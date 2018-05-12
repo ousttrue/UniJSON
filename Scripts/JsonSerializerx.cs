@@ -1,10 +1,10 @@
-﻿namespace UniJSON
+﻿namespace UniJson
 {
-    public class JSONSerializer
+    public class JsonSerializer
     {
-        public static JSONSerializer Create()
+        public static JsonSerializer Create()
         {
-            return new JSONSerializer();
+            return new JsonSerializer();
         }
 
         public string Serialize(int value)

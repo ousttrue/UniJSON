@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using UniJSON;
+using UniJson;
 
 
 public class SchemaTests
@@ -9,20 +9,20 @@ public class SchemaTests
     /// </summary>
     public class Person
     {
-        [JSONSchema(true)]
+        [JsonSchema(true)]
         public string firstName;
 
-        [JSONSchema(true)]
+        [JsonSchema(true)]
         public string lastName;
 
-        [JSONSchema(false, "Age in years", 0)]
+        [JsonSchema(false, "Age in years", 0)]
         public int age;
     }
 
     [Test]
     public void Tests()
     {
-        var s = JSONSchema.Create<Person>();
+        var s = JsonSchema.Create<Person>();
         Assert.AreEqual("Person", s.Title);
         Assert.AreEqual("object", s.Type);
         Assert.AreEqual("string", s.Properties["firstName"].Type);

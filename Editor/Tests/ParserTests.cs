@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using UniJSON;
+using UniJson;
 
 
 public class ParserTests
@@ -7,7 +7,7 @@ public class ParserTests
     [Test]
     public void Tests()
     {
-        var result = JSONParser.Parse("1");
+        var result = JsonParser.Parse("1");
         Assert.AreEqual(1, result[0].GetInt32());
     }
 }

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 
 
-namespace UniJSON
+namespace UniJson
 {
-    public enum JSONValueType
+    public enum JsonValueType
     {
         Unknown,
 
@@ -20,10 +20,10 @@ namespace UniJSON
         //Close, // internal use
     }
 
-    public struct JSONValue
+    public struct JsonValue
     {
         public StringSegment Segment;
-        public JSONValueType ValueType;
+        public JsonValueType ValueType;
 
         public Int32 GetInt32()
         {
@@ -31,28 +31,28 @@ namespace UniJSON
         }
     }
 
-    public class JSONParseException : Exception
+    public class JsonParseException : Exception
     {
-        public JSONParseException(string msg) : base(msg) { }
+        public JsonParseException(string msg) : base(msg) { }
     }
 
-    public class JSONParseResult
+    public class JsonParseResult
     {
-        public List<JSONValue> Values = new List<JSONValue>();
+        public List<JsonValue> Values = new List<JsonValue>();
     }
 
-    public static class JSONParser
+    public static class JsonParser
     {
-        static JSONValueType GetValueType(char c)
+        static JsonValueType GetValueType(char c)
         {
             switch (c)
             {
-                case '{': return JSONValueType.Object;
-                case '[': return JSONValueType.Array;
-                case '"': return JSONValueType.String;
-                case 't': return JSONValueType.Boolean;
-                case 'f': return JSONValueType.Boolean;
-                case 'n': return JSONValueType.Unknown;
+                case '{': return JsonValueType.Object;
+                case '[': return JsonValueType.Array;
+                case '"': return JsonValueType.String;
+                case 't': return JsonValueType.Boolean;
+                case 'f': return JsonValueType.Boolean;
+                case 'n': return JsonValueType.Unknown;
 
                 case '-': // fall through
                 case '0': // fall through
@@ -65,14 +65,14 @@ namespace UniJSON
                 case '7': // fall through
                 case '8': // fall through
                 case '9': // fall through
-                    return JSONValueType.Number;
+                    return JsonValueType.Number;
 
                 default:
-                    throw new JSONParseException(c + " is not valid json start");
+                    throw new JsonParseException(c + " is not valid json start");
             }
         }
 
-        static JSONValue ParsePrimitive(StringSegment segment, JSONValueType valueType)
+        static JsonValue ParsePrimitive(StringSegment segment, JsonValueType valueType)
         {
             int i = 1;
             for (; i < segment.Count; ++i)
@@ -87,24 +87,24 @@ namespace UniJSON
                     break;
                 }
             }
-            return new JSONValue
+            return new JsonValue
             {
                 Segment = segment.Take(i),
                 ValueType = valueType,
             };
         }
 
-        static JSONValue ParseString(StringSegment segment)
+        static JsonValue ParseString(StringSegment segment)
         {
             int i = 1;
             for (; i < segment.Count; ++i)
             {
                 if (segment[i] == '\"')
                 {
-                    return new JSONValue
+                    return new JsonValue
                     {
                         Segment = segment.Take(i + 1),
-                        ValueType = JSONValueType.String,
+                        ValueType = JsonValueType.String,
                     };
                 }
                 else if (segment[i] == '\\')
@@ -130,17 +130,17 @@ namespace UniJSON
 
                         default:
                             // unkonw escape
-                            throw new JSONParseException("unknown escape: " + segment.Skip(i));
+                            throw new JsonParseException("unknown escape: " + segment.Skip(i));
                     }
                 }
             }
-            throw new JSONParseException("no close string: " + segment.Skip(i));
+            throw new JsonParseException("no close string: " + segment.Skip(i));
         }
 
-        static JSONValue ParseArray(StringSegment segment, List<JSONValue> values)
+        static JsonValue ParseArray(StringSegment segment, List<JsonValue> values)
         {
             var index = values.Count;
-            values.Add(new JSONValue()); // placeholder
+            values.Add(new JsonValue()); // placeholder
 
             var closeChar = ']';
             bool isFirst = true;
@@ -152,7 +152,7 @@ namespace UniJSON
                     int nextToken;
                     if (!current.TrySearch(x => !Char.IsWhiteSpace(x), out nextToken))
                     {
-                        throw new JSONParseException("no white space expected");
+                        throw new JsonParseException("no white space expected");
                     }
                     current = current.Skip(nextToken);
                 }
@@ -175,7 +175,7 @@ namespace UniJSON
                     int keyPos;
                     if (!current.TrySearch(x => x == ',', out keyPos))
                     {
-                        throw new JSONParseException("',' expected");
+                        throw new JsonParseException("',' expected");
                     }
                     current = current.Skip(keyPos + 1);
                 }
@@ -185,7 +185,7 @@ namespace UniJSON
                     int nextToken;
                     if (!current.TrySearch(x => !Char.IsWhiteSpace(x), out nextToken))
                     {
-                        throw new JSONParseException("not whitespace expected");
+                        throw new JsonParseException("not whitespace expected");
                     }
                     current = current.Skip(nextToken);
                 }
@@ -197,19 +197,19 @@ namespace UniJSON
             }
 
             var array = values[index].Segment;
-            values[index] = new JSONValue
+            values[index] = new JsonValue
             {
                 Segment = new StringSegment(array.Value, array.Offset, current.Offset - array.Offset),
-                ValueType = JSONValueType.Array
+                ValueType = JsonValueType.Array
             };
 
             return values[index];
         }
 
-        static JSONValue ParseObject(StringSegment segment, List<JSONValue> values)
+        static JsonValue ParseObject(StringSegment segment, List<JsonValue> values)
         {
             var index = values.Count;
-            values.Add(new JSONValue()); // placeholder
+            values.Add(new JsonValue()); // placeholder
 
             var closeChar = '}';
             bool isFirst = true;
@@ -221,7 +221,7 @@ namespace UniJSON
                     int nextToken;
                     if (!current.TrySearch(x => !Char.IsWhiteSpace(x), out nextToken))
                     {
-                        throw new JSONParseException("no white space expected");
+                        throw new JsonParseException("no white space expected");
                     }
                     current = current.Skip(nextToken);
                 }
@@ -243,7 +243,7 @@ namespace UniJSON
                     int keyPos;
                     if (!current.TrySearch(x => x == ',', out keyPos))
                     {
-                        throw new JSONParseException("',' expected");
+                        throw new JsonParseException("',' expected");
                     }
                     current = current.Skip(keyPos + 1);
                 }
@@ -253,16 +253,16 @@ namespace UniJSON
                     int nextToken;
                     if (!current.TrySearch(x => !Char.IsWhiteSpace(x), out nextToken))
                     {
-                        throw new JSONParseException("not whitespace expected");
+                        throw new JsonParseException("not whitespace expected");
                     }
                     current = current.Skip(nextToken);
                 }
 
                 // key
                 var key = Parse(current, values);
-                if (key.ValueType != JSONValueType.String)
+                if (key.ValueType != JsonValueType.String)
                 {
-                    throw new JSONParseException("object key must string: " + key.Segment);
+                    throw new JsonParseException("object key must string: " + key.Segment);
                 }
                 current = current.Skip(key.Segment.Count);
                 values.Add(key);
@@ -271,7 +271,7 @@ namespace UniJSON
                 int valuePos;
                 if (!current.TrySearch(x => x == ':', out valuePos))
                 {
-                    throw new JSONParseException(": is not found");
+                    throw new JsonParseException(": is not found");
                 }
                 current = current.Skip(valuePos + 1);
 
@@ -280,7 +280,7 @@ namespace UniJSON
                     int nextToken;
                     if (!current.TrySearch(x => !Char.IsWhiteSpace(x), out nextToken))
                     {
-                        throw new JSONParseException("not whitespace expected");
+                        throw new JsonParseException("not whitespace expected");
                     }
                     current = current.Skip(nextToken);
                 }
@@ -292,40 +292,40 @@ namespace UniJSON
             }
 
             var obj = values[index].Segment;
-            values[index] = new JSONValue
+            values[index] = new JsonValue
             {
                 Segment = new StringSegment(obj.Value, obj.Offset, current.Offset - obj.Offset),
-                ValueType = JSONValueType.Array
+                ValueType = JsonValueType.Array
             };
 
             return values[index];
         }
 
-        public static JSONValue Parse(StringSegment segment, List<JSONValue> values)
+        public static JsonValue Parse(StringSegment segment, List<JsonValue> values)
         {
             // skip white space
             int pos;
             if (!segment.TrySearch(x => !char.IsWhiteSpace(x), out pos))
             {
-                throw new JSONParseException("only whitespace");
+                throw new JsonParseException("only whitespace");
             }
             segment = segment.Skip(pos);
 
             var valueType = GetValueType(segment[0]);
             switch (valueType)
             {
-                case JSONValueType.Boolean:
-                case JSONValueType.Number:
-                case JSONValueType.Null:
+                case JsonValueType.Boolean:
+                case JsonValueType.Number:
+                case JsonValueType.Null:
                     return ParsePrimitive(segment, valueType);
 
-                case JSONValueType.String:
+                case JsonValueType.String:
                     return ParseString(segment);
 
-                case JSONValueType.Array: // fall through
+                case JsonValueType.Array: // fall through
                     return ParseArray(segment, values);
 
-                case JSONValueType.Object: // fall through
+                case JsonValueType.Object: // fall through
                     return ParseObject(segment, values);
 
                 default:
@@ -333,11 +333,11 @@ namespace UniJSON
             }
         }
 
-        public static List<JSONValue> Parse(String json)
+        public static List<JsonValue> Parse(String json)
         {
-            var result = new List<JSONValue>();
+            var result = new List<JsonValue>();
             var value = Parse(new StringSegment(json), result);
-            if (value.ValueType != JSONValueType.Array && value.ValueType != JSONValueType.Object)
+            if (value.ValueType != JsonValueType.Array && value.ValueType != JsonValueType.Object)
             {
                 result.Add(value);
             }
