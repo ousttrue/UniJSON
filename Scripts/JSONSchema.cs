@@ -108,5 +108,15 @@ namespace UniJSON
                 Required = props.Where(x => x.Value.Required).Select(x => x.Key).ToArray(),
             };
         }
+
+        public static JSONSchema Parse(Byte[] bytes)
+        {
+
+
+            return new JSONSchema
+            {
+
+            };
+        }
     }
 }
