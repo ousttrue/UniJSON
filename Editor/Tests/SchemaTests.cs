@@ -9,13 +9,13 @@ public class SchemaTests
     /// </summary>
     public class Person
     {
-        [JsonSchemaPropertyAttribute(true)]
+        [JsonSchemaPropertyAttribute(Required = true)]
         public string firstName;
 
-        [JsonSchemaPropertyAttribute(true)]
+        [JsonSchemaPropertyAttribute(Required = true)]
         public string lastName;
 
-        [JsonSchemaPropertyAttribute(false, "Age in years", 0)]
+        [JsonSchemaPropertyAttribute(Description = "Age in years", Minimum = 0)]
         public int age;
     }
 

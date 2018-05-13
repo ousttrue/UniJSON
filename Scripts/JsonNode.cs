@@ -7,7 +7,7 @@ namespace UniJSON
 {
     public struct JsonNode
     {
-        public readonly JsonValue[] Values;
+        public readonly List<JsonValue> Values;
         int m_index;
         public JsonValue Value
         {
@@ -17,7 +17,7 @@ namespace UniJSON
         {
             get
             {
-                for (int i = 0; i < Values.Length; ++i)
+                for (int i = 0; i < Values.Count; ++i)
                 {
                     if (Values[i].ParentIndex == m_index)
                     {
@@ -26,8 +26,23 @@ namespace UniJSON
                 }
             }
         }
+        public JsonNode Parent
+        {
+            get
+            {
+                if (Value.ParentIndex < 0)
+                {
+                    throw new Exception("no parent");
+                }
+                if (Value.ParentIndex >= Values.Count)
+                {
+                    throw new IndexOutOfRangeException();
+                }
+                return new JsonNode(Values, Value.ParentIndex);
+            }
+        }
 
-        public JsonNode(JsonValue[] values, int index = 0)
+        public JsonNode(List<JsonValue> values, int index = 0)
         {
             Values = values;
             m_index = index;
@@ -56,7 +71,7 @@ namespace UniJSON
         {
             get
             {
-                if (this.GetValueType() != JsonValueType.Object) throw new JsonValueException("is not object");
+                if (this.Value.ValueType != JsonValueType.Object) throw new JsonValueException("is not object");
                 var it = Children.GetEnumerator();
                 while (it.MoveNext())
                 {
@@ -77,7 +92,7 @@ namespace UniJSON
                 int i = 0;
                 foreach (var v in ArrayItems)
                 {
-                    if (i++==index)
+                    if (i++ == index)
                     {
                         return v;
                     }
@@ -89,18 +104,82 @@ namespace UniJSON
         {
             get
             {
-                if (this.GetValueType() != JsonValueType.Array) throw new JsonValueException("is not object");
+                if (this.Value.ValueType != JsonValueType.Array) throw new JsonValueException("is not object");
                 return Children;
             }
         }
         #endregion
+
+        public void RemoveKey(string key)
+        {
+            if (Value.ValueType != JsonValueType.Object)
+            {
+                throw new Exception("is not object");
+            }
+
+            var parentIndex = m_index;
+            var indices = Values
+                .Select((value, index) => new { value, index })
+                .Where(x => x.value.ParentIndex == parentIndex)
+                .ToArray();
+
+            for (int i = 0; i < indices.Length; i += 2)
+            {
+                if (indices[i].value.GetString() == key)
+                {
+                    Values[indices[i].index] = JsonValue.Empty; // remove
+                    Values[indices[i + 1].index] = JsonValue.Empty; // remove
+                }
+            }
+        }
+
+        public void AddNode(string key, JsonNode node)
+        {
+            if (Value.ValueType != JsonValueType.Object)
+            {
+                throw new InvalidOperationException();
+            }
+
+            switch (key)
+            {
+                case "title":
+                case "$schema":
+                    // skip
+                    return;
+            }
+
+            Values.Add(new JsonValue(new StringSegment("\"" + key + "\""), JsonValueType.String, m_index));
+            AddNode(node);
+        }
+
+        private void AddNode(JsonNode node)
+        {
+            var index = Values.Count;
+            Values.Add(new JsonValue(node.Value.Segment, node.Value.ValueType, m_index));
+
+            var parent = new JsonNode(Values, index);
+            if (node.Value.ValueType == JsonValueType.Array)
+            {
+                foreach (var value in node.ArrayItems)
+                {
+                    parent.AddNode(value);
+                }
+            }
+            else if (node.Value.ValueType == JsonValueType.Object)
+            {
+                foreach (var kv in node.ObjectItems)
+                {
+                    parent.AddNode(kv.Key, kv.Value);
+                }
+            }
+        }
     }
 
     public static class JsonNodeExtensions
     {
-        public static JsonValueType GetValueType(this JsonNode self)
+        public static Boolean GetBoolean(this JsonNode self)
         {
-            return self.Value.ValueType;
+            return self.Value.GetBoolean();
         }
 
         public static Int32 GetInt32(this JsonNode self)
@@ -111,6 +190,22 @@ namespace UniJSON
         public static string GetString(this JsonNode self)
         {
             return self.Value.GetString();
+        }
+
+        public static IEnumerable<KeyValuePair<string, JsonNode>> TraverseObjects(this JsonNode self)
+        {
+            foreach (var kv in self.ObjectItems)
+            {
+                yield return kv;
+
+                if (kv.Value.Value.ValueType == JsonValueType.Object)
+                {
+                    foreach (var _kv in kv.Value.TraverseObjects())
+                    {
+                        yield return _kv;
+                    }
+                }
+            }
         }
     }
 }

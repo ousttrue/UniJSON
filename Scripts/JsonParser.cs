@@ -97,11 +97,8 @@ namespace UniJSON
             throw new JsonParseException("no close string: " + segment.Skip(i));
         }
 
-        static JsonValue ParseArray(StringSegment segment, List<JsonValue> values, int parentIndex)
+        static StringSegment ParseArray(StringSegment segment, List<JsonValue> values, int parentIndex)
         {
-            var index = values.Count;
-            values.Add(new JsonValue()); // placeholder
-
             var closeChar = ']';
             bool isFirst = true;
             var current = segment.Skip(1);
@@ -151,22 +148,15 @@ namespace UniJSON
                 }
 
                 // value
-                var value = Parse(current, values, index);
+                var value = Parse(current, values, parentIndex);
                 current = current.Skip(value.Segment.Count);
-                values.Add(value);
             }
 
-            values[index] = new JsonValue(new StringSegment(segment.Value, segment.Offset, current.Offset + 1 - segment.Offset),
-                JsonValueType.Array, parentIndex);
-
-            return values[index];
+            return current;
         }
 
-        static JsonValue ParseObject(StringSegment segment, List<JsonValue> values, int parentIndex)
+        static StringSegment ParseObject(StringSegment segment, List<JsonValue> values, int parentIndex)
         {
-            var index = values.Count;
-            values.Add(new JsonValue()); // placeholder
-
             var closeChar = '}';
             bool isFirst = true;
             var current = segment.Skip(1);
@@ -215,13 +205,12 @@ namespace UniJSON
                 }
 
                 // key
-                var key = Parse(current, values, index);
+                var key = Parse(current, values, parentIndex);
                 if (key.ValueType != JsonValueType.String)
                 {
                     throw new JsonParseException("object key must string: " + key.Segment);
                 }
                 current = current.Skip(key.Segment.Count);
-                values.Add(key);
 
                 // search ':'
                 int valuePos;
@@ -242,18 +231,14 @@ namespace UniJSON
                 }
 
                 // value
-                var value = Parse(current, values, index);
+                var value = Parse(current, values, parentIndex);
                 current = current.Skip(value.Segment.Count);
-                values.Add(value);
             }
 
-            values[index] = new JsonValue(new StringSegment(segment.Value, segment.Offset, current.Offset + 1 - segment.Offset),
-                JsonValueType.Object, parentIndex);
-
-            return values[index];
+            return current;
         }
 
-        public static JsonValue Parse(StringSegment segment, List<JsonValue> values, int parentIndex = -1)
+        public static JsonValue Parse(StringSegment segment, List<JsonValue> values, int parentIndex)
         {
             // skip white space
             int pos;
@@ -269,16 +254,38 @@ namespace UniJSON
                 case JsonValueType.Boolean:
                 case JsonValueType.Number:
                 case JsonValueType.Null:
-                    return ParsePrimitive(segment, valueType, parentIndex);
+                    {
+                        var value= ParsePrimitive(segment, valueType, parentIndex);
+                        values.Add(value);
+                        return value;
+                    }
 
                 case JsonValueType.String:
-                    return ParseString(segment, parentIndex);
+                    {
+                        var value= ParseString(segment, parentIndex);
+                        values.Add(value);
+                        return value;
+                    }
 
                 case JsonValueType.Array: // fall through
-                    return ParseArray(segment, values, parentIndex);
+                    {
+                        var index = values.Count;
+                        values.Add(new JsonValue()); // placeholder
+                        var current = ParseArray(segment, values, index);
+                        values[index] = new JsonValue(new StringSegment(segment.Value, segment.Offset, current.Offset + 1 - segment.Offset),
+                            JsonValueType.Array, parentIndex);
+                        return values[index];
+                    }
 
                 case JsonValueType.Object: // fall through
-                    return ParseObject(segment, values, parentIndex);
+                    {
+                        var index = values.Count;
+                        values.Add(new JsonValue()); // placeholder
+                        var current=ParseObject(segment, values, index);
+                        values[index] = new JsonValue(new StringSegment(segment.Value, segment.Offset, current.Offset + 1 - segment.Offset),
+                            JsonValueType.Object, parentIndex);
+                        return values[index];
+                    }
 
                 default:
                     throw new NotImplementedException();
@@ -288,15 +295,15 @@ namespace UniJSON
         public static JsonNode Parse(String json)
         {
             var result = new List<JsonValue>();
-            var value = Parse(new StringSegment(json), result);
+            var value = Parse(new StringSegment(json), result, -1);
             if (value.ValueType != JsonValueType.Array && value.ValueType != JsonValueType.Object)
             {
                 result.Add(value);
-                return new JsonNode(result.ToArray());
+                return new JsonNode(result);
             }
             else
             {
-                return new JsonNode(result.ToArray());
+                return new JsonNode(result);
             }
         }
     }

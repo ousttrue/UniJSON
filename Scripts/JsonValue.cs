@@ -33,9 +33,31 @@ namespace UniJSON
             //UnityEngine.Debug.LogFormat("{0}", this.ToString());
         }
 
+        public static readonly JsonValue Empty = new JsonValue
+        {
+            ParentIndex=-1
+        };
+
         public override string ToString()
         {
             return "[" + ParentIndex + "]" + ValueType + ": " + Segment.ToString();
+        }
+
+        public Boolean GetBoolean()
+        {
+            var s = Segment.ToString();
+            if (s == "true")
+            {
+                return true;
+            }
+            else if (s == "false")
+            {
+                return false;
+            }
+            else
+            {
+                throw new JsonValueException("invalid boolean: " + s);
+            }
         }
 
         public Int32 GetInt32()
