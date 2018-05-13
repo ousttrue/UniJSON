@@ -31,7 +31,7 @@ namespace UniJSON
         public object Minimum { get; private set; }
         public JsonSchemaPropertyItem[] AnyOf { get; private set; }
 
-        public JsonSchemaProperty(string type=null, JsonSchemaPropertyAttributeAttribute a = null)
+        public JsonSchemaProperty(string type=null, JsonSchemaPropertyAttribute a = null)
         {
             Type = type;
             if (a != null)
@@ -113,7 +113,7 @@ namespace UniJSON
             throw new NotImplementedException(t.Name);
         }
 
-        static KeyValuePair<string, JsonSchemaProperty> CreateProperty(string key, Type type, JsonSchemaPropertyAttributeAttribute a)
+        static KeyValuePair<string, JsonSchemaProperty> CreateProperty(string key, Type type, JsonSchemaPropertyAttribute a)
         {
             if (type.IsEnum)
             {
@@ -130,13 +130,13 @@ namespace UniJSON
         {
             foreach (var fi in t.GetFields())
             {
-                var a = fi.GetCustomAttributes(typeof(JsonSchemaPropertyAttributeAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttributeAttribute;
+                var a = fi.GetCustomAttributes(typeof(JsonSchemaPropertyAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttribute;
                 yield return CreateProperty(fi.Name, fi.FieldType, a);
             }
 
             foreach (var pi in t.GetProperties())
             {
-                var a = pi.GetCustomAttributes(typeof(JsonSchemaPropertyAttributeAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttributeAttribute;
+                var a = pi.GetCustomAttributes(typeof(JsonSchemaPropertyAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttribute;
                 yield return CreateProperty(pi.Name, pi.PropertyType, a);
             }
         }
@@ -144,9 +144,12 @@ namespace UniJSON
         public static JsonSchema Create(Type t, PropertyExportFlags exportFlags = PropertyExportFlags.Default)
         {
             var props = GetProperties(t, exportFlags).ToArray();
+
+            var a = (JsonSchemaObjectAttribute)t.GetCustomAttributes(typeof(JsonSchemaObjectAttribute), true).FirstOrDefault();
+
             return new JsonSchema
             {
-                Title = t.Name,
+                Title = a != null ? a.Title : t.Name,
                 Type = GetJsonType(t),
                 Properties = props.ToDictionary(x => x.Key, x => x.Value),
                 Required = props.Where(x => x.Value.Required).Select(x => x.Key).ToArray(),
