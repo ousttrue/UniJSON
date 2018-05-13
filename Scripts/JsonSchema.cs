@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UniJson
+namespace UniJSON
 {
     [Flags]
     public enum PropertyExportFlags
@@ -15,14 +15,23 @@ namespace UniJson
         Default = PublicFields | PublicProperties,
     }
 
+    public struct JsonSchemaPropertyItem
+    {
+        public object[] Enum;
+        public string Description;
+        public string Type;
+    }
+
     public class JsonSchemaProperty
     {
-        public string Type { get; private set; }
         public string Description { get; private set; }
-        public object Minimum { get; private set; }
         public bool Required { get; private set; }
 
-        public JsonSchemaProperty(string type, JsonSchemaAttribute a = null)
+        public string Type { get; private set; }
+        public object Minimum { get; private set; }
+        public JsonSchemaPropertyItem[] AnyOf { get; private set; }
+
+        public JsonSchemaProperty(string type=null, JsonSchemaPropertyAttributeAttribute a = null)
         {
             Type = type;
             if (a != null)
@@ -31,6 +40,20 @@ namespace UniJson
                 Minimum = a.Minimum;
                 Required = a.Required;
             }
+        }
+
+        public static JsonSchemaProperty FromEnum(Type enumType)
+        {
+            var enumValues = Enum.GetValues(enumType).Cast<Object>().Select(x => new JsonSchemaPropertyItem
+            {
+                Enum = new[] { x.ToString() },
+                Description = x.ToString(),
+            }).ToArray();
+
+            return new JsonSchemaProperty
+            {
+                AnyOf = enumValues,
+            };
         }
     }
 
@@ -44,6 +67,22 @@ namespace UniJson
         public static JsonSchema Create<T>()
         {
             return Create(typeof(T));
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || this.GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            var c = (JsonSchema)obj;
+            return (this.Title == c.Title);
+        }
+
+        public override int GetHashCode()
+        {
+            return Title.GetHashCode();
         }
 
         static readonly Dictionary<Type, string> JsonSchemaTypeMap = new Dictionary<Type, string>
@@ -60,6 +99,12 @@ namespace UniJson
                 return name;
             }
 
+            if (t.IsEnum)
+            {
+                // anyof
+                return "";
+            }
+
             if (t.IsClass)
             {
                 return "object";
@@ -68,32 +113,31 @@ namespace UniJson
             throw new NotImplementedException(t.Name);
         }
 
+        static KeyValuePair<string, JsonSchemaProperty> CreateProperty(string key, Type type, JsonSchemaPropertyAttributeAttribute a)
+        {
+            if (type.IsEnum)
+            {
+                return new KeyValuePair<string, JsonSchemaProperty>(key, JsonSchemaProperty.FromEnum(type));
+            }
+            else
+            {
+                var jsonType = GetJsonType(type);
+                return new KeyValuePair<string, JsonSchemaProperty>(key, new JsonSchemaProperty(jsonType, a));
+            }
+        }
+
         static IEnumerable<KeyValuePair<string, JsonSchemaProperty>> GetProperties(Type t, PropertyExportFlags exportFlags)
         {
             foreach (var fi in t.GetFields())
             {
-                var a = fi.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault() as JsonSchemaAttribute;
-                if (a != null)
-                {
-                    yield return new KeyValuePair<string, JsonSchemaProperty>(fi.Name, new JsonSchemaProperty(GetJsonType(fi.FieldType), a));
-                }
-                else if (exportFlags.HasFlag(PropertyExportFlags.PublicFields))
-                {
-                    yield return new KeyValuePair<string, JsonSchemaProperty>(fi.Name, new JsonSchemaProperty(GetJsonType(fi.FieldType)));
-                }
+                var a = fi.GetCustomAttributes(typeof(JsonSchemaPropertyAttributeAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttributeAttribute;
+                yield return CreateProperty(fi.Name, fi.FieldType, a);
             }
 
             foreach (var pi in t.GetProperties())
             {
-                var a = pi.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault() as JsonSchemaAttribute;
-                if (a != null)
-                {
-                    yield return new KeyValuePair<string, JsonSchemaProperty>(pi.Name, new JsonSchemaProperty(GetJsonType(pi.PropertyType), a));
-                }
-                if (exportFlags.HasFlag(PropertyExportFlags.PublicProperties))
-                {
-                    yield return new KeyValuePair<string, JsonSchemaProperty>(pi.Name, new JsonSchemaProperty(GetJsonType(pi.PropertyType)));
-                }
+                var a = pi.GetCustomAttributes(typeof(JsonSchemaPropertyAttributeAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttributeAttribute;
+                yield return CreateProperty(pi.Name, pi.PropertyType, a);
             }
         }
 
@@ -112,11 +156,18 @@ namespace UniJson
         public static JsonSchema Parse(Byte[] bytes)
         {
             var json = Encoding.UTF8.GetString(bytes);
-            var parsed=JsonParser.Parse(json);
+            var values = JsonParser.Parse(json);
+
+            var root = new JsonNode(values.ToArray(), 0);
+
+            if (root.GetValueType() != JsonValueType.Object)
+            {
+                throw new JsonParseException("root value must object: " + root.Value.ToString());
+            }
 
             return new JsonSchema
             {
-
+                Title = root["title"].GetString(),
             };
         }
     }

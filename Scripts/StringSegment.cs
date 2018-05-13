@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-namespace UniJson
+namespace UniJSON
 {
     public struct StringSegment : IEnumerable<Char>
     {

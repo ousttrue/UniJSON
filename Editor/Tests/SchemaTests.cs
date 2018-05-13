@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using UniJson;
+using UniJSON;
 
 
 public class SchemaTests
@@ -9,13 +9,13 @@ public class SchemaTests
     /// </summary>
     public class Person
     {
-        [JsonSchema(true)]
+        [JsonSchemaPropertyAttribute(true)]
         public string firstName;
 
-        [JsonSchema(true)]
+        [JsonSchemaPropertyAttribute(true)]
         public string lastName;
 
-        [JsonSchema(false, "Age in years", 0)]
+        [JsonSchemaPropertyAttribute(false, "Age in years", 0)]
         public int age;
     }
 

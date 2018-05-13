@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace UniJson
+namespace UniJSON
 {
     public static class EnumExtensions
     {

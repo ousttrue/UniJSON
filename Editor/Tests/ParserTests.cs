@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using UniJson;
+using UniJSON;
 
 
 public class ParserTests

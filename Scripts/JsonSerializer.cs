@@ -1,4 +1,4 @@
-﻿namespace UniJson
+﻿namespace UniJSON
 {
     public class JsonSerializer
     {
