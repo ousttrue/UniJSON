@@ -285,15 +285,19 @@ namespace UniJSON
             }
         }
 
-        public static List<JsonValue> Parse(String json)
+        public static JsonNode Parse(String json)
         {
             var result = new List<JsonValue>();
             var value = Parse(new StringSegment(json), result);
             if (value.ValueType != JsonValueType.Array && value.ValueType != JsonValueType.Object)
             {
                 result.Add(value);
+                return new JsonNode(result.ToArray());
             }
-            return result;
+            else
+            {
+                return new JsonNode(result.ToArray());
+            }
         }
     }
 }

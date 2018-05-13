@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 
@@ -32,6 +33,7 @@ namespace UniJSON
             m_index = index;
         }
 
+        #region object interface
         public JsonNode this[string key]
         {
             get
@@ -65,6 +67,33 @@ namespace UniJSON
                 }
             }
         }
+        #endregion
+
+        #region array interface
+        public JsonNode this[int index]
+        {
+            get
+            {
+                int i = 0;
+                foreach (var v in ArrayItems)
+                {
+                    if (i++==index)
+                    {
+                        return v;
+                    }
+                }
+                throw new KeyNotFoundException();
+            }
+        }
+        public IEnumerable<JsonNode> ArrayItems
+        {
+            get
+            {
+                if (this.GetValueType() != JsonValueType.Array) throw new JsonValueException("is not object");
+                return Children;
+            }
+        }
+        #endregion
     }
 
     public static class JsonNodeExtensions
@@ -72,6 +101,11 @@ namespace UniJSON
         public static JsonValueType GetValueType(this JsonNode self)
         {
             return self.Value.ValueType;
+        }
+
+        public static Int32 GetInt32(this JsonNode self)
+        {
+            return self.Value.GetInt32();
         }
 
         public static string GetString(this JsonNode self)

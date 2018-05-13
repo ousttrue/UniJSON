@@ -31,7 +31,7 @@ namespace UniJSON
         public object Minimum { get; private set; }
         public JsonSchemaPropertyItem[] AnyOf { get; private set; }
 
-        public JsonSchemaProperty(string type=null, JsonSchemaPropertyAttribute a = null)
+        public JsonSchemaProperty(string type = null, JsonSchemaPropertyAttribute a = null)
         {
             Type = type;
             if (a != null)
@@ -53,6 +53,14 @@ namespace UniJSON
             return new JsonSchemaProperty
             {
                 AnyOf = enumValues,
+            };
+        }
+
+        public static JsonSchemaProperty FromJsonNode(JsonNode node)
+        {
+            return new JsonSchemaProperty
+            {
+
             };
         }
     }
@@ -77,7 +85,17 @@ namespace UniJSON
             }
 
             var c = (JsonSchema)obj;
-            return (this.Title == c.Title);
+
+            if (this.Title != c.Title)
+                return false;
+            if (this.Type != c.Type)
+                return false;
+            if (this.Properties.Count != c.Properties.Count || this.Properties.Except(c.Properties).Any())
+                return false;
+            if (!this.Required.SequenceEqual(c.Required))
+                return false;
+
+            return true;
         }
 
         public override int GetHashCode()
@@ -159,10 +177,7 @@ namespace UniJSON
         public static JsonSchema Parse(Byte[] bytes)
         {
             var json = Encoding.UTF8.GetString(bytes);
-            var values = JsonParser.Parse(json);
-
-            var root = new JsonNode(values.ToArray(), 0);
-
+            var root = JsonParser.Parse(json);
             if (root.GetValueType() != JsonValueType.Object)
             {
                 throw new JsonParseException("root value must object: " + root.Value.ToString());
@@ -171,6 +186,9 @@ namespace UniJSON
             return new JsonSchema
             {
                 Title = root["title"].GetString(),
+                Type = "object",
+                Properties = root["properties"].ObjectItems.ToDictionary(x => x.Key, x=> JsonSchemaProperty.FromJsonNode(x.Value)),
+                Required = root["required"].ArrayItems.Select(x => x.GetString()).ToArray(),
             };
         }
     }
