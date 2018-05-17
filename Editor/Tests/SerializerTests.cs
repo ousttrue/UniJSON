@@ -1,22 +1,21 @@
-﻿using UnityEngine;
-using UnityEditor;
-using UnityEngine.TestTools;
-using NUnit.Framework;
-using System.Collections;
-using UniJSON;
+﻿using NUnit.Framework;
 
-public class SerializerTests
+
+namespace UniJSON
 {
-
-    [Test]
-    public void SerializerTestsSimplePasses()
+    public class SerializerTests
     {
-        // Use the Assert class to test conditions.
 
-        var s = JsonSerializer.Create();
+        [Test]
+        public void SerializerTestsSimplePasses()
+        {
+            // Use the Assert class to test conditions.
 
-        // number
-        Assert.AreEqual("0", s.Serialize(0));
+            var s = JsonSerializer.Create();
+
+            // number
+            Assert.AreEqual("0", s.Serialize(0));
+        }
+
     }
-
 }

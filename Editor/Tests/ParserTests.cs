@@ -1,20 +1,22 @@
 ﻿using NUnit.Framework;
-using UniJSON;
 
 
-public class ParserTests
+namespace UniJSON
 {
-    [Test]
-    public void Tests()
+    public class ParserTests
     {
+        [Test]
+        public void Tests()
         {
-            var result = JsonParser.Parse("1");
-            Assert.AreEqual(1, result.GetInt32());
-        }
+            {
+                var result = JsonParser.Parse("1");
+                Assert.AreEqual(1, result.GetInt32());
+            }
 
-        {
-            var result = JsonParser.Parse("{ \"a\": { \"b\": 1 }}");
-            Assert.True(result.ContainsKey("a"));
+            {
+                var result = JsonParser.Parse("{ \"a\": { \"b\": 1 }}");
+                Assert.True(result.ContainsKey("a"));
+            }
         }
     }
 }
