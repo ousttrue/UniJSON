@@ -321,7 +321,7 @@ namespace UniJSON
             };
         }
 
-        public static JsonSchema Parse(string path)
+        public static JsonSchema ParseFromPath(string path)
         {
             var baseDir = Path.GetDirectoryName(path);
             var json = File.ReadAllText(path, Encoding.UTF8);
