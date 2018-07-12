@@ -1,7 +1,5 @@
 ﻿using NUnit.Framework;
 using System.IO;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 
@@ -14,13 +12,13 @@ namespace UniJSON
         /// </summary>
         public class Person
         {
-            [JsonSchemaPropertyAttribute(Required = true)]
+            [JsonSchemaProperty(Required = true)]
             public string firstName;
 
-            [JsonSchemaPropertyAttribute(Required = true)]
+            [JsonSchemaProperty(Required = true)]
             public string lastName;
 
-            [JsonSchemaPropertyAttribute(Description = "Age in years", Minimum = 0)]
+            [JsonSchemaProperty(Description = "Age in years", Minimum = 0)]
             public int age;
         }
 
@@ -39,15 +37,17 @@ namespace UniJSON
         }
 
         [Test]
-        public void CreateFromJSON()
+        public void Gltf_Accessor()
         {
             var path = Path.GetFullPath(Application.dataPath + "/../glTF/specification/2.0/schema/accessor.schema.json");
-            var s = JsonSchema.ParseFromPath(path);
-            Assert.AreEqual("Accessor", s.Title);
-            Assert.AreEqual("object", s.Type);
-            Assert.AreEqual("integer", s.Properties["bufferView"].Type);
-            Assert.AreEqual("integer", s.Properties["byteOffset"].Type);
-            //Assert.True(s.Required.);
+            var fromSchema = JsonSchema.ParseFromPath(path);
+            Assert.AreEqual("Accessor", fromSchema.Title);
+            Assert.AreEqual("object", fromSchema.Type);
+            Assert.AreEqual("integer", fromSchema.Properties["bufferView"].Type);
+            Assert.AreEqual("integer", fromSchema.Properties["byteOffset"].Type);
+
+            var fromClass = JsonSchema.Create<UniGLTF.glTFAccessor>();
+            Assert.True(fromSchema.MatchProperties(fromClass));
         }
     }
 }

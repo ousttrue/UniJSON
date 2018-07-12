@@ -194,9 +194,44 @@ namespace UniJSON
         public Dictionary<string, JsonSchemaProperty> Properties { get; private set; }
         public string[] Required { get; private set; }
 
+        public override string ToString()
+        {
+            return string.Format("<{0}>", Title);
+        }
+
         public static JsonSchema Create<T>()
         {
             return Create(typeof(T));
+        }
+
+        public bool MatchProperties(JsonSchema rhs)
+        {
+            if (this.Properties.Count != rhs.Properties.Count)
+                return false;
+
+            foreach (var pair in Properties)
+            {
+                JsonSchemaProperty value;
+                if (rhs.Properties.TryGetValue(pair.Key, out value))
+                {
+#if false
+                    // ToDo
+                    if (value.Type != pair.Value.Type)
+                    {
+                        return false;
+                    }
+#else
+                    // key name match
+                    return true;
+#endif
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public override bool Equals(object obj)
@@ -296,13 +331,33 @@ namespace UniJSON
             foreach (var fi in t.GetFields())
             {
                 var a = fi.GetCustomAttributes(typeof(JsonSchemaPropertyAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttribute;
-                yield return CreateProperty(fi.Name, fi.FieldType, a);
+                if (a != null)
+                {
+                    yield return CreateProperty(fi.Name, fi.FieldType, a);
+                }
+                else
+                {
+                    // default
+                    // only public instance field
+                    if(!fi.IsStatic && fi.IsPublic)
+                    {
+                        yield return CreateProperty(fi.Name, fi.FieldType, new JsonSchemaPropertyAttribute());
+                    }
+                }
             }
 
             foreach (var pi in t.GetProperties())
             {
                 var a = pi.GetCustomAttributes(typeof(JsonSchemaPropertyAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttribute;
-                yield return CreateProperty(pi.Name, pi.PropertyType, a);
+                if (a != null)
+                {
+                    yield return CreateProperty(pi.Name, pi.PropertyType, a);
+                }
+                else
+                {
+                    // default
+                    // skip
+                }
             }
         }
 

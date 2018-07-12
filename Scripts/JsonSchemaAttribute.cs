@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 
 namespace UniJSON
@@ -13,8 +14,8 @@ namespace UniJSON
 
     public enum EnumSerializationType
     {
-        AsInt,
         AsString,
+        AsInt,
     }
 
     public class JsonSchemaObjectAttribute : Attribute
