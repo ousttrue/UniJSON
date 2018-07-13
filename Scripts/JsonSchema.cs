@@ -143,7 +143,7 @@ namespace UniJSON
                 {
                     required = req.GetBoolean();
                 }
-                else if(reqType==JsonValueType.Array)
+                else if (reqType == JsonValueType.Array)
                 {
                     required = req.ArrayItems.Select(x => x.GetString()).ToArray();
                 }
@@ -158,7 +158,7 @@ namespace UniJSON
                 return new JsonSchemaProperty
                 {
                     AllOf = node["allOf"].ArrayItems.Select(x => x.GetString()).ToArray(),
-                    Required=required,
+                    Required = required,
                 };
             }
             else if (node.ContainsKey("anyOf"))
@@ -169,7 +169,7 @@ namespace UniJSON
                     Required = required,
                 };
             }
-            else if(node.ContainsKey("type"))
+            else if (node.ContainsKey("type"))
             {
                 return new JsonSchemaProperty
                 {
@@ -339,7 +339,7 @@ namespace UniJSON
                 {
                     // default
                     // only public instance field
-                    if(!fi.IsStatic && fi.IsPublic)
+                    if (!fi.IsStatic && fi.IsPublic)
                     {
                         yield return CreateProperty(fi.Name, fi.FieldType, new JsonSchemaPropertyAttribute());
                     }
@@ -400,9 +400,9 @@ namespace UniJSON
             while (true)
             {
                 var replaced = false;
-                foreach(var kv in root.TraverseObjects())
+                foreach (var kv in root.TraverseObjects())
                 {
-                    if(kv.Key=="allOf")
+                    if (kv.Key == "allOf")
                     {
                         if (kv.Value.Value.ValueType == JsonValueType.Array)
                         {
@@ -410,7 +410,7 @@ namespace UniJSON
                             //var parentIndex = kv.Value.Value.ParentIndex;
 
                             var refObj = kv.Value[0];
-                            if(refObj.Value.ValueType==JsonValueType.Object && refObj.ContainsKey("$ref"))
+                            if (refObj.Value.ValueType == JsonValueType.Object && refObj.ContainsKey("$ref"))
                             {
                                 // replace $ref
                                 var refPath = Path.Combine(baseDir, refObj["$ref"].GetString());
@@ -421,9 +421,9 @@ namespace UniJSON
                                 parent.RemoveKey("allOf");
 
                                 // add Values
-                                foreach(var _kv in refRoot.ObjectItems)
+                                foreach (var _kv in refRoot.ObjectItems)
                                 {
-                                    parent.AddNode(_kv.Key, _kv.Value);                                    
+                                    parent.AddNode(_kv.Key, _kv.Value);
                                 }
 
                                 replaced = true;
