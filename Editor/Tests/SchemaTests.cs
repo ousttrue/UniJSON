@@ -35,19 +35,5 @@ namespace UniJSON
             Assert.AreEqual(0, s.Properties["age"].Minimum);
             Assert.AreEqual(new[] { "firstName", "lastName" }, s.Required);
         }
-
-        [Test]
-        public void Gltf_Accessor()
-        {
-            var path = Path.GetFullPath(Application.dataPath + "/../glTF/specification/2.0/schema/accessor.schema.json");
-            var fromSchema = JsonSchema.ParseFromPath(path);
-            Assert.AreEqual("Accessor", fromSchema.Title);
-            Assert.AreEqual("object", fromSchema.Type);
-            Assert.AreEqual("integer", fromSchema.Properties["bufferView"].Type);
-            Assert.AreEqual("integer", fromSchema.Properties["byteOffset"].Type);
-
-            var fromClass = JsonSchema.Create<UniGLTF.glTFAccessor>();
-            Assert.True(fromSchema.MatchProperties(fromClass));
-        }
     }
 }
