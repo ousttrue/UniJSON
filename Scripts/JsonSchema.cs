@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 
 
 namespace UniJSON
@@ -377,10 +375,9 @@ namespace UniJSON
             };
         }
 
-        public static JsonSchema ParseFromPath(string path)
+        public static JsonSchema ParseFromPath(IFileSystemAccessor fs)
         {
-            var baseDir = Path.GetDirectoryName(path);
-            var json = File.ReadAllText(path, Encoding.UTF8);
+            var json = fs.ReadAllText();
             var root = JsonParser.Parse(json);
             if (root.Value.ValueType != JsonValueType.Object)
             {
@@ -414,8 +411,8 @@ namespace UniJSON
                             if (refObj.Value.ValueType == JsonValueType.Object && refObj.ContainsKey("$ref"))
                             {
                                 // replace $ref
-                                var refPath = Path.Combine(baseDir, refObj["$ref"].GetString());
-                                var refJson = File.ReadAllText(refPath, Encoding.UTF8);
+                                var refPath = refObj["$ref"].GetString();
+                                var refJson = fs.ReadAllText(refPath);
                                 var refRoot = JsonParser.Parse(refJson);
 
                                 // remove allOf
