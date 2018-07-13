@@ -282,6 +282,7 @@ namespace UniJSON
             {typeof(bool), "boolean" },
             {typeof(string), "string"},
             {typeof(int), "integer"},
+            {typeof(float), "floatg" }
         };
 
         static string GetJsonType(Type t)
@@ -439,13 +440,20 @@ namespace UniJSON
                 }
             }
 
-            return new JsonSchema
+            var schema = new JsonSchema
             {
                 Title = root["title"].GetString(),
                 Type = "object",
                 Properties = root["properties"].ObjectItems.ToDictionary(x => x.Key, x => JsonSchemaProperty.FromJsonNode(x.Value)),
-                Required = root["required"].ArrayItems.Select(x => x.GetString()).ToArray(),
             };
+
+            var required = root.ObjectItems.FirstOrDefault(x => x.Key == "Required").Value;
+            if (required.Values != null)
+            {
+                schema.Required = required.ArrayItems.Select(x => x.GetString()).ToArray();
+            }
+
+            return schema;
         }
     }
 }
