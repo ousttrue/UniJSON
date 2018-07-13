@@ -8,7 +8,7 @@ namespace UniJSON
     {
         string ReadAllText();
         string ReadAllText(string relativePath);
-        IFileSystemAccessor GetRelative(string relativePath);
+        IFileSystemAccessor Get(string relativePath);
     }
 
     public class FileSystemAccessor : IFileSystemAccessor
@@ -39,7 +39,7 @@ namespace UniJSON
             return File.ReadAllText(path, Encoding.UTF8);
         }
 
-        public IFileSystemAccessor GetRelative(string relativePath)
+        public IFileSystemAccessor Get(string relativePath)
         {
             var path = Path.Combine(m_baseDir, relativePath);
             return new FileSystemAccessor(path);
