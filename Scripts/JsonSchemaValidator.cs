@@ -21,6 +21,7 @@ namespace UniJSON
 
         AllOf,
         AnyOf,
+        OneOf,
     }
 
     public abstract class JsonSchemaValidatorBase
@@ -50,6 +51,11 @@ namespace UniJSON
     public class JsonIntValidator : JsonSchemaValidatorBase
     {
         public override JsonValueType JsonValueType { get { return JsonValueType.Integer; } }
+    }
+
+    public class JsonNumbeerValidator : JsonSchemaValidatorBase
+    {
+        public override JsonValueType JsonValueType { get { return JsonValueType.Number; } }
     }
 
     public class JsonStringValidator : JsonSchemaValidatorBase
@@ -200,6 +206,7 @@ namespace UniJSON
             switch (t)
             {
                 case JsonValueType.Integer: return new JsonIntValidator();
+                case JsonValueType.Number: return new JsonNumbeerValidator();
                 case JsonValueType.String: return new JsonStringValidator();
                 case JsonValueType.Boolean: return new JsonBoolValidator();
                 case JsonValueType.Array: return new JsonArrayValidator();
@@ -224,15 +231,15 @@ namespace UniJSON
 
         static JsonValueType ToJsonType(Type t)
         {
-            if (t.IsClass)
-            {
-                return JsonValueType.Object;
-            }
-
             JsonValueType jsonValueType;
             if(s_typeMap.TryGetValue(t, out jsonValueType))
             {
                 return jsonValueType;
+            }
+
+            if (t.IsClass)
+            {
+                return JsonValueType.Object;
             }
 
             throw new NotImplementedException();

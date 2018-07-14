@@ -29,10 +29,10 @@ namespace UniJSON
             Assert.AreEqual("Person", s.Title);
 
             var v = s.Validator as JsonObjectValidator;
-            Assert.AreEqual("object", v.JsonValueType);
-            Assert.AreEqual("string", v.Properties["firstName"].Validator.JsonValueType);
-            Assert.AreEqual("string", v.Properties["lastName"].Validator.JsonValueType);
-            Assert.AreEqual("integer", v.Properties["age"].Validator.JsonValueType);
+            Assert.AreEqual(JsonValueType.Object, v.JsonValueType);
+            Assert.AreEqual(JsonValueType.String, v.Properties["firstName"].Validator.JsonValueType);
+            Assert.AreEqual(JsonValueType.String, v.Properties["lastName"].Validator.JsonValueType);
+            Assert.AreEqual(JsonValueType.Integer, v.Properties["age"].Validator.JsonValueType);
             Assert.AreEqual("Age in years", v.Properties["age"].Description);
             //Assert.AreEqual(0, s.Properties["age"].Minimum);
             Assert.IsTrue(v.Properties["firstName"].Validator.Required);

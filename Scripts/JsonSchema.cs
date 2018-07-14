@@ -155,6 +155,12 @@ namespace UniJSON
                     case "minimum": // for number
                         break;
 
+                    case "maximum":
+                        break;
+
+                    case "multipleOf":
+                        break;
+
                     case "default":
                         break;
 
@@ -170,7 +176,25 @@ namespace UniJSON
                     case "maxItems":
                         break;
 
+                    case "uniqueItems":
+                        break;
+
+                    case "pattern":
+                        break;
+
+                    case "format":
+                        break;
+
                     case "dependencies":
+                        break;
+
+                    case "minProperties":
+                        break;
+
+                    case "oneOf":
+                        break;
+
+                    case "not":
                         break;
 
                     case "anyOf": // composition
@@ -213,6 +237,9 @@ namespace UniJSON
                         break;
 
                     case "gltf_webgl":
+                        break;
+
+                    case "gltf_uriType":
                         break;
 
                     default:
