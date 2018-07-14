@@ -391,6 +391,14 @@ namespace UniJSON
     {
         public override JsonValueType JsonValueType { get { return JsonValueType.Array; } }
 
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.4.4
+        /// </summary>
+        public int? MinItems
+        {
+            get; set;
+        }
+
         public override void Assign(JsonSchemaValidatorBase rhs)
         {
             throw new NotImplementedException();
@@ -410,6 +418,7 @@ namespace UniJSON
                     return true;
 
                 case "minItems":
+                    MinItems = value.GetInt32();
                     return true;
 
                 case "uniqueItems":

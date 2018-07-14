@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -64,16 +65,73 @@ namespace UniJSON
             }
         }
 
-        public static JsonSchemaValidatorBase Create(JsonValueType t)
+        public static JsonSchemaValidatorBase Create(JsonValueType valueType, Type t = null, JsonSchemaAttribute a = null)
         {
-            switch (t)
+            switch (valueType)
             {
-                case JsonValueType.Integer: return new JsonIntValidator();
-                case JsonValueType.Number: return new JsonNumberValidator();
-                case JsonValueType.String: return new JsonStringValidator();
-                case JsonValueType.Boolean: return new JsonBoolValidator();
-                case JsonValueType.Array: return new JsonArrayValidator();
-                case JsonValueType.Object: return new JsonObjectValidator();
+                case JsonValueType.Integer:
+                    {
+                        var v = new JsonIntValidator();
+                        if (a != null)
+                        {
+                            if (a.Minimum != double.PositiveInfinity)
+                            {
+                                v.Minimum = (int)a.Minimum;
+                            }
+                        }
+                        return v;
+                    }
+
+                case JsonValueType.Number:
+                    {
+                        var v = new JsonNumberValidator();
+                        if (a != null)
+                        {
+                            if (a.Minimum != double.PositiveInfinity)
+                            {
+                                v.Minimum = a.Minimum;
+                            }
+                        }
+                        return v;
+                    }
+
+                case JsonValueType.String:
+                    return new JsonStringValidator();
+
+                case JsonValueType.Boolean:
+                    return new JsonBoolValidator();
+
+                case JsonValueType.Array:
+                    {
+                        var v= new JsonArrayValidator();
+                        if (a != null)
+                        {
+                            if (a.MinItems != 0)
+                            {
+                                v.MinItems = a.MinItems;
+                            }
+                        }
+                        return v;
+                    }
+
+                case JsonValueType.Object:
+                    {
+                        var v = new JsonObjectValidator();
+                        if (a != null)
+                        {
+                            // props
+                            foreach (var prop in GetProperties(t, a.ExportFlags))
+                            {
+                                v.Properties.Add(prop.Key, prop.Schema);
+                                if (prop.Required)
+                                {
+                                    v.Required.Add(prop.Key);
+                                }
+                            }
+                        }
+                        return v;
+                    }
+
                 default:
                     throw new NotImplementedException();
             }
@@ -104,6 +162,10 @@ namespace UniJSON
             {
                 return JsonValueType.Array;
             }
+            if(t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(List<>)))
+            {
+                return JsonValueType.Array;
+            }
 
             if (t.IsClass)
             {
@@ -115,47 +177,7 @@ namespace UniJSON
 
         public static JsonSchemaValidatorBase Create(Type t, JsonSchemaAttribute a)
         {
-            var validator = Create(ToJsonType(t));
-
-            {
-                var v = validator as JsonIntValidator;
-                if (v != null)
-                {
-                    if (a.Minimum != null)
-                    {
-                        v.Minimum = (int)a.Minimum;
-                    }
-                }
-            }
-
-            {
-                var v = validator as JsonNumberValidator;
-                if (v != null)
-                {
-                    if (a.Minimum != null)
-                    {
-                        v.Minimum = (double)a.Minimum;
-                    }
-                }
-            }
-
-            {
-                var v = validator as JsonObjectValidator;
-                if (v != null)
-                {
-                    // props
-                    foreach (var prop in GetProperties(t, a.ExportFlags))
-                    {
-                        v.Properties.Add(prop.Key, prop.Schema);
-                        if (prop.Required)
-                        {
-                            v.Required.Add(prop.Key);
-                        }
-                    }
-                }
-            }
-
-            return validator;
+            return Create(ToJsonType(t), t, a);
         }
     }
 }

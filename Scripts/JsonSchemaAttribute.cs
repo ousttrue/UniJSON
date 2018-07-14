@@ -5,11 +5,23 @@ namespace UniJSON
 {
     public class JsonSchemaAttribute : Attribute
     {
+        #region Annotation
         public string Title;
-        public bool Required;
         public string Description;
-        public object Minimum;
+        #endregion
+
+        public bool Required;
+
+        #region integer, number
+        public double Minimum = double.PositiveInfinity;
+        #endregion
+
+        #region array
+        public int MinItems;
+        #endregion
+
         public EnumSerializationType EnumSerializationType;
+
         public PropertyExportFlags ExportFlags = PropertyExportFlags.Default;
     }
 
