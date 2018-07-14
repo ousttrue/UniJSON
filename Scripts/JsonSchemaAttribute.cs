@@ -1,25 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 
 
 namespace UniJSON
 {
-    public class JsonSchemaPropertyAttribute : Attribute
+    public class JsonSchemaAttribute : Attribute
     {
+        public string Title;
         public bool Required;
         public string Description;
         public object Minimum;
         public EnumSerializationType EnumSerializationType;
+        public PropertyExportFlags ExportFlags = PropertyExportFlags.Default;
     }
 
     public enum EnumSerializationType
     {
         AsString,
         AsInt,
-    }
-
-    public class JsonSchemaObjectAttribute : Attribute
-    {
-        public string Title;
     }
 }

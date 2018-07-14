@@ -5,24 +5,6 @@ using System.Linq;
 
 namespace UniJSON
 {
-    [Flags]
-    public enum PropertyExportFlags
-    {
-        None,
-        PublicFields = 1,
-        PublicProperties = 2,
-
-        Default = PublicFields | PublicProperties,
-    }
-
-    public enum CompositionType
-    {
-        Unknown,
-
-        AllOf,
-        AnyOf,
-    }
-
     public class JsonSchema
     {
         public string Schema; // http://json-schema.org/draft-04/schema
@@ -32,167 +14,57 @@ namespace UniJSON
         public string Description { get; private set; }
         #endregion
 
-        #region Validations
-        public JsonValueType Type { get; private set; }
-        public bool Required { get; private set; }
-        public IEnumValues EnumValues { get; private set; }
-        Dictionary<string, JsonSchema> m_props;
-        public Dictionary<string, JsonSchema> Properties
-        {
-            get
-            {
-                if (m_props == null)
-                {
-                    m_props = new Dictionary<string, JsonSchema>();
-                }
-                return m_props;
-            }
-        } // for object
-        #endregion
+        public JsonSchemaValidatorBase Validator { get; private set; }
 
         public override string ToString()
         {
             return string.Format("<{0}>", Title);
         }
 
-        public static JsonSchema Create<T>()
-        {
-            return Create(typeof(T));
-        }
-
-        public bool MatchProperties(JsonSchema rhs)
-        {
-            if (this.Properties.Count != rhs.Properties.Count)
-                return false;
-
-            foreach (var pair in Properties)
-            {
-                JsonSchema value;
-                if (rhs.Properties.TryGetValue(pair.Key, out value))
-                {
-#if false
-                    // ToDo
-                    if (value.Type != pair.Value.Type)
-                    {
-                        return false;
-                    }
-#else
-                    // key name match
-                    return true;
-#endif
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         public override bool Equals(object obj)
         {
-            if (obj == null || this.GetType() != obj.GetType())
-            {
-                return false;
-            }
-
-            var c = (JsonSchema)obj;
-
-            if (this.Type != c.Type)
-                return false;
-            if (this.Properties.Count != c.Properties.Count)
-                return false;
-            foreach (var pair in Properties)
-            {
-                JsonSchema value;
-                if (c.Properties.TryGetValue(pair.Key, out value))
-                {
-                    // Require value be equal.
-                    if (value != pair.Value)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    // Require key be present.
-                    return false;
-                }
-            }
-
-            return true;
+            var rhs = obj as JsonSchema;
+            if (rhs == null) return false;
+            return Validator.Equals(rhs.Validator);
         }
 
         public override int GetHashCode()
         {
-            return Title.GetHashCode();
+            return 1;
         }
 
-        static readonly Dictionary<Type, JsonValueType> JsonSchemaTypeMap = new Dictionary<Type, JsonValueType>
+        #region FromType
+        public static JsonSchema FromType<T>()
         {
-            {typeof(bool), JsonValueType.Boolean },
-            {typeof(string), JsonValueType.String },
-            {typeof(int), JsonValueType.Integer},
-            {typeof(float), JsonValueType.Number }
-        };
+            return FromType(typeof(T), null);
+        }
 
-        static JsonValueType GetJsonType(Type t)
+        public static JsonSchema FromType(Type t, JsonSchemaAttribute a)
         {
-            JsonValueType jsonValueType;
-            if (JsonSchemaTypeMap.TryGetValue(t, out jsonValueType))
+            if (a == null)
             {
-                return jsonValueType;
+                a = t.GetCustomAttributes(typeof(JsonSchemaAttribute), true)
+                    .FirstOrDefault() as JsonSchemaAttribute;
             }
-
-            if (t.IsClass)
+            if (a == null)
             {
-                return JsonValueType.Object;
-            }
-
-            throw new NotImplementedException(t.Name);
-        }
-
-        public interface IEnumValues
-        {
-            Object[] Values { get; }
-        }
-
-        public class IntEnum<T> : IEnumValues
-        {
-            public object[] Values
-            {
-                get
+                a = new JsonSchemaAttribute
                 {
-                    throw new NotImplementedException();
-                }
+                    Title = t.Name,
+                };
             }
-        }
 
-        public class StringEnum<T> : IEnumValues
-        {
-            public object[] Values
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-        }
-
-        static JsonSchema FromType(Type type, JsonSchemaPropertyAttribute a)
-        {
-            var jsonType = default(JsonValueType);
-            if (type.IsEnum)
+            JsonSchemaValidatorBase validator = null;
+            if (t.IsEnum)
             {
                 switch (a.EnumSerializationType)
                 {
                     case EnumSerializationType.AsInt:
-                        jsonType = JsonValueType.Integer;
+                        validator = new JsonIntValidator();
                         break;
 
                     case EnumSerializationType.AsString:
-                        jsonType = JsonValueType.String;
+                        validator = new JsonStringValidator();
                         break;
 
                     default:
@@ -201,122 +73,22 @@ namespace UniJSON
             }
             else
             {
-                jsonType = GetJsonType(type);
-                if (jsonType == JsonValueType.Unknown)
-                {
-                    throw new NotImplementedException();
-                }
+                validator = JsonSchemaValidatorFactory.Create(t, a);
             }
+            validator.Required = a.Required;
 
-            return new JsonSchema
-            {
-                Description = a.Description,
-                Type = jsonType,
-                Required = a.Required,
-            };
-        }
-
-        static IEnumerable<KeyValuePair<string, JsonSchema>> GetProperties(Type t, PropertyExportFlags exportFlags)
-        {
-            // fields
-            foreach (var fi in t.GetFields())
-            {
-                var a = fi.GetCustomAttributes(typeof(JsonSchemaPropertyAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttribute;
-                if (a == null)
-                {
-                    // default
-                    // only public instance field
-                    if (!fi.IsStatic && fi.IsPublic)
-                    {
-                        a = new JsonSchemaPropertyAttribute();
-                    }
-                }
-
-                if (a != null)
-                {
-                    yield return new KeyValuePair<string, JsonSchema>(fi.Name, JsonSchema.FromType(fi.FieldType, a));
-                }
-            }
-
-            // properties
-            foreach (var pi in t.GetProperties())
-            {
-                var a = pi.GetCustomAttributes(typeof(JsonSchemaPropertyAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttribute;
-
-                if (a != null)
-                {
-                    yield return new KeyValuePair<string, JsonSchema>(pi.Name, JsonSchema.FromType(pi.PropertyType, a));
-                }
-            }
-        }
-
-        public static JsonSchema Create(Type t, PropertyExportFlags exportFlags = PropertyExportFlags.Default)
-        {
             var schema = new JsonSchema
             {
-                Title = t.Name,
-                Type = GetJsonType(t),
+                Title = a.Title,
+                Description = a.Description,          
+                Validator = validator,
             };
-
-            var a = (JsonSchemaObjectAttribute)t.GetCustomAttributes(typeof(JsonSchemaObjectAttribute), true).FirstOrDefault();
-            if (a != null)
-            {
-                schema.Title = a.Title;
-            }
-
-            foreach (var x in GetProperties(t, exportFlags))
-            {
-                schema.Properties.Add(x.Key, x.Value);
-            }
 
             return schema;
         }
+        #endregion
 
-        void Assign(JsonSchema rhs)
-        {
-            this.Type = rhs.Type;
-
-            if (rhs.Required)
-            {
-                this.Required = rhs.Required;
-            }
-
-            foreach (var x in rhs.Properties)
-            {
-                if (this.Properties.ContainsKey(x.Key))
-                {
-                    this.Properties[x.Key] = x.Value;
-                }
-                else
-                {
-                    this.Properties.Add(x.Key, x.Value);
-                }
-            }
-        }
-
-        void Composite(CompositionType compositionType, List<JsonSchema> composition)
-        {
-            switch (compositionType)
-            {
-                case CompositionType.AllOf:
-                    if (composition.Count == 1)
-                    {
-                        this.Assign(composition[0]);
-                    }
-                    else
-                    {
-                        throw new NotImplementedException();
-                    }
-                    break;
-
-                case CompositionType.AnyOf:
-                    break;
-
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-
+        #region FromJson
         static JsonValueType ParseValueType(string type)
         {
             try
@@ -331,11 +103,10 @@ namespace UniJSON
 
         Stack<string> m_context = new Stack<string>();
 
-        void Parse(IFileSystemAccessor fs, JsonNode root, string Key)
+        public void Parse(IFileSystemAccessor fs, JsonNode root, string Key)
         {
             m_context.Push(Key);
 
-            var required = new List<string>();
             var compositionType = default(CompositionType);
             var composition = new List<JsonSchema>();
             foreach (var kv in root.ObjectItems)
@@ -356,24 +127,28 @@ namespace UniJSON
                         break;
 
                     case "type": // validation
-                        Type = ParseValueType(kv.Value.GetString());
+                        Validator = JsonSchemaValidatorFactory.Create(kv.Value.GetString());
                         break;
 
-                    case "properties": // validation
+                    case "properties": // for object
                         m_context.Push("properties");
-                        foreach (var prop in kv.Value.ObjectItems)
                         {
-                            var sub = new JsonSchema();
-                            sub.Parse(fs, prop.Value, prop.Key);
-                            Properties.Add(prop.Key, sub);
+                            var objectValidator = Validator as JsonObjectValidator;
+                            foreach (var prop in kv.Value.ObjectItems)
+                            {
+                                objectValidator.AddProperty(fs, prop.Key, prop.Value);
+                            }
                         }
                         m_context.Pop();
                         break;
 
-                    case "required": // validation
-                        foreach (var req in kv.Value.ArrayItems)
+                    case "required": // for object
                         {
-                            required.Add(req.GetString());
+                            var objectValidator = Validator as JsonObjectValidator;
+                            foreach (var req in kv.Value.ArrayItems)
+                            {
+                                objectValidator.SetRequired(req.GetString());
+                            }
                         }
                         break;
 
@@ -447,14 +222,44 @@ namespace UniJSON
             }
             m_context.Pop();
 
-            foreach (var req in required)
-            {
-                Properties[req].Required = true;
-            }
-
             if (composition.Count > 0)
             {
                 Composite(compositionType, composition);
+            }
+        }
+
+        void Composite(CompositionType compositionType, List<JsonSchema> composition)
+        {
+            switch (compositionType)
+            {
+                case CompositionType.AllOf:
+                    if (composition.Count == 1)
+                    {
+                        // inheritance
+                        if (Validator == null)
+                        {
+                            Validator = JsonSchemaValidatorFactory.Create(composition[0].Validator.JsonValueType);
+                        }
+                        Validator.Assign(composition[0].Validator);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
+                    break;
+
+                case CompositionType.AnyOf:
+                    // extend enum
+                    if (Validator == null)
+                    {
+                        var typeSchema = composition.First(x => x.Validator != null);
+                        Validator = JsonSchemaValidatorFactory.Create(typeSchema.Validator.JsonValueType);
+                    }
+                    //throw new NotImplementedException();
+                    break;
+
+                default:
+                    throw new NotImplementedException();
             }
         }
 
@@ -469,5 +274,6 @@ namespace UniJSON
             schema.Parse(fs, root, "__ParseFromPath__" + fs.ToString());
             return schema;
         }
+        #endregion
     }
 }

@@ -12,28 +12,31 @@ namespace UniJSON
         /// </summary>
         public class Person
         {
-            [JsonSchemaProperty(Required = true)]
+            [JsonSchemaAttribute(Required = true)]
             public string firstName;
 
-            [JsonSchemaProperty(Required = true)]
+            [JsonSchemaAttribute(Required = true)]
             public string lastName;
 
-            [JsonSchemaProperty(Description = "Age in years", Minimum = 0)]
+            [JsonSchemaAttribute(Description = "Age in years", Minimum = 0)]
             public int age;
         }
 
         [Test]
         public void CreateFromClass()
         {
-            var s = JsonSchema.Create<Person>();
+            var s = JsonSchema.FromType<Person>();
             Assert.AreEqual("Person", s.Title);
-            Assert.AreEqual("object", s.Type);
-            Assert.AreEqual("string", s.Properties["firstName"].Type);
-            Assert.AreEqual("string", s.Properties["lastName"].Type);
-            Assert.AreEqual("integer", s.Properties["age"].Type);
-            Assert.AreEqual("Age in years", s.Properties["age"].Description);
+
+            var v = s.Validator as JsonObjectValidator;
+            Assert.AreEqual("object", v.JsonValueType);
+            Assert.AreEqual("string", v.Properties["firstName"].Validator.JsonValueType);
+            Assert.AreEqual("string", v.Properties["lastName"].Validator.JsonValueType);
+            Assert.AreEqual("integer", v.Properties["age"].Validator.JsonValueType);
+            Assert.AreEqual("Age in years", v.Properties["age"].Description);
             //Assert.AreEqual(0, s.Properties["age"].Minimum);
-            Assert.AreEqual(new[] { "firstName", "lastName" }, s.Required);
+            Assert.IsTrue(v.Properties["firstName"].Validator.Required);
+            Assert.IsTrue(v.Properties["lastName"].Validator.Required);
         }
     }
 }
