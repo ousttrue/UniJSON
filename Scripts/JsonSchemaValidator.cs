@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 
 
@@ -27,7 +26,6 @@ namespace UniJSON
     public abstract class JsonSchemaValidatorBase
     {
         public abstract JsonValueType JsonValueType { get; }
-        public bool Required { get; set; }
 
         public virtual void Assign(JsonSchemaValidatorBase rhs)
         {
@@ -35,54 +33,316 @@ namespace UniJSON
             {
                 throw new NotImplementedException();
             }
-
-            if (rhs.Required)
-            {
-                this.Required = rhs.Required;
-            }
         }
+
+        public abstract bool Parse(IFileSystemAccessor fs, string key, JsonNode value);
     }
 
     public class JsonBoolValidator: JsonSchemaValidatorBase
     {
         public override JsonValueType JsonValueType { get { return JsonValueType.Boolean; } }
+
+        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        {
+            return false;
+        }
     }
 
+    /// <summary>
+    /// http://json-schema.org/latest/json-schema-validation.html#numeric
+    /// </summary>
     public class JsonIntValidator : JsonSchemaValidatorBase
     {
         public override JsonValueType JsonValueType { get { return JsonValueType.Integer; } }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.1
+        /// </summary>
+        public int? MultipleOf
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.2
+        /// </summary>
+        public int? Maximum
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.3
+        /// </summary>
+        public int? ExclusiveMaximum
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.4
+        /// </summary>
+        public int? Minimum
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.5
+        /// </summary>
+        public int? ExclusiveMinimum
+        {
+            get; private set;
+        }
+
+        public int? Default
+        {
+            get; private set;
+        }
+
+        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        {
+            switch (key)
+            {
+                case "multipleOf":
+                    MultipleOf = value.GetInt32();
+                    return true;
+
+                case "maximum":
+                    Maximum = value.GetInt32();
+                    return true;
+
+                case "exclusiveMaximum":
+                    ExclusiveMaximum = value.GetInt32();
+                    return true;
+
+                case "minimum":
+                    Minimum = value.GetInt32();
+                    return true;
+
+                case "exclusiveMinimum":
+                    ExclusiveMinimum = value.GetInt32();
+                    return true;
+            }
+
+            return false;
+        }
     }
 
-    public class JsonNumbeerValidator : JsonSchemaValidatorBase
+    /// <summary>
+    /// http://json-schema.org/latest/json-schema-validation.html#numeric
+    /// </summary>
+    public class JsonNumberValidator : JsonSchemaValidatorBase
     {
         public override JsonValueType JsonValueType { get { return JsonValueType.Number; } }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.1
+        /// </summary>
+        public double? MultipleOf
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.2
+        /// </summary>
+        public double? Maximum
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.3
+        /// </summary>
+        public double? ExclusiveMaximum
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.4
+        /// </summary>
+        public double? Minimum
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.5
+        /// </summary>
+        public double? ExclusiveMinimum
+        {
+            get; private set;
+        }
+
+        public double? Default
+        {
+            get; private set;
+        }
+
+        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        {
+            switch (key)
+            {
+                case "multipleOf":
+                    MultipleOf = value.GetDouble();
+                    return true;
+
+                case "maximum":
+                    Maximum = value.GetDouble();
+                    return true;
+
+                case "exclusiveMaximum":
+                    ExclusiveMaximum = value.GetDouble();
+                    return true;
+
+                case "minimum":
+                    Minimum = value.GetDouble();
+                    return true;
+
+                case "exclusiveMinimum":
+                    ExclusiveMinimum = value.GetDouble();
+                    return true;
+            }
+
+            return false;
+        }
     }
 
+    /// <summary>
+    /// http://json-schema.org/latest/json-schema-validation.html#string
+    /// </summary>
     public class JsonStringValidator : JsonSchemaValidatorBase
     {
         public override JsonValueType JsonValueType { get { return JsonValueType.String; } }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.3.1
+        /// </summary>
+        public int? MaxLength
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.3.2
+        /// </summary>
+        public int? MinLength
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.3.3
+        /// </summary>
+        public string Pattern
+        {
+            get; private set;
+        }
+
+        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        {
+            switch(key)
+            {
+                case "maxLength":
+                    MaxLength = value.GetInt32();
+                    return true;
+
+                case "minLength":
+                    MinLength = value.GetInt32();
+                    return true;
+
+                case "pattern":
+                    Pattern = value.GetString();
+                    return true;
+            }
+
+            return false;
+        }
     }
 
-    public class JsonArrayValidator: JsonSchemaValidatorBase
+    /// <summary>
+    /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.4
+    /// </summary>
+    public class JsonArrayValidator : JsonSchemaValidatorBase
     {
         public override JsonValueType JsonValueType { get { return JsonValueType.Array; } }
+
+        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        {
+            switch (key)
+            {
+                case "items":
+                    return true;
+
+                case "additionalItems":
+                    return true;
+
+                case "maxItems":
+                    return true;
+
+                case "minItems":
+                    return true;
+
+                case "uniqueItems":
+                    return true;
+
+                case "contains":
+                    return true;
+            }
+
+            return false;
+        }
     }
 
+    /// <summary>
+    /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5
+    /// </summary>
     public class JsonObjectValidator : JsonSchemaValidatorBase
     {
         public override JsonValueType JsonValueType { get { return JsonValueType.Object; } }
 
-        Dictionary<string, JsonSchema> m_props;
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.1
+        /// </summary>
+        public int MaxProperties
+        {
+            get; private set;
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.2
+        /// </summary>
+        public int MinProperties
+        {
+            get; private set;
+        }
+
+        List<string> m_required = new List<string>();
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.3
+        /// </summary>
+        public List<string> Required
+        {
+            get { return m_required; }
+        }
+
+        Dictionary<string, JsonSchema> m_props = new Dictionary<string, JsonSchema>();
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.4
+        /// </summary>
         public Dictionary<string, JsonSchema> Properties
         {
-            get
-            {
-                if (m_props == null)
-                {
-                    m_props = new Dictionary<string, JsonSchema>();
-                }
-                return m_props;
-            }
+            get { return m_props; }
+        }
+
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.5
+        /// </summary>
+        public string PatternProperties
+        {
+            get; private set;
         }
 
         public override int GetHashCode()
@@ -158,106 +418,51 @@ namespace UniJSON
             Properties.Add(key, sub);
         }
 
-        public void SetRequired(string key)
+        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
         {
-            var validator = Properties[key].Validator;
-            validator.Required = true;
-        }
-    }
-
-    public static class JsonSchemaValidatorFactory
-    {
-        static IEnumerable<KeyValuePair<string, JsonSchema>> GetProperties(Type t, PropertyExportFlags exportFlags)
-        {
-            // fields
-            foreach (var fi in t.GetFields())
+            switch (key)
             {
-                var a = fi.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault() as JsonSchemaAttribute;
-                if (a == null)
-                {
-                    // default
-                    // only public instance field
-                    if (!fi.IsStatic && fi.IsPublic)
+                case "maxProperties":
+                    MaxProperties = value.GetInt32();
+                    return true;
+
+                case "minProperties":
+                    MinProperties = value.GetInt32();
+                    return true;
+
+                case "required":
                     {
-                        a = new JsonSchemaAttribute();
+                        foreach (var req in value.ArrayItems)
+                        {
+                            m_required.Add(req.GetString());
+                        }
                     }
-                }
+                    return true;
 
-                if (a != null)
-                {
-                    yield return new KeyValuePair<string, JsonSchema>(fi.Name, JsonSchema.FromType(fi.FieldType, a));
-                }
+                case "properties":
+                    {
+                        foreach (var prop in value.ObjectItems)
+                        {
+                            AddProperty(fs, prop.Key, prop.Value);
+                        }
+                    }
+                    return true;
+
+                case "patternProperties":
+                    PatternProperties = value.GetString();
+                    return true;
+
+                case "additionalProperties":
+                    return true;
+
+                case "dependencies":
+                    return true;
+
+                case "propertyNames":
+                    return true;
             }
 
-            // properties
-            foreach (var pi in t.GetProperties())
-            {
-                var a = pi.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault() as JsonSchemaAttribute;
-
-                if (a != null)
-                {
-                    yield return new KeyValuePair<string, JsonSchema>(pi.Name, JsonSchema.FromType(pi.PropertyType, a));
-                }
-            }
-        }
-
-        public static JsonSchemaValidatorBase Create(JsonValueType t)
-        {
-            switch (t)
-            {
-                case JsonValueType.Integer: return new JsonIntValidator();
-                case JsonValueType.Number: return new JsonNumbeerValidator();
-                case JsonValueType.String: return new JsonStringValidator();
-                case JsonValueType.Boolean: return new JsonBoolValidator();
-                case JsonValueType.Array: return new JsonArrayValidator();
-                case JsonValueType.Object: return new JsonObjectValidator();
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-
-        public static JsonSchemaValidatorBase Create(string t)
-        {
-            return Create((JsonValueType)Enum.Parse(typeof(JsonValueType), t, true));
-        }
-
-        static Dictionary<Type, JsonValueType> s_typeMap = new Dictionary<Type, JsonValueType>
-        {
-            {typeof(int), JsonValueType.Integer },
-            {typeof(float), JsonValueType.Number },
-            {typeof(string), JsonValueType.String },
-            {typeof(bool), JsonValueType.Boolean },
-        };
-
-        static JsonValueType ToJsonType(Type t)
-        {
-            JsonValueType jsonValueType;
-            if(s_typeMap.TryGetValue(t, out jsonValueType))
-            {
-                return jsonValueType;
-            }
-
-            if (t.IsClass)
-            {
-                return JsonValueType.Object;
-            }
-
-            throw new NotImplementedException();
-        }
-
-        public static JsonSchemaValidatorBase Create(Type t, JsonSchemaAttribute a)
-        {
-            var validator =  Create(ToJsonType(t));
-            var obj = validator as JsonObjectValidator;
-            if (obj != null)
-            {
-                // props
-                foreach(var prop in GetProperties(t, a.ExportFlags))
-                {
-                    obj.Properties.Add(prop.Key, prop.Value);
-                }
-            }
-            return validator;
+            return false;
         }
     }
 }

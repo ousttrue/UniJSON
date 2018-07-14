@@ -35,8 +35,7 @@ namespace UniJSON
             Assert.AreEqual(JsonValueType.Integer, v.Properties["age"].Validator.JsonValueType);
             Assert.AreEqual("Age in years", v.Properties["age"].Description);
             //Assert.AreEqual(0, s.Properties["age"].Minimum);
-            Assert.IsTrue(v.Properties["firstName"].Validator.Required);
-            Assert.IsTrue(v.Properties["lastName"].Validator.Required);
+            Assert.AreEqual(new[] { "firstName", "lastName" }, v.Required);
         }
     }
 }

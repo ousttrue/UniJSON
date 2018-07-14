@@ -12,6 +12,7 @@ namespace UniJSON
         #region Annotations
         public string Title { get; private set; }
         public string Description { get; private set; }
+        public object Default { get; private set; }
         #endregion
 
         public JsonSchemaValidatorBase Validator { get; private set; }
@@ -75,12 +76,11 @@ namespace UniJSON
             {
                 validator = JsonSchemaValidatorFactory.Create(t, a);
             }
-            validator.Required = a.Required;
 
             var schema = new JsonSchema
             {
                 Title = a.Title,
-                Description = a.Description,          
+                Description = a.Description,
                 Validator = validator,
             };
 
@@ -111,6 +111,14 @@ namespace UniJSON
             var composition = new List<JsonSchema>();
             foreach (var kv in root.ObjectItems)
             {
+                if (Validator != null)
+                {
+                    if (Validator.Parse(fs, kv.Key, kv.Value))
+                    {
+                        continue;
+                    }
+                }
+
                 //Console.WriteLine(kv.Key);
                 switch (kv.Key)
                 {
@@ -118,79 +126,47 @@ namespace UniJSON
                         Schema = kv.Value.GetString();
                         break;
 
-                    case "title": // annotation
+                    case "$ref":
+                        {
+                            var refFs = fs.Get(kv.Value.GetString());
+
+                            // parse JSON
+                            var json = refFs.ReadAllText();
+                            var refRoot = JsonParser.Parse(json);
+
+                            Parse(refFs, refRoot, "$ref");
+                        }
+                        break;
+
+                    #region Annotation
+                    case "title":
                         Title = kv.Value.GetString();
                         break;
 
-                    case "description": // annotation
+                    case "description":
                         Description = kv.Value.GetString();
                         break;
 
-                    case "type": // validation
+                    case "default":
+                        Default = kv.Value.Value.Segment;
+                        break;
+                    #endregion
+
+                    #region Validation
+                    // http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.1
+                    case "type":
                         Validator = JsonSchemaValidatorFactory.Create(kv.Value.GetString());
                         break;
 
-                    case "properties": // for object
-                        m_context.Push("properties");
-                        {
-                            var objectValidator = Validator as JsonObjectValidator;
-                            foreach (var prop in kv.Value.ObjectItems)
-                            {
-                                objectValidator.AddProperty(fs, prop.Key, prop.Value);
-                            }
-                        }
-                        m_context.Pop();
+                    case "enum":
                         break;
 
-                    case "required": // for object
-                        {
-                            var objectValidator = Validator as JsonObjectValidator;
-                            foreach (var req in kv.Value.ArrayItems)
-                            {
-                                objectValidator.SetRequired(req.GetString());
-                            }
-                        }
+                    case "const":
                         break;
+                    #endregion
 
-                    case "minimum": // for number
-                        break;
-
-                    case "maximum":
-                        break;
-
-                    case "multipleOf":
-                        break;
-
-                    case "default":
-                        break;
-
-                    case "enum": // value constraint
-                        break;
-
-                    case "items": // for array ?
-                        break;
-
-                    case "minItems":
-                        break;
-
-                    case "maxItems":
-                        break;
-
-                    case "uniqueItems":
-                        break;
-
-                    case "pattern":
-                        break;
-
-                    case "format":
-                        break;
-
-                    case "dependencies":
-                        break;
-
-                    case "minProperties":
-                        break;
-
+                    #region Composite
+                    // http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.7
                     case "oneOf":
                         break;
 
@@ -217,22 +193,13 @@ namespace UniJSON
                             }
                         }
                         break;
+                    #endregion
 
-                    case "$ref":
-                        {
-                            var refFs = fs.Get(kv.Value.GetString());
-
-                            // parse JSON
-                            var json = refFs.ReadAllText();
-                            var refRoot = JsonParser.Parse(json);
-
-                            Parse(refFs, refRoot, "$ref");
-                        }
+                    // http://json-schema.org/latest/json-schema-validation.html#rfc.section.7
+                    case "format":
                         break;
 
-                    case "additionalProperties":
-                        break;
-
+                    #region Gltf
                     case "gltf_detailedDescription":
                         break;
 
@@ -241,6 +208,7 @@ namespace UniJSON
 
                     case "gltf_uriType":
                         break;
+                    #endregion
 
                     default:
                         throw new NotImplementedException(string.Format("unknown key: {0}", kv.Key));

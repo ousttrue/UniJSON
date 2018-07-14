@@ -187,6 +187,11 @@ namespace UniJSON
             return self.Value.GetInt32();
         }
 
+        public static Double GetDouble(this JsonNode self)
+        {
+            return self.Value.GetDouble();
+        }
+
         public static string GetString(this JsonNode self)
         {
             return self.Value.GetString();
