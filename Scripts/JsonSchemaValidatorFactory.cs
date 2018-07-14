@@ -19,7 +19,13 @@ namespace UniJSON
             // fields
             foreach (var fi in t.GetFields())
             {
-                var a = fi.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault() as JsonSchemaAttribute;
+                var _a = fi.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault();
+                JsonSchemaAttribute a = null;
+                if (_a != null)
+                {
+                    a = _a as JsonSchemaAttribute;
+                }
+
                 if (a == null)
                 {
                     // default
@@ -94,6 +100,11 @@ namespace UniJSON
                 return jsonValueType;
             }
 
+            if (t.IsArray)
+            {
+                return JsonValueType.Array;
+            }
+
             if (t.IsClass)
             {
                 return JsonValueType.Object;
@@ -105,19 +116,45 @@ namespace UniJSON
         public static JsonSchemaValidatorBase Create(Type t, JsonSchemaAttribute a)
         {
             var validator = Create(ToJsonType(t));
-            var obj = validator as JsonObjectValidator;
-            if (obj != null)
+
             {
-                // props
-                foreach (var prop in GetProperties(t, a.ExportFlags))
+                var v = validator as JsonIntValidator;
+                if (v != null)
                 {
-                    obj.Properties.Add(prop.Key, prop.Schema);
-                    if (prop.Required)
+                    if (a.Minimum != null)
                     {
-                        obj.Required.Add(prop.Key);
+                        v.Minimum = (int)a.Minimum;
                     }
                 }
             }
+
+            {
+                var v = validator as JsonNumberValidator;
+                if (v != null)
+                {
+                    if (a.Minimum != null)
+                    {
+                        v.Minimum = (double)a.Minimum;
+                    }
+                }
+            }
+
+            {
+                var v = validator as JsonObjectValidator;
+                if (v != null)
+                {
+                    // props
+                    foreach (var prop in GetProperties(t, a.ExportFlags))
+                    {
+                        v.Properties.Add(prop.Key, prop.Schema);
+                        if (prop.Required)
+                        {
+                            v.Required.Add(prop.Key);
+                        }
+                    }
+                }
+            }
+
             return validator;
         }
     }

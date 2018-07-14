@@ -27,13 +27,7 @@ namespace UniJSON
     {
         public abstract JsonValueType JsonValueType { get; }
 
-        public virtual void Assign(JsonSchemaValidatorBase rhs)
-        {
-            if (JsonValueType != rhs.JsonValueType)
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public abstract void Assign(JsonSchemaValidatorBase obj);
 
         public abstract bool Parse(IFileSystemAccessor fs, string key, JsonNode value);
     }
@@ -42,9 +36,26 @@ namespace UniJSON
     {
         public override JsonValueType JsonValueType { get { return JsonValueType.Boolean; } }
 
+        public override void Assign(JsonSchemaValidatorBase obj)
+        {
+            throw new NotImplementedException();
+        }
+
         public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
         {
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return 1;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var rhs = obj as JsonBoolValidator;
+            if (rhs == null) return false;
+            return true;
         }
     }
 
@@ -84,7 +95,7 @@ namespace UniJSON
         /// </summary>
         public int? Minimum
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
@@ -127,6 +138,63 @@ namespace UniJSON
 
             return false;
         }
+
+        public override void Assign(JsonSchemaValidatorBase obj)
+        {
+            var rhs = obj as JsonIntValidator;
+            if (rhs == null)
+            {
+                throw new ArgumentException();
+            }
+
+            MultipleOf = rhs.MultipleOf;
+            Maximum = rhs.Maximum;
+            ExclusiveMaximum = rhs.ExclusiveMaximum;
+            Minimum = rhs.Minimum;
+            ExclusiveMinimum = rhs.ExclusiveMinimum;
+        }
+
+        public override int GetHashCode()
+        {
+            return 2;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var rhs = obj as JsonIntValidator;
+            if (rhs == null) return false;
+
+            if (MultipleOf != rhs.MultipleOf)
+            {
+                Console.WriteLine("MultipleOf");
+                return false;
+            }
+            if (Maximum != rhs.Maximum)
+            {
+                Console.WriteLine("Maximum");
+                return false;
+            }
+
+            if (ExclusiveMaximum != rhs.ExclusiveMaximum)
+            {
+                Console.WriteLine("ExclusiveMaximum");
+                return false;
+            }
+
+            if (Minimum != rhs.Minimum)
+            {
+                Console.WriteLine("Minimum");
+                return false;
+            }
+
+            if (ExclusiveMinimum != rhs.ExclusiveMinimum)
+            {
+                Console.WriteLine("ExclusiveMinimum");
+                return false;
+            }
+
+            return true;
+        }
     }
 
     /// <summary>
@@ -165,7 +233,7 @@ namespace UniJSON
         /// </summary>
         public double? Minimum
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
@@ -179,6 +247,11 @@ namespace UniJSON
         public double? Default
         {
             get; private set;
+        }
+
+        public override void Assign(JsonSchemaValidatorBase rhs)
+        {
+            throw new NotImplementedException();
         }
 
         public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
@@ -207,6 +280,25 @@ namespace UniJSON
             }
 
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return 3;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var rhs = obj as JsonNumberValidator;
+            if (rhs == null) return false;
+
+            if (MultipleOf != rhs.MultipleOf) return false;
+            if (Maximum != rhs.Maximum) return false;
+            if (ExclusiveMaximum != rhs.ExclusiveMaximum) return false;
+            if (Minimum != rhs.Minimum) return false;
+            if (ExclusiveMinimum != rhs.ExclusiveMinimum) return false;
+
+            return true;
         }
     }
 
@@ -241,6 +333,19 @@ namespace UniJSON
             get; private set;
         }
 
+        public override void Assign(JsonSchemaValidatorBase obj)
+        {
+            var rhs = obj as JsonStringValidator;
+            if (rhs == null)
+            {
+                throw new ArgumentException();
+            }
+
+            MaxLength = rhs.MaxLength;
+            MinLength = rhs.MinLength;
+            Pattern = rhs.Pattern;
+        }
+
         public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
         {
             switch(key)
@@ -260,6 +365,23 @@ namespace UniJSON
 
             return false;
         }
+
+        public override int GetHashCode()
+        {
+            return 4;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var rhs = obj as JsonStringValidator;
+            if (rhs == null) return false;
+
+            if (MaxLength != rhs.MaxLength) return false;
+            if (MinLength != rhs.MinLength) return false;
+            if (Pattern != rhs.Pattern) return false;
+
+            return true;
+        }
     }
 
     /// <summary>
@@ -268,6 +390,11 @@ namespace UniJSON
     public class JsonArrayValidator : JsonSchemaValidatorBase
     {
         public override JsonValueType JsonValueType { get { return JsonValueType.Array; } }
+
+        public override void Assign(JsonSchemaValidatorBase rhs)
+        {
+            throw new NotImplementedException();
+        }
 
         public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
         {
@@ -293,6 +420,18 @@ namespace UniJSON
             }
 
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return 5;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var rhs = obj as JsonArrayValidator;
+            if (rhs == null) return false;
+            return true;
         }
     }
 
@@ -345,53 +484,8 @@ namespace UniJSON
             get; private set;
         }
 
-        public override int GetHashCode()
-        {
-            return 1;
-        }
-
-        public override bool Equals(object obj)
-        {
-            var rhs = obj as JsonObjectValidator;
-            if (rhs == null)
-            {
-                return false;
-            }
-
-            if (Properties.Count != rhs.Properties.Count)
-            {
-                return false;
-            }
-
-            foreach (var pair in Properties)
-            {
-                JsonSchema value;
-                if (rhs.Properties.TryGetValue(pair.Key, out value))
-                {
-#if false
-                    // ToDo
-                    if (value.Type != pair.Value.Type)
-                    {
-                        return false;
-                    }
-#else
-                    // key name match
-                    return true;
-#endif
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         public override void Assign(JsonSchemaValidatorBase obj)
         {
-            base.Assign(obj);
-
             var rhs = obj as JsonObjectValidator;
             if (rhs == null)
             {
@@ -415,7 +509,22 @@ namespace UniJSON
         {
             var sub = new JsonSchema();
             sub.Parse(fs, value, key);
-            Properties.Add(key, sub);
+
+            if (Properties.ContainsKey(key))
+            {
+                if (sub.Validator != null)
+                {
+                    Properties[key].Validator.Assign(sub.Validator);
+                }
+            }
+            else
+            {
+                if (sub.Validator == null)
+                {
+                    sub.Validator = new JsonObjectValidator();
+                }
+                Properties.Add(key, sub);
+            }
         }
 
         public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
@@ -463,6 +572,51 @@ namespace UniJSON
             }
 
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return 6;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var rhs = obj as JsonObjectValidator;
+            if (rhs == null)
+            {
+                return false;
+            }
+
+            if (Properties.Count != rhs.Properties.Count)
+            {
+                return false;
+            }
+
+            foreach (var pair in Properties)
+            {
+                JsonSchema value;
+                if (rhs.Properties.TryGetValue(pair.Key, out value))
+                {
+#if true
+                    if (!value.Equals(pair.Value))
+                    {
+                        Console.WriteLine(string.Format("{0}", pair.Key));
+                        var l = value.Validator;
+                        var r = pair.Value.Validator;
+                        return false;
+                    }
+#else
+                    // key name match
+                    return true;
+#endif
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

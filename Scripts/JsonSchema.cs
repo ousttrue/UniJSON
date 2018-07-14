@@ -15,7 +15,7 @@ namespace UniJSON
         public object Default { get; private set; }
         #endregion
 
-        public JsonSchemaValidatorBase Validator { get; private set; }
+        public JsonSchemaValidatorBase Validator { get; set; }
 
         public override string ToString()
         {
@@ -111,14 +111,6 @@ namespace UniJSON
             var composition = new List<JsonSchema>();
             foreach (var kv in root.ObjectItems)
             {
-                if (Validator != null)
-                {
-                    if (Validator.Parse(fs, kv.Key, kv.Value))
-                    {
-                        continue;
-                    }
-                }
-
                 //Console.WriteLine(kv.Key);
                 switch (kv.Key)
                 {
@@ -191,6 +183,7 @@ namespace UniJSON
                                     composition.Add(sub);
                                 }
                             }
+                            Composite(compositionType, composition);
                         }
                         break;
                     #endregion
@@ -211,16 +204,19 @@ namespace UniJSON
                     #endregion
 
                     default:
-                        throw new NotImplementedException(string.Format("unknown key: {0}", kv.Key));
+                        {
+                            if (Validator != null)
+                            {
+                                if (Validator.Parse(fs, kv.Key, kv.Value))
+                                {
+                                    continue;
+                                }
+                            }
+                            throw new NotImplementedException(string.Format("unknown key: {0}", kv.Key));
+                        }
                 }
-
             }
             m_context.Pop();
-
-            if (composition.Count > 0)
-            {
-                Composite(compositionType, composition);
-            }
         }
 
         void Composite(CompositionType compositionType, List<JsonSchema> composition)
@@ -233,9 +229,13 @@ namespace UniJSON
                         // inheritance
                         if (Validator == null)
                         {
-                            Validator = JsonSchemaValidatorFactory.Create(composition[0].Validator.JsonValueType);
+                            //Validator = JsonSchemaValidatorFactory.Create(composition[0].Validator.JsonValueType);
+                            Validator = composition[0].Validator;
                         }
-                        Validator.Assign(composition[0].Validator);
+                        else
+                        {
+                            Validator.Assign(composition[0].Validator);
+                        }
                     }
                     else
                     {
