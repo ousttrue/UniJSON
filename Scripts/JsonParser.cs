@@ -11,9 +11,9 @@ namespace UniJSON
 
     public static class JsonParser
     {
-        static JsonValueType GetValueType(char c)
+        static JsonValueType GetValueType(StringSegment segment)
         {
-            switch (c)
+            switch (segment[0])
             {
                 case '{': return JsonValueType.Object;
                 case '[': return JsonValueType.Array;
@@ -33,10 +33,20 @@ namespace UniJSON
                 case '7': // fall through
                 case '8': // fall through
                 case '9': // fall through
-                    return JsonValueType.Number;
+                    {
+                        int tmp;
+                        if (int.TryParse(segment.ToString(), out tmp))
+                        {
+                            return JsonValueType.Integer;
+                        }
+                        else
+                        {
+                            return JsonValueType.Number;
+                        }
+                    }
 
                 default:
-                    throw new JsonParseException(c + " is not valid json start");
+                    throw new JsonParseException(segment + " is not valid json start");
             }
         }
 
@@ -248,10 +258,11 @@ namespace UniJSON
             }
             segment = segment.Skip(pos);
 
-            var valueType = GetValueType(segment[0]);
+            var valueType = GetValueType(segment);
             switch (valueType)
             {
                 case JsonValueType.Boolean:
+                case JsonValueType.Integer:
                 case JsonValueType.Number:
                 case JsonValueType.Null:
                     {

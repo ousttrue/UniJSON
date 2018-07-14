@@ -9,12 +9,14 @@ namespace UniJSON
 
         Null,
         Boolean,
-        Number,
 
+        Number,
         String,
 
         Object,
         Array,
+
+        Integer, // JsonSchema
 
         //Close, // internal use
     }

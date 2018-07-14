@@ -15,182 +15,40 @@ namespace UniJSON
         Default = PublicFields | PublicProperties,
     }
 
-    public struct JsonSchemaPropertyItem
+    public enum CompositionType
     {
-        public object[] Enum;
-        public string Description;
-        public string Type;
+        Unknown,
 
-        public static JsonSchemaPropertyItem Create(JsonNode node)
-        {
-            return new JsonSchemaPropertyItem
-            {
-
-            };
-        }
-    }
-
-    public class JsonSchemaProperty
-    {
-        public string Description { get; private set; }
-        public object Required { get; private set; } // boolean or string[]
-
-        public string Type { get; private set; }
-        public object Minimum { get; private set; } // int, float, int[], float[]
-        public JsonSchemaPropertyItem[] AnyOf { get; private set; }
-        public string[] AllOf { get; private set; }
-
-        public JsonSchemaProperty(string type = null, JsonSchemaPropertyAttribute a = null)
-        {
-            Type = type;
-            ApplyAttribute(a);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null || this.GetType() != obj.GetType())
-            {
-                return false;
-            }
-
-            var c = (JsonSchemaProperty)obj;
-
-            /*
-            if (this.Required != c.Required)
-                return false;
-            */
-            if (this.Type != c.Type)
-                return false;
-
-            return true;
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-        public static bool operator ==(JsonSchemaProperty lhs, JsonSchemaProperty rhs)
-        {
-            return lhs.Equals(rhs);
-        }
-
-        public static bool operator !=(JsonSchemaProperty lhs, JsonSchemaProperty rhs)
-        {
-            return !lhs.Equals(rhs);
-        }
-
-        private void ApplyAttribute(JsonSchemaPropertyAttribute a)
-        {
-            if (a != null)
-            {
-                Description = a.Description;
-                Minimum = a.Minimum;
-                Required = a.Required;
-            }
-        }
-
-        public static JsonSchemaProperty FromEnum(Type enumType, JsonSchemaPropertyAttribute a = null)
-        {
-            if (a.EnumSerializationType == EnumSerializationType.AsInt)
-            {
-                var enumValues = Enum.GetValues(enumType).Cast<Object>().Select(x => new JsonSchemaPropertyItem
-                {
-                    Enum = new[] { (object)(int)x },
-                    Description = x.ToString(),
-                }).ToArray();
-
-                var prop = new JsonSchemaProperty
-                {
-                    AnyOf = enumValues,
-                };
-                prop.ApplyAttribute(a);
-                return prop;
-            }
-            else if (a.EnumSerializationType == EnumSerializationType.AsString)
-            {
-                var enumValues = Enum.GetValues(enumType).Cast<Object>().Select(x => new JsonSchemaPropertyItem
-                {
-                    Enum = new[] { x.ToString() },
-                    Description = x.ToString(),
-                }).ToArray();
-
-                var prop = new JsonSchemaProperty
-                {
-                    AnyOf = enumValues,
-                };
-                prop.ApplyAttribute(a);
-                return prop;
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public static JsonSchemaProperty FromJsonNode(JsonNode node)
-        {
-            //var tmp = node.ObjectItems.ToArray();
-
-            var required = default(object);
-            if (node.ContainsKey("required"))
-            {
-                var req = node["required"];
-                var reqType = req.Value.ValueType;
-                if (reqType == JsonValueType.Boolean)
-                {
-                    required = req.GetBoolean();
-                }
-                else if (reqType == JsonValueType.Array)
-                {
-                    required = req.ArrayItems.Select(x => x.GetString()).ToArray();
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            if (node.ContainsKey("allOf"))
-            {
-                return new JsonSchemaProperty
-                {
-                    AllOf = node["allOf"].ArrayItems.Select(x => x.GetString()).ToArray(),
-                    Required = required,
-                };
-            }
-            else if (node.ContainsKey("anyOf"))
-            {
-                return new JsonSchemaProperty
-                {
-                    AnyOf = node["anyOf"].ArrayItems.Select(x => JsonSchemaPropertyItem.Create(x)).ToArray(),
-                    Required = required,
-                };
-            }
-            else if (node.ContainsKey("type"))
-            {
-                return new JsonSchemaProperty
-                {
-                    Type = node["type"].GetString(),
-                    Required = required,
-                };
-            }
-            else
-            {
-                return new JsonSchemaProperty
-                {
-                    Required = required,
-                };
-            }
-        }
+        AllOf,
+        AnyOf,
     }
 
     public class JsonSchema
     {
+        public string Schema; // http://json-schema.org/draft-04/schema
+
+        #region Annotations
         public string Title { get; private set; }
-        public string Type { get; private set; }
-        public Dictionary<string, JsonSchemaProperty> Properties { get; private set; }
-        public string[] Required { get; private set; }
+        public string Description { get; private set; }
+        #endregion
+
+        #region Validations
+        public JsonValueType Type { get; private set; }
+        public bool Required { get; private set; }
+        public IEnumValues EnumValues { get; private set; }
+        Dictionary<string, JsonSchema> m_props;
+        public Dictionary<string, JsonSchema> Properties
+        {
+            get
+            {
+                if (m_props == null)
+                {
+                    m_props = new Dictionary<string, JsonSchema>();
+                }
+                return m_props;
+            }
+        } // for object
+        #endregion
 
         public override string ToString()
         {
@@ -209,7 +67,7 @@ namespace UniJSON
 
             foreach (var pair in Properties)
             {
-                JsonSchemaProperty value;
+                JsonSchema value;
                 if (rhs.Properties.TryGetValue(pair.Key, out value))
                 {
 #if false
@@ -241,15 +99,13 @@ namespace UniJSON
 
             var c = (JsonSchema)obj;
 
-            if (this.Title != c.Title)
-                return false;
             if (this.Type != c.Type)
                 return false;
             if (this.Properties.Count != c.Properties.Count)
                 return false;
             foreach (var pair in Properties)
             {
-                JsonSchemaProperty value;
+                JsonSchema value;
                 if (c.Properties.TryGetValue(pair.Key, out value))
                 {
                     // Require value be equal.
@@ -264,8 +120,6 @@ namespace UniJSON
                     return false;
                 }
             }
-            if (!this.Required.OrderBy(x => x).SequenceEqual(c.Required.OrderBy(x => x)))
-                return false;
 
             return true;
         }
@@ -275,181 +129,344 @@ namespace UniJSON
             return Title.GetHashCode();
         }
 
-        static readonly Dictionary<Type, string> JsonSchemaTypeMap = new Dictionary<Type, string>
+        static readonly Dictionary<Type, JsonValueType> JsonSchemaTypeMap = new Dictionary<Type, JsonValueType>
         {
-            {typeof(bool), "boolean" },
-            {typeof(string), "string"},
-            {typeof(int), "integer"},
-            {typeof(float), "floatg" }
+            {typeof(bool), JsonValueType.Boolean },
+            {typeof(string), JsonValueType.String },
+            {typeof(int), JsonValueType.Integer},
+            {typeof(float), JsonValueType.Number }
         };
 
-        static string GetJsonType(Type t)
+        static JsonValueType GetJsonType(Type t)
         {
-            string name;
-            if (JsonSchemaTypeMap.TryGetValue(t, out name))
+            JsonValueType jsonValueType;
+            if (JsonSchemaTypeMap.TryGetValue(t, out jsonValueType))
             {
-                return name;
-            }
-
-            if (t.IsEnum)
-            {
-                // anyof
-                return "";
+                return jsonValueType;
             }
 
             if (t.IsClass)
             {
-                return "object";
+                return JsonValueType.Object;
             }
 
             throw new NotImplementedException(t.Name);
         }
 
-        static KeyValuePair<string, JsonSchemaProperty> CreateProperty(string key, Type type, JsonSchemaPropertyAttribute a)
+        public interface IEnumValues
         {
-            if (type.IsEnum)
+            Object[] Values { get; }
+        }
+
+        public class IntEnum<T> : IEnumValues
+        {
+            public object[] Values
             {
-                return new KeyValuePair<string, JsonSchemaProperty>(key, JsonSchemaProperty.FromEnum(type, a));
-            }
-            else
-            {
-                var jsonType = GetJsonType(type);
-                if (!string.IsNullOrEmpty(jsonType))
-                {
-                    return new KeyValuePair<string, JsonSchemaProperty>(key, new JsonSchemaProperty(jsonType, a));
-                }
-                else
+                get
                 {
                     throw new NotImplementedException();
                 }
             }
         }
 
-        static IEnumerable<KeyValuePair<string, JsonSchemaProperty>> GetProperties(Type t, PropertyExportFlags exportFlags)
+        public class StringEnum<T> : IEnumValues
         {
+            public object[] Values
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+        }
+
+        static JsonSchema FromType(Type type, JsonSchemaPropertyAttribute a)
+        {
+            var jsonType = default(JsonValueType);
+            if (type.IsEnum)
+            {
+                switch (a.EnumSerializationType)
+                {
+                    case EnumSerializationType.AsInt:
+                        jsonType = JsonValueType.Integer;
+                        break;
+
+                    case EnumSerializationType.AsString:
+                        jsonType = JsonValueType.String;
+                        break;
+
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+            else
+            {
+                jsonType = GetJsonType(type);
+                if (jsonType == JsonValueType.Unknown)
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            return new JsonSchema
+            {
+                Description = a.Description,
+                Type = jsonType,
+                Required = a.Required,
+            };
+        }
+
+        static IEnumerable<KeyValuePair<string, JsonSchema>> GetProperties(Type t, PropertyExportFlags exportFlags)
+        {
+            // fields
             foreach (var fi in t.GetFields())
             {
                 var a = fi.GetCustomAttributes(typeof(JsonSchemaPropertyAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttribute;
-                if (a != null)
-                {
-                    yield return CreateProperty(fi.Name, fi.FieldType, a);
-                }
-                else
+                if (a == null)
                 {
                     // default
                     // only public instance field
                     if (!fi.IsStatic && fi.IsPublic)
                     {
-                        yield return CreateProperty(fi.Name, fi.FieldType, new JsonSchemaPropertyAttribute());
+                        a = new JsonSchemaPropertyAttribute();
                     }
+                }
+
+                if (a != null)
+                {
+                    yield return new KeyValuePair<string, JsonSchema>(fi.Name, JsonSchema.FromType(fi.FieldType, a));
                 }
             }
 
+            // properties
             foreach (var pi in t.GetProperties())
             {
                 var a = pi.GetCustomAttributes(typeof(JsonSchemaPropertyAttribute), true).FirstOrDefault() as JsonSchemaPropertyAttribute;
+
                 if (a != null)
                 {
-                    yield return CreateProperty(pi.Name, pi.PropertyType, a);
-                }
-                else
-                {
-                    // default
-                    // skip
+                    yield return new KeyValuePair<string, JsonSchema>(pi.Name, JsonSchema.FromType(pi.PropertyType, a));
                 }
             }
         }
 
         public static JsonSchema Create(Type t, PropertyExportFlags exportFlags = PropertyExportFlags.Default)
         {
-            var props = GetProperties(t, exportFlags).ToArray();
+            var schema = new JsonSchema
+            {
+                Title = t.Name,
+                Type = GetJsonType(t),
+            };
 
             var a = (JsonSchemaObjectAttribute)t.GetCustomAttributes(typeof(JsonSchemaObjectAttribute), true).FirstOrDefault();
-
-            return new JsonSchema
+            if (a != null)
             {
-                Title = a != null ? a.Title : t.Name,
-                Type = GetJsonType(t),
-                Properties = props.ToDictionary(x => x.Key, x => x.Value),
-                Required = props.Where(x => x.Value.Required != null && (bool)x.Value.Required != false).Select(x => x.Key).ToArray(),
-            };
+                schema.Title = a.Title;
+            }
+
+            foreach (var x in GetProperties(t, exportFlags))
+            {
+                schema.Properties.Add(x.Key, x.Value);
+            }
+
+            return schema;
+        }
+
+        void Assign(JsonSchema rhs)
+        {
+            this.Type = rhs.Type;
+
+            if (rhs.Required)
+            {
+                this.Required = rhs.Required;
+            }
+
+            foreach (var x in rhs.Properties)
+            {
+                if (this.Properties.ContainsKey(x.Key))
+                {
+                    this.Properties[x.Key] = x.Value;
+                }
+                else
+                {
+                    this.Properties.Add(x.Key, x.Value);
+                }
+            }
+        }
+
+        void Composite(CompositionType compositionType, List<JsonSchema> composition)
+        {
+            switch (compositionType)
+            {
+                case CompositionType.AllOf:
+                    if (composition.Count == 1)
+                    {
+                        this.Assign(composition[0]);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
+                    break;
+
+                case CompositionType.AnyOf:
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        static JsonValueType ParseValueType(string type)
+        {
+            try
+            {
+                return (JsonValueType)Enum.Parse(typeof(JsonValueType), type, true);
+            }
+            catch (ArgumentException)
+            {
+                throw new ArgumentException(string.Format("unknown type: {0}", type));
+            }
+        }
+
+        Stack<string> m_context = new Stack<string>();
+
+        void Parse(IFileSystemAccessor fs, JsonNode root, string Key)
+        {
+            m_context.Push(Key);
+
+            var required = new List<string>();
+            var compositionType = default(CompositionType);
+            var composition = new List<JsonSchema>();
+            foreach (var kv in root.ObjectItems)
+            {
+                //Console.WriteLine(kv.Key);
+                switch (kv.Key)
+                {
+                    case "$schema":
+                        Schema = kv.Value.GetString();
+                        break;
+
+                    case "title": // annotation
+                        Title = kv.Value.GetString();
+                        break;
+
+                    case "description": // annotation
+                        Description = kv.Value.GetString();
+                        break;
+
+                    case "type": // validation
+                        Type = ParseValueType(kv.Value.GetString());
+                        break;
+
+                    case "properties": // validation
+                        m_context.Push("properties");
+                        foreach (var prop in kv.Value.ObjectItems)
+                        {
+                            var sub = new JsonSchema();
+                            sub.Parse(fs, prop.Value, prop.Key);
+                            Properties.Add(prop.Key, sub);
+                        }
+                        m_context.Pop();
+                        break;
+
+                    case "required": // validation
+                        foreach (var req in kv.Value.ArrayItems)
+                        {
+                            required.Add(req.GetString());
+                        }
+                        break;
+
+                    case "minimum": // for number
+                        break;
+
+                    case "default":
+                        break;
+
+                    case "enum": // value constraint
+                        break;
+
+                    case "items": // for array ?
+                        break;
+
+                    case "minItems":
+                        break;
+
+                    case "maxItems":
+                        break;
+
+                    case "dependencies":
+                        break;
+
+                    case "anyOf": // composition
+                    case "allOf": // composition
+                        {
+                            compositionType = (CompositionType)Enum.Parse(typeof(CompositionType), kv.Key, true);
+                            foreach (var item in kv.Value.ArrayItems)
+                            {
+                                if (item.ContainsKey("$ref"))
+                                {
+                                    var sub = JsonSchema.ParseFromPath(fs.Get(item["$ref"].GetString()));
+                                    composition.Add(sub);
+                                }
+                                else
+                                {
+                                    var sub = new JsonSchema();
+                                    sub.Parse(fs, item, compositionType.ToString());
+                                    composition.Add(sub);
+                                }
+                            }
+                        }
+                        break;
+
+                    case "$ref":
+                        {
+                            var refFs = fs.Get(kv.Value.GetString());
+
+                            // parse JSON
+                            var json = refFs.ReadAllText();
+                            var refRoot = JsonParser.Parse(json);
+
+                            Parse(refFs, refRoot, "$ref");
+                        }
+                        break;
+
+                    case "additionalProperties":
+                        break;
+
+                    case "gltf_detailedDescription":
+                        break;
+
+                    case "gltf_webgl":
+                        break;
+
+                    default:
+                        throw new NotImplementedException(string.Format("unknown key: {0}", kv.Key));
+                }
+
+            }
+            m_context.Pop();
+
+            foreach (var req in required)
+            {
+                Properties[req].Required = true;
+            }
+
+            if (composition.Count > 0)
+            {
+                Composite(compositionType, composition);
+            }
         }
 
         public static JsonSchema ParseFromPath(IFileSystemAccessor fs)
         {
+            // parse JSON
             var json = fs.ReadAllText();
             var root = JsonParser.Parse(json);
-            if (root.Value.ValueType != JsonValueType.Object)
-            {
-                throw new JsonParseException("root value must object: " + root.Value.ToString());
-            }
 
-            // extend $ref
-            // "allOf": [ { "$ref": "glTFid.schema.json" } ]
-            //
-            /*
-            {
-                "$schema": "http://json-schema.org/draft-04/schema",
-                "title": "glTF Id",
-                "type": "integer",
-                "minimum": 0
-            }
-             */
-            while (true)
-            {
-                var replaced = false;
-                foreach (var kv in root.TraverseObjects())
-                {
-                    if (kv.Key == "allOf")
-                    {
-                        if (kv.Value.Value.ValueType == JsonValueType.Array)
-                        {
-                            var parent = kv.Value.Parent;
-                            //var parentIndex = kv.Value.Value.ParentIndex;
-
-                            var refObj = kv.Value[0];
-                            if (refObj.Value.ValueType == JsonValueType.Object && refObj.ContainsKey("$ref"))
-                            {
-                                // replace $ref
-                                var refPath = refObj["$ref"].GetString();
-                                var refJson = fs.ReadAllText(refPath);
-                                var refRoot = JsonParser.Parse(refJson);
-
-                                // remove allOf
-                                parent.RemoveKey("allOf");
-
-                                // add Values
-                                foreach (var _kv in refRoot.ObjectItems)
-                                {
-                                    parent.AddNode(_kv.Key, _kv.Value);
-                                }
-
-                                replaced = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (!replaced)
-                {
-                    break;
-                }
-            }
-
-            var schema = new JsonSchema
-            {
-                Title = root["title"].GetString(),
-                Type = "object",
-                Properties = root["properties"].ObjectItems.ToDictionary(x => x.Key, x => JsonSchemaProperty.FromJsonNode(x.Value)),
-            };
-
-            var required = root.ObjectItems.FirstOrDefault(x => x.Key == "Required").Value;
-            if (required.Values != null)
-            {
-                schema.Required = required.ArrayItems.Select(x => x.GetString()).ToArray();
-            }
-
+            // create schema
+            var schema = new JsonSchema();
+            schema.Parse(fs, root, "__ParseFromPath__" + fs.ToString());
             return schema;
         }
     }

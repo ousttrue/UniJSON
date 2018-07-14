@@ -28,6 +28,11 @@ namespace UniJSON
             }
         }
 
+        public override string ToString()
+        {
+            return "<" + Path.GetFileName(m_path) + ">";
+        }
+
         public string ReadAllText()
         {
             return File.ReadAllText(m_path, Encoding.UTF8);
