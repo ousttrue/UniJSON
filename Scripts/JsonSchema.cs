@@ -17,6 +17,11 @@ namespace UniJSON
 
         public JsonSchemaValidatorBase Validator { get; set; }
 
+        /// <summary>
+        /// Skip validator comparison
+        /// </summary>
+        public bool Empty { get; set; }
+
         public override string ToString()
         {
             return string.Format("<{0}>", Title);
@@ -26,6 +31,11 @@ namespace UniJSON
         {
             var rhs = obj as JsonSchema;
             if (rhs == null) return false;
+
+            // skip comparison
+            if (Empty) return true;
+            if (rhs.Empty) return true;
+
             return Validator.Equals(rhs.Validator);
         }
 
@@ -56,7 +66,12 @@ namespace UniJSON
             }
 
             JsonSchemaValidatorBase validator = null;
-            if (t.IsEnum)
+            bool empty = a.Empty;
+            if(t== typeof(object))
+            {
+                empty = true;
+            }
+            else if (t.IsEnum)
             {
                 switch (a.EnumSerializationType)
                 {
@@ -82,6 +97,7 @@ namespace UniJSON
                 Title = a.Title,
                 Description = a.Description,
                 Validator = validator,
+                Empty = empty
             };
 
             return schema;
@@ -217,6 +233,11 @@ namespace UniJSON
                 }
             }
             m_context.Pop();
+
+            if (Validator == null)
+            {
+                Empty = true;
+            }
         }
 
         void Composite(CompositionType compositionType, List<JsonSchema> composition)

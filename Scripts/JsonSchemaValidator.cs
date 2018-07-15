@@ -71,7 +71,7 @@ namespace UniJSON
         /// </summary>
         public int? MultipleOf
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace UniJSON
         /// </summary>
         public int? Maximum
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace UniJSON
         /// </summary>
         public int? ExclusiveMaximum
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
@@ -103,12 +103,7 @@ namespace UniJSON
         /// </summary>
         public int? ExclusiveMinimum
         {
-            get; private set;
-        }
-
-        public int? Default
-        {
-            get; private set;
+            get; set;
         }
 
         public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
@@ -209,7 +204,7 @@ namespace UniJSON
         /// </summary>
         public double? MultipleOf
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
@@ -217,7 +212,7 @@ namespace UniJSON
         /// </summary>
         public double? Maximum
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
@@ -225,7 +220,7 @@ namespace UniJSON
         /// </summary>
         public double? ExclusiveMaximum
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
@@ -241,12 +236,7 @@ namespace UniJSON
         /// </summary>
         public double? ExclusiveMinimum
         {
-            get; private set;
-        }
-
-        public double? Default
-        {
-            get; private set;
+            get; set;
         }
 
         public override void Assign(JsonSchemaValidatorBase rhs)
@@ -330,7 +320,7 @@ namespace UniJSON
         /// </summary>
         public string Pattern
         {
-            get; private set;
+            get; set;
         }
 
         public override void Assign(JsonSchemaValidatorBase obj)
@@ -392,6 +382,14 @@ namespace UniJSON
         public override JsonValueType JsonValueType { get { return JsonValueType.Array; } }
 
         /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.4.3
+        /// </summary>
+        public int? MaxItems
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.4.4
         /// </summary>
         public int? MinItems
@@ -415,6 +413,7 @@ namespace UniJSON
                     return true;
 
                 case "maxItems":
+                    MaxItems = value.GetInt32();
                     return true;
 
                 case "minItems":
@@ -440,6 +439,10 @@ namespace UniJSON
         {
             var rhs = obj as JsonArrayValidator;
             if (rhs == null) return false;
+
+            if (MaxItems != rhs.MaxItems) return false;
+            if (MinItems != rhs.MinItems) return false;
+
             return true;
         }
     }
@@ -456,7 +459,7 @@ namespace UniJSON
         /// </summary>
         public int MaxProperties
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
@@ -464,7 +467,7 @@ namespace UniJSON
         /// </summary>
         public int MinProperties
         {
-            get; private set;
+            get; set;
         }
 
         List<string> m_required = new List<string>();
@@ -528,10 +531,6 @@ namespace UniJSON
             }
             else
             {
-                if (sub.Validator == null)
-                {
-                    sub.Validator = new JsonObjectValidator();
-                }
                 Properties.Add(key, sub);
             }
         }
@@ -610,8 +609,8 @@ namespace UniJSON
                     if (!value.Equals(pair.Value))
                     {
                         Console.WriteLine(string.Format("{0}", pair.Key));
-                        var l = value.Validator;
-                        var r = pair.Value.Validator;
+                        var l = pair.Value.Validator;
+                        var r = value.Validator;
                         return false;
                     }
 #else

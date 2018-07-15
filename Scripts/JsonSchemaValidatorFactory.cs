@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -74,9 +73,17 @@ namespace UniJSON
                         var v = new JsonIntValidator();
                         if (a != null)
                         {
-                            if (a.Minimum != double.PositiveInfinity)
+                            if (!double.IsNaN(a.Minimum))
                             {
                                 v.Minimum = (int)a.Minimum;
+                            }
+                            if (!double.IsNaN(a.Maximum))
+                            {
+                                v.Maximum = (int)a.Maximum;
+                            }
+                            if (a.MultipleOf != 0)
+                            {
+                                v.MultipleOf = (int)a.MultipleOf;
                             }
                         }
                         return v;
@@ -87,16 +94,34 @@ namespace UniJSON
                         var v = new JsonNumberValidator();
                         if (a != null)
                         {
-                            if (a.Minimum != double.PositiveInfinity)
+                            if (!double.IsNaN(a.Minimum))
                             {
-                                v.Minimum = a.Minimum;
+                                v.Minimum = (int)a.Minimum;
+                            }
+                            if (!double.IsNaN(a.Maximum))
+                            {
+                                v.Maximum = (int)a.Maximum;
+                            }
+                            if (a.MultipleOf != 0)
+                            {
+                                v.MultipleOf = (int)a.MultipleOf;
                             }
                         }
                         return v;
                     }
 
                 case JsonValueType.String:
-                    return new JsonStringValidator();
+                    {
+                        var v = new JsonStringValidator();
+                        if (a != null)
+                        {
+                            if (a.Pattern != null)
+                            {
+                                v.Pattern = a.Pattern;
+                            }
+                        }
+                        return v;
+                    }
 
                 case JsonValueType.Boolean:
                     return new JsonBoolValidator();
@@ -110,6 +135,10 @@ namespace UniJSON
                             {
                                 v.MinItems = a.MinItems;
                             }
+                            if(a.MaxItems != 0)
+                            {
+                                v.MaxItems = a.MaxItems;
+                            }
                         }
                         return v;
                     }
@@ -119,6 +148,10 @@ namespace UniJSON
                         var v = new JsonObjectValidator();
                         if (a != null)
                         {
+                            if (a.MinProperties > 0)
+                            {
+                                v.MinProperties = a.MinProperties;
+                            }
                             // props
                             foreach (var prop in GetProperties(t, a.ExportFlags))
                             {
