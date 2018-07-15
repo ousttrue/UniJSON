@@ -19,29 +19,26 @@ namespace UniJSON
             // fields
             foreach (var fi in t.GetFields())
             {
-                var _a = fi.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault();
-                JsonSchemaAttribute a = null;
-                if (_a != null)
-                {
-                    a = _a as JsonSchemaAttribute;
-                }
-
+                var a = fi.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault() as JsonSchemaAttribute;
                 if (a == null)
                 {
                     // default
-                    // only public instance field
                     if (!fi.IsStatic && fi.IsPublic)
                     {
+                        // only public instance field
                         a = new JsonSchemaAttribute();
                     }
                 }
+
+                // for array item
+                var ia = fi.GetCustomAttributes(typeof(ItemJsonSchemaAttribute), true).FirstOrDefault() as ItemJsonSchemaAttribute;
 
                 if (a != null)
                 {
                     yield return new JsonSchemaItem
                     {
                         Key = fi.Name,
-                        Schema = JsonSchema.FromType(fi.FieldType, a),
+                        Schema = JsonSchema.FromType(fi.FieldType, a, ia),
                         Required = a.Required,
                     };
                 }
@@ -52,19 +49,22 @@ namespace UniJSON
             {
                 var a = pi.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault() as JsonSchemaAttribute;
 
+                // for array item
+                var ia = pi.GetCustomAttributes(typeof(ItemJsonSchemaAttribute), true).FirstOrDefault() as ItemJsonSchemaAttribute;
+
                 if (a != null)
                 {
                     yield return new JsonSchemaItem
                     {
                         Key = pi.Name,
-                        Schema = JsonSchema.FromType(pi.PropertyType, a),
+                        Schema = JsonSchema.FromType(pi.PropertyType, a, ia),
                         Required = a.Required,
                     };
                 }
             }
         }
 
-        public static JsonSchemaValidatorBase Create(JsonValueType valueType, Type t = null, JsonSchemaAttribute a = null)
+        public static JsonSchemaValidatorBase Create(JsonValueType valueType, Type t = null, BaseJsonSchemaAttribute a = null, ItemJsonSchemaAttribute ia=null)
         {
             switch (valueType)
             {
@@ -77,9 +77,17 @@ namespace UniJSON
                             {
                                 v.Minimum = (int)a.Minimum;
                             }
+                            if (a.ExclusiveMinimum)
+                            {
+                                v.ExclusiveMinimum = a.ExclusiveMinimum;
+                            }
                             if (!double.IsNaN(a.Maximum))
                             {
                                 v.Maximum = (int)a.Maximum;
+                            }
+                            if (a.ExclusiveMaximum)
+                            {
+                                v.ExclusiveMaximum = a.ExclusiveMaximum;
                             }
                             if (a.MultipleOf != 0)
                             {
@@ -98,9 +106,17 @@ namespace UniJSON
                             {
                                 v.Minimum = (int)a.Minimum;
                             }
+                            if (a.ExclusiveMinimum)
+                            {
+                                v.ExclusiveMinimum = a.ExclusiveMinimum;
+                            }
                             if (!double.IsNaN(a.Maximum))
                             {
                                 v.Maximum = (int)a.Maximum;
+                            }
+                            if (a.ExclusiveMaximum)
+                            {
+                                v.ExclusiveMaximum = a.ExclusiveMaximum;
                             }
                             if (a.MultipleOf != 0)
                             {
@@ -138,6 +154,33 @@ namespace UniJSON
                             if(a.MaxItems != 0)
                             {
                                 v.MaxItems = a.MaxItems;
+                            }
+
+                            if (t != null)
+                            {
+                                if (ia == null)
+                                {
+                                    ia = new ItemJsonSchemaAttribute();
+                                }
+
+                                if (t.IsArray)
+                                {
+                                    var sub = new JsonSchema
+                                    {
+                                        Empty=ia.Empty,
+                                        Validator = Create(t.GetElementType(), ia, null)
+                                    };
+                                    v.Items = sub;
+                                }
+                                else if (t.GetIsGenericList())
+                                {
+                                    var sub = new JsonSchema
+                                    {
+                                        Empty = ia.Empty,
+                                        Validator = Create(t.GetGenericArguments().First(), ia, null)
+                                    };
+                                    v.Items = sub;
+                                }
                             }
                         }
                         return v;
@@ -195,7 +238,7 @@ namespace UniJSON
             {
                 return JsonValueType.Array;
             }
-            if(t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(List<>)))
+            if(t.GetIsGenericList())
             {
                 return JsonValueType.Array;
             }
@@ -208,9 +251,9 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public static JsonSchemaValidatorBase Create(Type t, JsonSchemaAttribute a)
+        public static JsonSchemaValidatorBase Create(Type t, BaseJsonSchemaAttribute a, ItemJsonSchemaAttribute ia)
         {
-            return Create(ToJsonType(t), t, a);
+            return Create(ToJsonType(t), t, a, ia);
         }
     }
 }

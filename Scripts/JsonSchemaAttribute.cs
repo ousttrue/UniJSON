@@ -3,7 +3,13 @@
 
 namespace UniJSON
 {
-    public class JsonSchemaAttribute : Attribute
+    public enum EnumSerializationType
+    {
+        AsString,
+        AsInt,
+    }
+
+    public class BaseJsonSchemaAttribute : Attribute
     {
         #region Annotation
         public string Title;
@@ -14,7 +20,9 @@ namespace UniJSON
 
         #region integer, number
         public double Minimum = double.NaN;
+        public bool ExclusiveMinimum;
         public double Maximum = double.NaN;
+        public bool ExclusiveMaximum;
         public double MultipleOf;
         #endregion
 
@@ -41,9 +49,7 @@ namespace UniJSON
         public bool Empty;
     }
 
-    public enum EnumSerializationType
-    {
-        AsString,
-        AsInt,
-    }
+    public class JsonSchemaAttribute : BaseJsonSchemaAttribute { }
+
+    public class ItemJsonSchemaAttribute : BaseJsonSchemaAttribute { }
 }

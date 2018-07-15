@@ -85,7 +85,7 @@ namespace UniJSON
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.3
         /// </summary>
-        public int? ExclusiveMaximum
+        public bool ExclusiveMaximum
         {
             get; set;
         }
@@ -101,7 +101,7 @@ namespace UniJSON
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.5
         /// </summary>
-        public int? ExclusiveMinimum
+        public bool ExclusiveMinimum
         {
             get; set;
         }
@@ -119,7 +119,7 @@ namespace UniJSON
                     return true;
 
                 case "exclusiveMaximum":
-                    ExclusiveMaximum = value.GetInt32();
+                    ExclusiveMaximum = value.GetBoolean();
                     return true;
 
                 case "minimum":
@@ -127,7 +127,7 @@ namespace UniJSON
                     return true;
 
                 case "exclusiveMinimum":
-                    ExclusiveMinimum = value.GetInt32();
+                    ExclusiveMinimum = value.GetBoolean();
                     return true;
             }
 
@@ -218,7 +218,7 @@ namespace UniJSON
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.3
         /// </summary>
-        public double? ExclusiveMaximum
+        public bool ExclusiveMaximum
         {
             get; set;
         }
@@ -234,7 +234,7 @@ namespace UniJSON
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.5
         /// </summary>
-        public double? ExclusiveMinimum
+        public bool ExclusiveMinimum
         {
             get; set;
         }
@@ -257,7 +257,7 @@ namespace UniJSON
                     return true;
 
                 case "exclusiveMaximum":
-                    ExclusiveMaximum = value.GetDouble();
+                    ExclusiveMaximum = value.GetBoolean();
                     return true;
 
                 case "minimum":
@@ -265,7 +265,7 @@ namespace UniJSON
                     return true;
 
                 case "exclusiveMinimum":
-                    ExclusiveMinimum = value.GetDouble();
+                    ExclusiveMinimum = value.GetBoolean();
                     return true;
             }
 
@@ -382,6 +382,14 @@ namespace UniJSON
         public override JsonValueType JsonValueType { get { return JsonValueType.Array; } }
 
         /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.4.1
+        /// </summary>
+        public JsonSchema Items
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.4.3
         /// </summary>
         public int? MaxItems
@@ -407,6 +415,16 @@ namespace UniJSON
             switch (key)
             {
                 case "items":
+                    if (value.Value.ValueType == JsonValueType.Array)
+                    {
+                        throw new NotImplementedException();
+                    }
+                    else
+                    {
+                        var sub = new JsonSchema();
+                        sub.Parse(fs, value, "items");
+                        Items = sub;
+                    }
                     return true;
 
                 case "additionalItems":
@@ -440,6 +458,7 @@ namespace UniJSON
             var rhs = obj as JsonArrayValidator;
             if (rhs == null) return false;
 
+            if (Items != rhs.Items) return false;
             if (MaxItems != rhs.MaxItems) return false;
             if (MinItems != rhs.MinItems) return false;
 

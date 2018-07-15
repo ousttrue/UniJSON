@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace UniJSON
 {
-    public class JsonSchema
+    public class JsonSchema: IEquatable<JsonSchema>
     {
         public string Schema; // http://json-schema.org/draft-04/schema
 
@@ -27,33 +27,65 @@ namespace UniJSON
             return string.Format("<{0}>", Title);
         }
 
-        public override bool Equals(object obj)
-        {
-            var rhs = obj as JsonSchema;
-            if (rhs == null) return false;
-
-            // skip comparison
-            if (Empty) return true;
-            if (rhs.Empty) return true;
-
-            return Validator.Equals(rhs.Validator);
-        }
-
         public override int GetHashCode()
         {
             return 1;
         }
 
+        public override bool Equals(object obj)
+        {
+            var rhs = obj as JsonSchema;
+            if (rhs == null) return false;
+            return Equals(rhs);
+        }
+
+        public bool Equals(JsonSchema rhs)
+        {
+            // skip comparison
+            if (Empty) return true;
+            if (rhs.Empty) return true;
+            return Validator.Equals(rhs.Validator);
+        }
+
+        public static bool operator ==(JsonSchema obj1, JsonSchema obj2)
+        {
+            if (ReferenceEquals(obj1, obj2))
+            {
+                return true;
+            }
+
+            if (ReferenceEquals(obj1, null))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(obj2, null))
+            {
+                return false;
+            }
+
+            return obj1.Equals(obj2);
+        }
+
+        public static bool operator !=(JsonSchema obj1, JsonSchema obj2)
+        {
+            return !(obj1 == obj2);
+        }
+
         #region FromType
         public static JsonSchema FromType<T>()
         {
-            return FromType(typeof(T), null);
+            return FromType(typeof(T), null, null);
         }
 
-        public static JsonSchema FromType(Type t, JsonSchemaAttribute a)
+        public static JsonSchema FromType(Type t, 
+            JsonSchemaAttribute a, // field attribute
+            ItemJsonSchemaAttribute ia
+            )
         {
             if (a == null)
             {
+                // get class attribute
                 a = t.GetCustomAttributes(typeof(JsonSchemaAttribute), true)
                     .FirstOrDefault() as JsonSchemaAttribute;
             }
@@ -89,7 +121,7 @@ namespace UniJSON
             }
             else
             {
-                validator = JsonSchemaValidatorFactory.Create(t, a);
+                validator = JsonSchemaValidatorFactory.Create(t, a, ia);
             }
 
             var schema = new JsonSchema
