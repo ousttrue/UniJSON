@@ -18,3 +18,39 @@ JSON serializer and deserializer and schema utilities for Unity(.Net3.5)
 
 * [ ] array.items
 
+## Example
+
+```cs
+[Serializable]
+public class glTFSparseIndices
+{
+    [JsonSchema(Minimum = 0)]
+    public int bufferView;
+
+    [JsonSchema(Minimum = 0)]
+    public int byteOffset;
+
+    [JsonSchema(EnumSerializationType = EnumSerializationType.AsInt)]
+    public glComponentType componentType;
+
+    // empty schemas
+    public object extensions;
+    public object extras;
+}
+
+
+[Test]
+public void AccessorSparseIndices()
+{
+    // from JSON schema
+    var path = Path.GetFullPath(Application.dataPath + "/../glTF/specification/2.0/schema");
+    var SchemaDir = new FileSystemAccessor(path);
+    var fromSchema = JsonSchema.ParseFromPath(SchemaDir.Get("accessor.sparse.indices.schema.json"));
+
+    // from C# type definition
+    var fromClass = JsonSchema.FromType<glTFSparseIndices>();
+
+    Assert.AreEqual(fromSchema, fromClass);
+}
+```
+
