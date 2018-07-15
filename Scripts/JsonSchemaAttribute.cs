@@ -5,8 +5,8 @@ namespace UniJSON
 {
     public enum EnumSerializationType
     {
-        AsString,
         AsInt,
+        AsLowerString,
     }
 
     public class BaseJsonSchemaAttribute : Attribute
@@ -39,7 +39,11 @@ namespace UniJSON
         public int MinProperties;
         #endregion
 
+        #region enum
         public EnumSerializationType EnumSerializationType;
+        public object[] EnumValues;
+        public object[] EnumExcludes;
+        #endregion
 
         public PropertyExportFlags ExportFlags = PropertyExportFlags.Default;
 

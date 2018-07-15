@@ -17,7 +17,7 @@ JSON serializer and deserializer and schema utilities for Unity(.Net3.5)
 ## ToDo
 
 * [x] array.items
-* [ ] enum anyOf
+* [x] enum anyOf
 
 ## Example
 

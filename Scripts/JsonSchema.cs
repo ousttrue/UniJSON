@@ -99,25 +99,18 @@ namespace UniJSON
 
             JsonSchemaValidatorBase validator = null;
             bool empty = a.Empty;
-            if(t== typeof(object))
+            if (t== typeof(object))
             {
                 empty = true;
             }
+
+            if (a.EnumValues != null)
+            {
+                validator = EnumValidator.Create(a.EnumValues);
+            }
             else if (t.IsEnum)
             {
-                switch (a.EnumSerializationType)
-                {
-                    case EnumSerializationType.AsInt:
-                        validator = new JsonIntValidator();
-                        break;
-
-                    case EnumSerializationType.AsString:
-                        validator = new JsonStringValidator();
-                        break;
-
-                    default:
-                        throw new NotImplementedException();
-                }
+                validator = EnumValidator.Create(t, a.EnumSerializationType, a.EnumExcludes);
             }
             else
             {
@@ -199,6 +192,7 @@ namespace UniJSON
                         break;
 
                     case "enum":
+                        Validator = EnumValidator.Create(kv.Value);
                         break;
 
                     case "const":
@@ -297,11 +291,19 @@ namespace UniJSON
                     break;
 
                 case CompositionType.AnyOf:
-                    // extend enum
                     if (Validator == null)
                     {
-                        var typeSchema = composition.First(x => x.Validator != null);
-                        Validator = JsonSchemaValidatorFactory.Create(typeSchema.Validator.JsonValueType);
+                        if (composition.Count == 1)
+                        {
+                            var typeSchema = composition.First(x => x.Validator != null);
+                            Validator = JsonSchemaValidatorFactory.Create(typeSchema.Validator.JsonValueType);
+                        }
+                        else
+                        {
+                            // extend enum
+                            // enum, enum..., type
+                            Validator = EnumValidator.Create(composition);                           
+                        }
                     }
                     //throw new NotImplementedException();
                     break;
