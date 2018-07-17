@@ -328,7 +328,22 @@ namespace UniJSON
 
         public string Serialize(Object o)
         {
-            throw new NotImplementedException();
+            var f = new JsonFormatter();
+
+            var t = o.GetType();
+
+            var v = Validator as JsonObjectValidator;
+            if (v == null)
+            {
+                throw new ArgumentException();
+            }
+
+            foreach(var p in v.Properties)
+            {
+                
+            }
+
+            return null;
         }
     }
 }
