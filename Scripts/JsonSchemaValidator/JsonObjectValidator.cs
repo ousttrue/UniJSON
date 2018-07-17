@@ -246,7 +246,8 @@ namespace UniJSON
             {
                 foreach (var x in Required)
                 {
-                    if (!Properties[x].Validator.Validate(o))
+                    var value=o.GetValue(x);
+                    if (!Properties[x].Validator.Validate(value))
                     {
                         return false;
                     }
