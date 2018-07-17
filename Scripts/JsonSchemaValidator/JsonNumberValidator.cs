@@ -6,7 +6,7 @@ namespace UniJSON
     /// <summary>
     /// http://json-schema.org/latest/json-schema-validation.html#numeric
     /// </summary>
-    public class JsonIntValidator : JsonSchemaValidatorBase
+    public class JsonIntValidator : IJsonSchemaValidator
     {
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.1
@@ -46,49 +46,6 @@ namespace UniJSON
         public bool ExclusiveMinimum
         {
             get; set;
-        }
-
-        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
-        {
-            switch (key)
-            {
-                case "multipleOf":
-                    MultipleOf = value.GetInt32();
-                    return true;
-
-                case "maximum":
-                    Maximum = value.GetInt32();
-                    return true;
-
-                case "exclusiveMaximum":
-                    ExclusiveMaximum = value.GetBoolean();
-                    return true;
-
-                case "minimum":
-                    Minimum = value.GetInt32();
-                    return true;
-
-                case "exclusiveMinimum":
-                    ExclusiveMinimum = value.GetBoolean();
-                    return true;
-            }
-
-            return false;
-        }
-
-        public override void Assign(JsonSchemaValidatorBase obj)
-        {
-            var rhs = obj as JsonIntValidator;
-            if (rhs == null)
-            {
-                throw new ArgumentException();
-            }
-
-            MultipleOf = rhs.MultipleOf;
-            Maximum = rhs.Maximum;
-            ExclusiveMaximum = rhs.ExclusiveMaximum;
-            Minimum = rhs.Minimum;
-            ExclusiveMinimum = rhs.ExclusiveMinimum;
         }
 
         public override int GetHashCode()
@@ -133,12 +90,55 @@ namespace UniJSON
             return true;
         }
 
-        public override bool Validate(object o)
+        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        {
+            switch (key)
+            {
+                case "multipleOf":
+                    MultipleOf = value.GetInt32();
+                    return true;
+
+                case "maximum":
+                    Maximum = value.GetInt32();
+                    return true;
+
+                case "exclusiveMaximum":
+                    ExclusiveMaximum = value.GetBoolean();
+                    return true;
+
+                case "minimum":
+                    Minimum = value.GetInt32();
+                    return true;
+
+                case "exclusiveMinimum":
+                    ExclusiveMinimum = value.GetBoolean();
+                    return true;
+            }
+
+            return false;
+        }
+
+        public void Assign(IJsonSchemaValidator obj)
+        {
+            var rhs = obj as JsonIntValidator;
+            if (rhs == null)
+            {
+                throw new ArgumentException();
+            }
+
+            MultipleOf = rhs.MultipleOf;
+            Maximum = rhs.Maximum;
+            ExclusiveMaximum = rhs.ExclusiveMaximum;
+            Minimum = rhs.Minimum;
+            ExclusiveMinimum = rhs.ExclusiveMinimum;
+        }
+
+        public bool Validate(object o)
         {
             return true;
         }
 
-        public override void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, object o)
         {
             f.Value((int)o);
         }
@@ -147,7 +147,7 @@ namespace UniJSON
     /// <summary>
     /// http://json-schema.org/latest/json-schema-validation.html#numeric
     /// </summary>
-    public class JsonNumberValidator : JsonSchemaValidatorBase
+    public class JsonNumberValidator : IJsonSchemaValidator
     {
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.1
@@ -189,12 +189,31 @@ namespace UniJSON
             get; set;
         }
 
-        public override void Assign(JsonSchemaValidatorBase rhs)
+        public override int GetHashCode()
+        {
+            return 3;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var rhs = obj as JsonNumberValidator;
+            if (rhs == null) return false;
+
+            if (MultipleOf != rhs.MultipleOf) return false;
+            if (Maximum != rhs.Maximum) return false;
+            if (ExclusiveMaximum != rhs.ExclusiveMaximum) return false;
+            if (Minimum != rhs.Minimum) return false;
+            if (ExclusiveMinimum != rhs.ExclusiveMinimum) return false;
+
+            return true;
+        }
+
+        public void Assign(IJsonSchemaValidator rhs)
         {
             throw new NotImplementedException();
         }
 
-        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
         {
             switch (key)
             {
@@ -222,31 +241,12 @@ namespace UniJSON
             return false;
         }
 
-        public override int GetHashCode()
-        {
-            return 3;
-        }
-
-        public override bool Equals(object obj)
-        {
-            var rhs = obj as JsonNumberValidator;
-            if (rhs == null) return false;
-
-            if (MultipleOf != rhs.MultipleOf) return false;
-            if (Maximum != rhs.Maximum) return false;
-            if (ExclusiveMaximum != rhs.ExclusiveMaximum) return false;
-            if (Minimum != rhs.Minimum) return false;
-            if (ExclusiveMinimum != rhs.ExclusiveMinimum) return false;
-
-            return true;
-        }
-
-        public override bool Validate(object o)
+        public bool Validate(object o)
         {
             return true;
         }
 
-        public override void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, object o)
         {
             throw new NotImplementedException();
         }

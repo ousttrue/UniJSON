@@ -7,7 +7,7 @@ namespace UniJSON
     /// <summary>
     /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5
     /// </summary>
-    public class JsonObjectValidator : JsonSchemaValidatorBase
+    public class JsonObjectValidator : IJsonSchemaValidator
     {
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.1
@@ -51,27 +51,6 @@ namespace UniJSON
             get; private set;
         }
 
-        public override void Assign(JsonSchemaValidatorBase obj)
-        {
-            var rhs = obj as JsonObjectValidator;
-            if (rhs == null)
-            {
-                throw new ArgumentException();
-            }
-
-            foreach (var x in rhs.Properties)
-            {
-                if (this.Properties.ContainsKey(x.Key))
-                {
-                    this.Properties[x.Key] = x.Value;
-                }
-                else
-                {
-                    this.Properties.Add(x.Key, x.Value);
-                }
-            }
-        }
-
         public void AddProperty(IFileSystemAccessor fs, string key, JsonNode value)
         {
             var sub = new JsonSchema();
@@ -88,53 +67,6 @@ namespace UniJSON
             {
                 Properties.Add(key, sub);
             }
-        }
-
-        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
-        {
-            switch (key)
-            {
-                case "maxProperties":
-                    MaxProperties = value.GetInt32();
-                    return true;
-
-                case "minProperties":
-                    MinProperties = value.GetInt32();
-                    return true;
-
-                case "required":
-                    {
-                        foreach (var req in value.ArrayItems)
-                        {
-                            m_required.Add(req.GetString());
-                        }
-                    }
-                    return true;
-
-                case "properties":
-                    {
-                        foreach (var prop in value.ObjectItems)
-                        {
-                            AddProperty(fs, prop.Key, prop.Value);
-                        }
-                    }
-                    return true;
-
-                case "patternProperties":
-                    PatternProperties = value.GetString();
-                    return true;
-
-                case "additionalProperties":
-                    return true;
-
-                case "dependencies":
-                    return true;
-
-                case "propertyNames":
-                    return true;
-            }
-
-            return false;
         }
 
         public override int GetHashCode()
@@ -182,7 +114,75 @@ namespace UniJSON
             return true;
         }
 
-        public override bool Validate(object o)
+        public void Assign(IJsonSchemaValidator obj)
+        {
+            var rhs = obj as JsonObjectValidator;
+            if (rhs == null)
+            {
+                throw new ArgumentException();
+            }
+
+            foreach (var x in rhs.Properties)
+            {
+                if (this.Properties.ContainsKey(x.Key))
+                {
+                    this.Properties[x.Key] = x.Value;
+                }
+                else
+                {
+                    this.Properties.Add(x.Key, x.Value);
+                }
+            }
+        }
+
+        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        {
+            switch (key)
+            {
+                case "maxProperties":
+                    MaxProperties = value.GetInt32();
+                    return true;
+
+                case "minProperties":
+                    MinProperties = value.GetInt32();
+                    return true;
+
+                case "required":
+                    {
+                        foreach (var req in value.ArrayItems)
+                        {
+                            m_required.Add(req.GetString());
+                        }
+                    }
+                    return true;
+
+                case "properties":
+                    {
+                        foreach (var prop in value.ObjectItems)
+                        {
+                            AddProperty(fs, prop.Key, prop.Value);
+                        }
+                    }
+                    return true;
+
+                case "patternProperties":
+                    PatternProperties = value.GetString();
+                    return true;
+
+                case "additionalProperties":
+                    return true;
+
+                case "dependencies":
+                    return true;
+
+                case "propertyNames":
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool Validate(object o)
         {
             if (o == null)
             {
@@ -192,7 +192,7 @@ namespace UniJSON
             return true;
         }
 
-        public override void Serialize(JsonFormatter f, Object o)
+        public void Serialize(JsonFormatter f, Object o)
         {
             f.BeginMap();
             foreach (var kv in Properties)

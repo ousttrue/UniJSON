@@ -6,7 +6,7 @@ namespace UniJSON
     /// <summary>
     /// http://json-schema.org/latest/json-schema-validation.html#string
     /// </summary>
-    public class JsonStringValidator : JsonSchemaValidatorBase
+    public class JsonStringValidator : IJsonSchemaValidator
     {
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.3.1
@@ -32,7 +32,24 @@ namespace UniJSON
             get; set;
         }
 
-        public override void Assign(JsonSchemaValidatorBase obj)
+        public override int GetHashCode()
+        {
+            return 4;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var rhs = obj as JsonStringValidator;
+            if (rhs == null) return false;
+
+            if (MaxLength != rhs.MaxLength) return false;
+            if (MinLength != rhs.MinLength) return false;
+            if (Pattern != rhs.Pattern) return false;
+
+            return true;
+        }
+
+        public void Assign(IJsonSchemaValidator obj)
         {
             var rhs = obj as JsonStringValidator;
             if (rhs == null)
@@ -45,7 +62,7 @@ namespace UniJSON
             Pattern = rhs.Pattern;
         }
 
-        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
         {
             switch (key)
             {
@@ -65,30 +82,13 @@ namespace UniJSON
             return false;
         }
 
-        public override int GetHashCode()
-        {
-            return 4;
-        }
-
-        public override bool Equals(object obj)
-        {
-            var rhs = obj as JsonStringValidator;
-            if (rhs == null) return false;
-
-            if (MaxLength != rhs.MaxLength) return false;
-            if (MinLength != rhs.MinLength) return false;
-            if (Pattern != rhs.Pattern) return false;
-
-            return true;
-        }
-
-        public override bool Validate(object o)
+        public bool Validate(object o)
         {
             // allow null
             return true;
         }
 
-        public override void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, object o)
         {
             f.Value((string)o);
         }

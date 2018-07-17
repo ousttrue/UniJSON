@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace UniJSON
 {
-    public static class EnumValidator
+    public static class JsonEnumValidator
     {
-        public static JsonSchemaValidatorBase Create(JsonNode value)
+        public static IJsonSchemaValidator Create(JsonNode value)
         {
             foreach (var x in value.ArrayItems)
             {
@@ -15,13 +15,13 @@ namespace UniJSON
                 {
                     case JsonValueType.Integer:
                     case JsonValueType.Number:
-                        return IntEnumValidator.Create(value.ArrayItems
+                        return JsonIntEnumValidator.Create(value.ArrayItems
                             .Where(y => y.Value.ValueType == JsonValueType.Integer || y.Value.ValueType == JsonValueType.Number)
                             .Select(y => y.GetInt32())
                             );
 
                     case JsonValueType.String:
-                        return StringEnumValidator.Create(value.ArrayItems
+                        return JsonStringEnumValidator.Create(value.ArrayItems
                             .Where(y => y.Value.ValueType == JsonValueType.String)
                             .Select(y => y.GetString())
                             );
@@ -34,22 +34,22 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public static JsonSchemaValidatorBase Create(IEnumerable<JsonSchema> composition)
+        public static IJsonSchemaValidator Create(IEnumerable<JsonSchema> composition)
         {
             foreach (var x in composition)
             {
-                if (x.Validator is StringEnumValidator)
+                if (x.Validator is JsonStringEnumValidator)
                 {
-                    return StringEnumValidator.Create(composition
-                        .Select(y => y.Validator as StringEnumValidator)
+                    return JsonStringEnumValidator.Create(composition
+                        .Select(y => y.Validator as JsonStringEnumValidator)
                         .Where(y => y != null)
                         .SelectMany(y => y.Values)
                         );
                 }
-                if (x.Validator is IntEnumValidator)
+                if (x.Validator is JsonIntEnumValidator)
                 {
-                    return IntEnumValidator.Create(composition
-                        .Select(y => y.Validator as IntEnumValidator)
+                    return JsonIntEnumValidator.Create(composition
+                        .Select(y => y.Validator as JsonIntEnumValidator)
                         .Where(y => y != null)
                         .SelectMany(y => y.Values)
                         );
@@ -81,32 +81,32 @@ namespace UniJSON
             }
         }
 
-        public static JsonSchemaValidatorBase Create(Type t, EnumSerializationType serializationType, object[] excludes)
+        public static IJsonSchemaValidator Create(Type t, EnumSerializationType serializationType, object[] excludes)
         {
             switch (serializationType)
             {
                 case EnumSerializationType.AsLowerString:
-                    return StringEnumValidator.Create(GetStringValues(t, excludes, x => x.ToLower()));
+                    return JsonStringEnumValidator.Create(GetStringValues(t, excludes, x => x.ToLower()));
 
                 case EnumSerializationType.AsInt:
-                    return IntEnumValidator.Create(GetIntValues(t, excludes));
+                    return JsonIntEnumValidator.Create(GetIntValues(t, excludes));
 
                 default:
                     throw new NotImplementedException();
             }
         }
 
-        public static JsonSchemaValidatorBase Create(object[] values)
+        public static IJsonSchemaValidator Create(object[] values)
         {
             foreach (var x in values)
             {
                 if (x is string)
                 {
-                    return StringEnumValidator.Create(values.Select(y => (string)y));
+                    return JsonStringEnumValidator.Create(values.Select(y => (string)y));
                 }
                 if (x is int)
                 {
-                    return IntEnumValidator.Create(values.Select(y => (int)y));
+                    return JsonIntEnumValidator.Create(values.Select(y => (int)y));
                 }
             }
 
@@ -114,29 +114,19 @@ namespace UniJSON
         }
     }
 
-    public class StringEnumValidator : JsonSchemaValidatorBase
+    public class JsonStringEnumValidator : IJsonSchemaValidator
     {
         public String[] Values
         {
             get; set;
         }
 
-        public static StringEnumValidator Create(IEnumerable<string> values)
+        public static JsonStringEnumValidator Create(IEnumerable<string> values)
         {
-            return new StringEnumValidator
+            return new JsonStringEnumValidator
             {
                 Values = values.ToArray(),
             };
-        }
-
-        public override void Assign(JsonSchemaValidatorBase obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
-        {
-            throw new NotImplementedException();
         }
 
         public override int GetHashCode()
@@ -146,7 +136,7 @@ namespace UniJSON
 
         public override bool Equals(object obj)
         {
-            var rhs = obj as StringEnumValidator;
+            var rhs = obj as JsonStringEnumValidator;
             if (rhs == null) return false;
 
             if (Values.Length != rhs.Values.Length) return false;
@@ -163,40 +153,40 @@ namespace UniJSON
             return true;
         }
 
-        public override bool Validate(object o)
+        public void Assign(IJsonSchemaValidator obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Validate(object o)
         {
             return true;
         }
 
-        public override void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, object o)
         {
             f.Value((string)o);
         }
     }
 
-    public class IntEnumValidator : JsonSchemaValidatorBase
+    public class JsonIntEnumValidator : IJsonSchemaValidator
     {
         public int[] Values
         {
             get; set;
         }
 
-        public static IntEnumValidator Create(IEnumerable<int> values)
+        public static JsonIntEnumValidator Create(IEnumerable<int> values)
         {
-            return new IntEnumValidator
+            return new JsonIntEnumValidator
             {
                 Values = values.ToArray()
             };
-        }
-
-        public override void Assign(JsonSchemaValidatorBase obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
-        {
-            throw new NotImplementedException();
         }
 
         public override int GetHashCode()
@@ -206,7 +196,7 @@ namespace UniJSON
 
         public override bool Equals(object obj)
         {
-            var rhs = obj as IntEnumValidator;
+            var rhs = obj as JsonIntEnumValidator;
             if (rhs == null) return false;
 
             if (Values.Length != rhs.Values.Length) return false;
@@ -223,12 +213,22 @@ namespace UniJSON
             return true;
         }
 
-        public override bool Validate(object o)
+        public void Assign(IJsonSchemaValidator obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Validate(object o)
         {
             return true;
         }
 
-        public override void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, object o)
         {
             f.Value((int)o);
         }

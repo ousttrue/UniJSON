@@ -64,7 +64,7 @@ namespace UniJSON
             }
         }
 
-        public static JsonSchemaValidatorBase Create(JsonValueType valueType, Type t = null, BaseJsonSchemaAttribute a = null, ItemJsonSchemaAttribute ia=null)
+        public static IJsonSchemaValidator Create(JsonValueType valueType, Type t = null, BaseJsonSchemaAttribute a = null, ItemJsonSchemaAttribute ia=null)
         {
             switch (valueType)
             {
@@ -213,7 +213,7 @@ namespace UniJSON
             }
         }
 
-        public static JsonSchemaValidatorBase Create(string t)
+        public static IJsonSchemaValidator Create(string t)
         {
             return Create((JsonValueType)Enum.Parse(typeof(JsonValueType), t, true));
         }
@@ -251,7 +251,7 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public static JsonSchemaValidatorBase Create(Type t, BaseJsonSchemaAttribute a, ItemJsonSchemaAttribute ia)
+        public static IJsonSchemaValidator Create(Type t, BaseJsonSchemaAttribute a, ItemJsonSchemaAttribute ia)
         {
             return Create(ToJsonType(t), t, a, ia);
         }

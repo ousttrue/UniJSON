@@ -15,7 +15,7 @@ namespace UniJSON
         public object Default { get; private set; }
         #endregion
 
-        public JsonSchemaValidatorBase Validator { get; set; }
+        public IJsonSchemaValidator Validator { get; set; }
 
         /// <summary>
         /// Skip validator comparison
@@ -97,7 +97,7 @@ namespace UniJSON
                 };
             }
 
-            JsonSchemaValidatorBase validator = null;
+            IJsonSchemaValidator validator = null;
             bool empty = a.Empty;
             if (t == typeof(object))
             {
@@ -106,11 +106,11 @@ namespace UniJSON
 
             if (a.EnumValues != null)
             {
-                validator = EnumValidator.Create(a.EnumValues);
+                validator = JsonEnumValidator.Create(a.EnumValues);
             }
             else if (t.IsEnum)
             {
-                validator = EnumValidator.Create(t, a.EnumSerializationType, a.EnumExcludes);
+                validator = JsonEnumValidator.Create(t, a.EnumSerializationType, a.EnumExcludes);
             }
             else
             {
@@ -192,7 +192,7 @@ namespace UniJSON
                         break;
 
                     case "enum":
-                        Validator = EnumValidator.Create(kv.Value);
+                        Validator = JsonEnumValidator.Create(kv.Value);
                         break;
 
                     case "const":
@@ -302,7 +302,7 @@ namespace UniJSON
                         {
                             // extend enum
                             // enum, enum..., type
-                            Validator = EnumValidator.Create(composition);
+                            Validator = JsonEnumValidator.Create(composition);
                         }
                     }
                     //throw new NotImplementedException();

@@ -3,18 +3,8 @@
 
 namespace UniJSON
 {
-    public class JsonBoolValidator : JsonSchemaValidatorBase
+    public class JsonBoolValidator : IJsonSchemaValidator
     {
-        public override void Assign(JsonSchemaValidatorBase obj)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
-        {
-            return false;
-        }
-
         public override int GetHashCode()
         {
             return 1;
@@ -27,12 +17,22 @@ namespace UniJSON
             return true;
         }
 
-        public override bool Validate(object o)
+        public void Assign(IJsonSchemaValidator obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        {
+            return false;
+        }
+
+        public bool Validate(object o)
         {
             return true;
         }
 
-        public override void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, object o)
         {
             f.Value((bool)o);
         }

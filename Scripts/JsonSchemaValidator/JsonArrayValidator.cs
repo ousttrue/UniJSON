@@ -6,7 +6,7 @@ namespace UniJSON
     /// <summary>
     /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.4
     /// </summary>
-    public class JsonArrayValidator : JsonSchemaValidatorBase
+    public class JsonArrayValidator : IJsonSchemaValidator
     {
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.4.1
@@ -32,12 +32,29 @@ namespace UniJSON
             get; set;
         }
 
-        public override void Assign(JsonSchemaValidatorBase rhs)
+        public override int GetHashCode()
+        {
+            return 5;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var rhs = obj as JsonArrayValidator;
+            if (rhs == null) return false;
+
+            if (Items != rhs.Items) return false;
+            if (MaxItems != rhs.MaxItems) return false;
+            if (MinItems != rhs.MinItems) return false;
+
+            return true;
+        }
+
+        public void Assign(IJsonSchemaValidator rhs)
         {
             throw new NotImplementedException();
         }
 
-        public override bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
         {
             switch (key)
             {
@@ -75,24 +92,7 @@ namespace UniJSON
             return false;
         }
 
-        public override int GetHashCode()
-        {
-            return 5;
-        }
-
-        public override bool Equals(object obj)
-        {
-            var rhs = obj as JsonArrayValidator;
-            if (rhs == null) return false;
-
-            if (Items != rhs.Items) return false;
-            if (MaxItems != rhs.MaxItems) return false;
-            if (MinItems != rhs.MinItems) return false;
-
-            return true;
-        }
-
-        public override bool Validate(object o)
+        public bool Validate(object o)
         {
             if (o == null)
             {
@@ -102,7 +102,7 @@ namespace UniJSON
             return true;
         }
 
-        public override void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, object o)
         {
             throw new NotImplementedException();
         }
