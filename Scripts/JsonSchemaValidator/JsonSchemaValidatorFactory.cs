@@ -12,6 +12,7 @@ namespace UniJSON
             public string Key;
             public JsonSchema Schema;
             public bool Required;
+            public string[] Dependencies;
         }
 
         static IEnumerable<JsonSchemaItem> GetProperties(Type t, PropertyExportFlags exportFlags)
@@ -40,6 +41,7 @@ namespace UniJSON
                         Key = fi.Name,
                         Schema = JsonSchema.FromType(fi.FieldType, a, ia),
                         Required = a.Required,
+                        Dependencies = a.Dependencies,
                     };
                 }
             }
@@ -59,6 +61,7 @@ namespace UniJSON
                         Key = pi.Name,
                         Schema = JsonSchema.FromType(pi.PropertyType, a, ia),
                         Required = a.Required,
+                        Dependencies = a.Dependencies,
                     };
                 }
             }
@@ -202,6 +205,10 @@ namespace UniJSON
                                 if (prop.Required)
                                 {
                                     v.Required.Add(prop.Key);
+                                }
+                                if (prop.Dependencies != null)
+                                {
+                                    v.Dependencies.Add(prop.Key, prop.Dependencies);
                                 }
                             }
                         }

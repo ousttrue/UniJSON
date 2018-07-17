@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 
 namespace UniJSON
 {
@@ -20,6 +21,16 @@ namespace UniJSON
             }
 
             throw new ArgumentException();
+        }
+
+        public static int GetCount(this object self)
+        {
+            var count = 0;
+            foreach (var x in self as IEnumerable)
+            {
+                ++count;
+            }
+            return count;
         }
     }
 }

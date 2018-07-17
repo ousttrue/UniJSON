@@ -16,8 +16,6 @@ namespace UniJSON
         public string Description;
         #endregion
 
-        public bool Required;
-
         #region integer, number
         public double Minimum = double.NaN;
         public bool ExclusiveMinimum;
@@ -37,6 +35,8 @@ namespace UniJSON
 
         #region object
         public int MinProperties;
+        public bool Required;
+        public string[] Dependencies;
         #endregion
 
         #region enum

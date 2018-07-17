@@ -35,13 +35,19 @@ namespace UniJSON
             get { return m_required; }
         }
 
-        Dictionary<string, JsonSchema> m_props = new Dictionary<string, JsonSchema>();
+        Dictionary<string, JsonSchema> m_props;
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.4
         /// </summary>
         public Dictionary<string, JsonSchema> Properties
         {
-            get { return m_props; }
+            get {
+                if (m_props == null)
+                {
+                    m_props = new Dictionary<string, JsonSchema>();
+                }
+                return m_props;
+            }
         }
 
         /// <summary>
@@ -50,6 +56,22 @@ namespace UniJSON
         public string PatternProperties
         {
             get; private set;
+        }
+
+        Dictionary<string, string[]> m_depndencies;
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.7
+        /// </summary>
+        public Dictionary<string, string[]> Dependencies
+        {
+            get
+            {
+                if (m_depndencies == null)
+                {
+                    m_depndencies = new Dictionary<string, string[]>();
+                }
+                return m_depndencies;
+            }
         }
 
         public void AddProperty(IFileSystemAccessor fs, string key, JsonNode value)
@@ -87,7 +109,6 @@ namespace UniJSON
             {
                 return false;
             }
-
             foreach (var pair in Properties)
             {
                 JsonSchema value;
@@ -116,9 +137,20 @@ namespace UniJSON
             {
                 return false;
             }
-
             if (!Required.OrderBy(x => x).SequenceEqual(rhs.Required.OrderBy(x => x))){
                 return false;
+            }
+
+            if (Dependencies.Count != rhs.Dependencies.Count)
+            {
+                return false;
+            }
+            foreach(var kv in Dependencies)
+            {
+                if (!kv.Value.OrderBy(x => x).SequenceEqual(rhs.Dependencies[kv.Key].OrderBy(x => x)))
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -188,6 +220,12 @@ namespace UniJSON
                     return true;
 
                 case "dependencies":
+                    {
+                        foreach(var kv in value.ObjectItems)
+                        {
+                            Dependencies.Add(kv.Key, kv.Value.ArrayItems.Select(x => x.GetString()).ToArray());
+                        }
+                    }
                     return true;
 
                 case "propertyNames":
@@ -218,21 +256,55 @@ namespace UniJSON
             return true;
         }
 
+        Dictionary<string, object> m_validValueMap = new Dictionary<string, object>();
+
         public void Serialize(JsonFormatter f, Object o)
         {
-            f.BeginMap();
+            // validate properties
+            m_validValueMap.Clear();
             foreach (var kv in Properties)
             {
                 var value = o.GetValue(kv.Key);
                 var v = kv.Value.Validator;
                 if (v != null && v.Validate(value))
                 {
-                    // key
-                    f.Key(kv.Key);
-
-                    // value
-                    v.Serialize(f, value);
+                    m_validValueMap.Add(kv.Key, value);
                 }
+            }
+
+            f.BeginMap();
+            foreach (var kv in Properties)
+            {
+                object value;
+                if (!m_validValueMap.TryGetValue(kv.Key, out value))
+                {
+                    continue;
+                }
+
+                string[] dependencies;
+                if (Dependencies.TryGetValue(kv.Key, out dependencies))
+                {
+                    // check dependencies
+                    bool hasDependencies = true;
+                    foreach(var x in dependencies)
+                    {
+                        if (!m_validValueMap.ContainsKey(x))
+                        {
+                            hasDependencies = false;
+                            break;
+                        }
+                    }
+                    if (!hasDependencies)
+                    {
+                        continue;
+                    }
+                }
+
+                // key
+                f.Key(kv.Key);
+
+                // value
+                kv.Value.Validator.Serialize(f, value);
             }
             f.EndMap();
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 
 namespace UniJSON
@@ -95,6 +96,11 @@ namespace UniJSON
         public bool Validate(object o)
         {
             if (o == null)
+            {
+                return false;
+            }
+
+            if(MinItems.HasValue && o.GetCount() < MinItems.Value)
             {
                 return false;
             }

@@ -79,8 +79,8 @@ namespace UniJSON
         }
 
         public static JsonSchema FromType(Type t,
-            JsonSchemaAttribute a, // field attribute
-            ItemJsonSchemaAttribute ia
+            JsonSchemaAttribute a=null, // field attribute
+            ItemJsonSchemaAttribute ia=null
             )
         {
             if (a == null)

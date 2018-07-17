@@ -161,17 +161,20 @@ namespace UniJSON
 
         public void KeyValue<T>(Expression<Func<T>> expression)
         {
-            var t = typeof(T);
-            var body = expression.Body as MemberExpression;
-            if (body == null)
-            {
-                body = ((UnaryExpression)expression.Body).Operand as MemberExpression;
-            }
-            Key(body.Member.Name);
             var func = expression.Compile();
+            var value = func();
+            if (value != null)
+            {
+                var body = expression.Body as MemberExpression;
+                if (body == null)
+                {
+                    body = ((UnaryExpression)expression.Body).Operand as MemberExpression;
+                }
+                Key(body.Member.Name);
 
-            var method = GetMethod(expression);
-            method.Invoke(this, new object[] { func() });
+                var method = GetMethod(expression);
+                method.Invoke(this, new object[] { value });
+            }
         }
 
         public void Key(String key)
