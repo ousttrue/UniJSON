@@ -247,8 +247,8 @@ namespace UniJSON
         }
 
         public void Serialize(JsonFormatter f, object o)
-        {
-            throw new NotImplementedException();
+        {           
+            f.Value(Convert.ToDouble(o));
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Collections;
 
 namespace UniJSON
 {
@@ -104,7 +104,13 @@ namespace UniJSON
 
         public void Serialize(JsonFormatter f, object o)
         {
-            throw new NotImplementedException();
+            var array = o as IEnumerable;
+            f.BeginList();
+            foreach(var x in array)
+            {
+                Items.Validator.Serialize(f, x);
+            }
+            f.EndList();
         }
     }
 }
