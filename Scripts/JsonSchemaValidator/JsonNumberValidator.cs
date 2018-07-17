@@ -135,7 +135,25 @@ namespace UniJSON
 
         public bool Validate(object o)
         {
-            return true;
+            try
+            {
+                var value = (int)o;
+                if (Minimum.HasValue && value < Minimum.Value)
+                {
+                    return false;
+                }
+
+                if (Maximum.HasValue && value > Maximum.Value)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public void Serialize(JsonFormatter f, object o)
@@ -243,7 +261,25 @@ namespace UniJSON
 
         public bool Validate(object o)
         {
-            return true;
+            try
+            {
+                var value = (double)o;
+                if (Minimum.HasValue && value < Minimum.Value)
+                {
+                    return false;
+                }
+
+                if (Maximum.HasValue && value > Maximum.Value)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public void Serialize(JsonFormatter f, object o)

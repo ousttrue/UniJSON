@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 
@@ -111,6 +112,15 @@ namespace UniJSON
                 }
             }
 
+            if (Required.Count != rhs.Required.Count)
+            {
+                return false;
+            }
+
+            if (!Required.OrderBy(x => x).SequenceEqual(rhs.Required.OrderBy(x => x))){
+                return false;
+            }
+
             return true;
         }
 
@@ -132,6 +142,11 @@ namespace UniJSON
                 {
                     this.Properties.Add(x.Key, x.Value);
                 }
+            }
+
+            foreach(var x in rhs.Required)
+            {
+                this.Required.Add(x);
             }
         }
 
@@ -187,6 +202,17 @@ namespace UniJSON
             if (o == null)
             {
                 return false;
+            }
+
+            if (Required != null)
+            {
+                foreach (var x in Required)
+                {
+                    if (!Properties[x].Validator.Validate(o))
+                    {
+                        return false;
+                    }
+                }
             }
 
             return true;

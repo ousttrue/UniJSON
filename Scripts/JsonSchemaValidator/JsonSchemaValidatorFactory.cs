@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Reflection;
 
 namespace UniJSON
 {
@@ -64,7 +64,7 @@ namespace UniJSON
             }
         }
 
-        public static IJsonSchemaValidator Create(JsonValueType valueType, Type t = null, BaseJsonSchemaAttribute a = null, ItemJsonSchemaAttribute ia=null)
+        public static IJsonSchemaValidator Create(JsonValueType valueType, Type t = null, BaseJsonSchemaAttribute a = null, ItemJsonSchemaAttribute ia = null)
         {
             switch (valueType)
             {
@@ -144,14 +144,14 @@ namespace UniJSON
 
                 case JsonValueType.Array:
                     {
-                        var v= new JsonArrayValidator();
+                        var v = new JsonArrayValidator();
                         if (a != null)
                         {
                             if (a.MinItems != 0)
                             {
                                 v.MinItems = a.MinItems;
                             }
-                            if(a.MaxItems != 0)
+                            if (a.MaxItems != 0)
                             {
                                 v.MaxItems = a.MaxItems;
                             }
@@ -167,7 +167,7 @@ namespace UniJSON
                                 {
                                     var sub = new JsonSchema
                                     {
-                                        Empty=ia.Empty,
+                                        Empty = ia.Empty,
                                         Validator = Create(t.GetElementType(), ia, null)
                                     };
                                     v.Items = sub;
@@ -238,7 +238,7 @@ namespace UniJSON
             {
                 return JsonValueType.Array;
             }
-            if(t.GetIsGenericList())
+            if (t.GetIsGenericList())
             {
                 return JsonValueType.Array;
             }
