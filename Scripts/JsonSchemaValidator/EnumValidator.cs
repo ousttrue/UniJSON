@@ -223,6 +223,11 @@ namespace UniJSON
             return true;
         }
 
+        public override bool Validate(object o)
+        {
+            return true;
+        }
+
         public override void Serialize(JsonFormatter f, object o)
         {
             f.Value((int)o);

@@ -182,6 +182,16 @@ namespace UniJSON
             return true;
         }
 
+        public override bool Validate(object o)
+        {
+            if (o == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public override void Serialize(JsonFormatter f, Object o)
         {
             f.BeginMap();
