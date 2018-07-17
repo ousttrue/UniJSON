@@ -325,5 +325,10 @@ namespace UniJSON
             return schema;
         }
         #endregion
+
+        public string Serialize(Object o)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
