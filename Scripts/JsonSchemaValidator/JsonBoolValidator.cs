@@ -5,8 +5,6 @@ namespace UniJSON
 {
     public class JsonBoolValidator : JsonSchemaValidatorBase
     {
-        public override JsonValueType JsonValueType { get { return JsonValueType.Boolean; } }
-
         public override void Assign(JsonSchemaValidatorBase obj)
         {
             throw new NotImplementedException();

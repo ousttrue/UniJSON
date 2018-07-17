@@ -8,8 +8,6 @@ namespace UniJSON
     /// </summary>
     public class JsonIntValidator : JsonSchemaValidatorBase
     {
-        public override JsonValueType JsonValueType { get { return JsonValueType.Integer; } }
-
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.1
         /// </summary>
@@ -146,8 +144,6 @@ namespace UniJSON
     /// </summary>
     public class JsonNumberValidator : JsonSchemaValidatorBase
     {
-        public override JsonValueType JsonValueType { get { return JsonValueType.Number; } }
-
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.2.1
         /// </summary>

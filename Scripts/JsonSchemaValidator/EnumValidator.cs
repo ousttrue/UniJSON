@@ -116,14 +116,6 @@ namespace UniJSON
 
     public class StringEnumValidator : JsonSchemaValidatorBase
     {
-        public override JsonValueType JsonValueType
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public String[] Values
         {
             get; set;
@@ -184,14 +176,6 @@ namespace UniJSON
 
     public class IntEnumValidator : JsonSchemaValidatorBase
     {
-        public override JsonValueType JsonValueType
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public int[] Values
         {
             get; set;

@@ -5,8 +5,6 @@ namespace UniJSON
 {
     public abstract class JsonSchemaValidatorBase
     {
-        public abstract JsonValueType JsonValueType { get; }
-
         public abstract void Assign(JsonSchemaValidatorBase obj);
 
         public abstract bool Parse(IFileSystemAccessor fs, string key, JsonNode value);

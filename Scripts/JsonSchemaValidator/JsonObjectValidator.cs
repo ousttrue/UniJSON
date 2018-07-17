@@ -9,8 +9,6 @@ namespace UniJSON
     /// </summary>
     public class JsonObjectValidator : JsonSchemaValidatorBase
     {
-        public override JsonValueType JsonValueType { get { return JsonValueType.Object; } }
-
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.1
         /// </summary>

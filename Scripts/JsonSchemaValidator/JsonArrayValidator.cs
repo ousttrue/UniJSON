@@ -8,8 +8,6 @@ namespace UniJSON
     /// </summary>
     public class JsonArrayValidator : JsonSchemaValidatorBase
     {
-        public override JsonValueType JsonValueType { get { return JsonValueType.Array; } }
-
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.4.1
         /// </summary>

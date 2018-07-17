@@ -295,8 +295,8 @@ namespace UniJSON
                     {
                         if (composition.Count == 1)
                         {
-                            var typeSchema = composition.First(x => x.Validator != null);
-                            Validator = JsonSchemaValidatorFactory.Create(typeSchema.Validator.JsonValueType);
+                            throw new NotImplementedException();
+                            //Validator = composition[0].Validator;
                         }
                         else
                         {
