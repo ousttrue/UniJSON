@@ -31,6 +31,17 @@ namespace UniJSON
         public abstract void Assign(JsonSchemaValidatorBase obj);
 
         public abstract bool Parse(IFileSystemAccessor fs, string key, JsonNode value);
+
+        public virtual bool Validate(Object o)
+        {
+            if (o == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public abstract void Serialize(JsonFormatter f, Object o);
     }
 
     public class JsonBoolValidator : JsonSchemaValidatorBase
@@ -57,6 +68,11 @@ namespace UniJSON
             var rhs = obj as JsonBoolValidator;
             if (rhs == null) return false;
             return true;
+        }
+
+        public override void Serialize(JsonFormatter f, object o)
+        {
+            f.Value((bool)o);
         }
     }
 
@@ -191,6 +207,11 @@ namespace UniJSON
 
             return true;
         }
+
+        public override void Serialize(JsonFormatter f, object o)
+        {
+            f.Value((int)o);
+        }
     }
 
     /// <summary>
@@ -291,6 +312,11 @@ namespace UniJSON
 
             return true;
         }
+
+        public override void Serialize(JsonFormatter f, object o)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -372,6 +398,17 @@ namespace UniJSON
             if (Pattern != rhs.Pattern) return false;
 
             return true;
+        }
+
+        public override bool Validate(object o)
+        {
+            // allow null
+            return true;
+        }
+
+        public override void Serialize(JsonFormatter f, object o)
+        {
+            f.Value((string)o);
         }
     }
 
@@ -464,6 +501,11 @@ namespace UniJSON
             if (MinItems != rhs.MinItems) return false;
 
             return true;
+        }
+
+        public override void Serialize(JsonFormatter f, object o)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -646,6 +688,25 @@ namespace UniJSON
 
             return true;
         }
+
+        public override void Serialize(JsonFormatter f, Object o)
+        {
+            f.BeginMap();
+            foreach (var kv in Properties)
+            {
+                var value = o.GetValue(kv.Key);
+                var v = kv.Value.Validator;
+                if (v != null && v.Validate(value))
+                {
+                    // key
+                    f.Key(kv.Key);
+
+                    // value
+                    v.Serialize(f, value);
+                }
+            }
+            f.EndMap();
+        }
     }
 
     public static class EnumValidator
@@ -665,7 +726,7 @@ namespace UniJSON
 
                     case JsonValueType.String:
                         return StringEnumValidator.Create(value.ArrayItems
-                            .Where(y => y.Value.ValueType==JsonValueType.String)
+                            .Where(y => y.Value.ValueType == JsonValueType.String)
                             .Select(y => y.GetString())
                             );
 
@@ -704,7 +765,7 @@ namespace UniJSON
 
         static IEnumerable<string> GetStringValues(Type t, object[] excludes, Func<String, String> filter)
         {
-            foreach(var x in Enum.GetValues(t))
+            foreach (var x in Enum.GetValues(t))
             {
                 if (excludes == null || !excludes.Contains(x))
                 {
@@ -715,7 +776,7 @@ namespace UniJSON
 
         static IEnumerable<int> GetIntValues(Type t, object[] excludes)
         {
-            foreach(var x in Enum.GetValues(t))
+            foreach (var x in Enum.GetValues(t))
             {
                 if (excludes == null || !excludes.Contains(x))
                 {
@@ -729,7 +790,7 @@ namespace UniJSON
             switch (serializationType)
             {
                 case EnumSerializationType.AsLowerString:
-                    return StringEnumValidator.Create(GetStringValues(t, excludes, x=>x.ToLower()));
+                    return StringEnumValidator.Create(GetStringValues(t, excludes, x => x.ToLower()));
 
                 case EnumSerializationType.AsInt:
                     return IntEnumValidator.Create(GetIntValues(t, excludes));
@@ -749,7 +810,7 @@ namespace UniJSON
                 }
                 if (x is int)
                 {
-                    return IntEnumValidator.Create(values.Select(y =>(int)y));
+                    return IntEnumValidator.Create(values.Select(y => (int)y));
                 }
             }
 
@@ -813,6 +874,16 @@ namespace UniJSON
             }
             return true;
         }
+
+        public override bool Validate(object o)
+        {
+            return true;
+        }
+
+        public override void Serialize(JsonFormatter f, object o)
+        {
+            f.Value((string)o);
+        }
     }
 
     public class IntEnumValidator : JsonSchemaValidatorBase
@@ -870,6 +941,11 @@ namespace UniJSON
                 }
             }
             return true;
+        }
+
+        public override void Serialize(JsonFormatter f, object o)
+        {
+            f.Value((int)o);
         }
     }
 

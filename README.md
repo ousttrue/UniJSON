@@ -18,6 +18,8 @@ JSON serializer and deserializer and schema utilities for Unity(.Net3.5)
 
 * [x] array.items
 * [x] enum anyOf
+* [ ] object.required
+* [ ] default value
 
 ## Example
 

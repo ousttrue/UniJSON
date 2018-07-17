@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace UniJSON
 {
-    public class JsonSchema: IEquatable<JsonSchema>
+    public class JsonSchema : IEquatable<JsonSchema>
     {
         public string Schema; // http://json-schema.org/draft-04/schema
 
@@ -78,7 +78,7 @@ namespace UniJSON
             return FromType(typeof(T), null, null);
         }
 
-        public static JsonSchema FromType(Type t, 
+        public static JsonSchema FromType(Type t,
             JsonSchemaAttribute a, // field attribute
             ItemJsonSchemaAttribute ia
             )
@@ -99,7 +99,7 @@ namespace UniJSON
 
             JsonSchemaValidatorBase validator = null;
             bool empty = a.Empty;
-            if (t== typeof(object))
+            if (t == typeof(object))
             {
                 empty = true;
             }
@@ -302,7 +302,7 @@ namespace UniJSON
                         {
                             // extend enum
                             // enum, enum..., type
-                            Validator = EnumValidator.Create(composition);                           
+                            Validator = EnumValidator.Create(composition);
                         }
                     }
                     //throw new NotImplementedException();
@@ -329,21 +329,8 @@ namespace UniJSON
         public string Serialize(Object o)
         {
             var f = new JsonFormatter();
-
-            var t = o.GetType();
-
-            var v = Validator as JsonObjectValidator;
-            if (v == null)
-            {
-                throw new ArgumentException();
-            }
-
-            foreach(var p in v.Properties)
-            {
-                
-            }
-
-            return null;
+            Validator.Serialize(f, o);
+            return f.ToString();
         }
     }
 }
