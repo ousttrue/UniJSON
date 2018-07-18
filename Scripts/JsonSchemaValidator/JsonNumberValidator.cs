@@ -138,14 +138,62 @@ namespace UniJSON
             try
             {
                 var value = (int)o;
-                if (Minimum.HasValue && value < Minimum.Value)
+
+                if (Minimum.HasValue)
                 {
-                    return new JsonSchemaValidationException(c, string.Format("minimum: {0}<{1}", value, Minimum.Value));
+                    if (ExclusiveMinimum)
+                    {
+                        if (value > Minimum.Value)
+                        {
+                            // ok
+                        }
+                        else
+                        {
+                            return new JsonSchemaValidationException(c, string.Format("minimum: ! {0}>{1}", value, Minimum.Value));
+                        }
+                    }
+                    else
+                    {
+                        if (value >= Minimum.Value)
+                        {
+                            // ok
+                        }
+                        else
+                        {
+                            return new JsonSchemaValidationException(c, string.Format("minimum: ! {0}>={1}", value, Minimum.Value));
+                        }
+                    }
                 }
 
-                if (Maximum.HasValue && value > Maximum.Value)
+                if (Maximum.HasValue)
                 {
-                    return new JsonSchemaValidationException(c, string.Format("maximum: {0}>{1}", value, Maximum.Value));
+                    if (ExclusiveMaximum)
+                    {
+                        if (value < Maximum.Value)
+                        {
+                            // ok
+                        }
+                        else
+                        {
+                            return new JsonSchemaValidationException(c, string.Format("maximum: ! {0}<{1}", value, Maximum.Value));
+                        }
+                    }
+                    else
+                    {
+                        if (value <= Maximum.Value)
+                        {
+                            // ok
+                        }
+                        else
+                        {
+                            return new JsonSchemaValidationException(c, string.Format("maximum: ! {0}<={1}", value, Maximum.Value));
+                        }
+                    }
+                }
+
+                if(MultipleOf.HasValue && value % MultipleOf.Value != 0)
+                {
+                    return new JsonSchemaValidationException(c, string.Format("multipleOf: {0}%{1}", value, MultipleOf.Value));
                 }
 
                 return null;
@@ -264,14 +312,68 @@ namespace UniJSON
             try
             {
                 var value = Convert.ToDouble(o);
-                if (Minimum.HasValue && value < Minimum.Value)
+
+                if (Minimum.HasValue)
                 {
-                    return new JsonSchemaValidationException(c, string.Format("minimum: {0}<{1}", value, Minimum.Value));
+                    if (ExclusiveMinimum)
+                    {
+                        if (value > Minimum.Value)
+                        {
+                            // ok
+                        }
+                        else
+                        {
+                            return new JsonSchemaValidationException(c, string.Format("minimum: ! {0}>{1}", value, Minimum.Value));
+                        }
+                    }
+                    else
+                    {
+                        if (value >= Minimum.Value)
+                        {
+                            // ok
+                        }
+                        else
+                        {
+                            return new JsonSchemaValidationException(c, string.Format("minimum: ! {0}>={1}", value, Minimum.Value));
+                        }
+                    }
                 }
 
-                if (Maximum.HasValue && value > Maximum.Value)
+                if (Maximum.HasValue)
                 {
-                    return new JsonSchemaValidationException(c, string.Format("maximum: {0}>{1}", value, Maximum.Value));
+                    if (ExclusiveMaximum)
+                    {
+                        if (value < Maximum.Value)
+                        {
+                            // ok
+                        }
+                        else
+                        {
+                            return new JsonSchemaValidationException(c, string.Format("maximum: ! {0}<{1}", value, Maximum.Value));
+                        }
+                    }
+                    else
+                    {
+                        if (value <= Maximum.Value)
+                        {
+                            // ok
+                        }
+                        else
+                        {
+                            return new JsonSchemaValidationException(c, string.Format("maximum: ! {0}<={1}", value, Maximum.Value));
+                        }
+                    }
+                }
+
+                /*
+                if (MultipleOf.HasValue && value % MultipleOf.Value != 0)
+                {
+                    return new JsonSchemaValidationException(c, string.Format("multipleOf: {0}%{1}", value, MultipleOf.Value));
+                }
+                */
+                if (MultipleOf.HasValue)
+                {
+                    throw new NotImplementedException();
                 }
 
                 return null;
