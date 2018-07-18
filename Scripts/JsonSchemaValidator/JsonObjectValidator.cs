@@ -58,6 +58,14 @@ namespace UniJSON
             get; private set;
         }
 
+        /// <summary>
+        /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.6
+        /// </summary>
+        public JsonSchema AdditionalProperties
+        {
+            get; private set;
+        }
+
         Dictionary<string, string[]> m_depndencies;
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.5.7
@@ -137,7 +145,8 @@ namespace UniJSON
             {
                 return false;
             }
-            if (!Required.OrderBy(x => x).SequenceEqual(rhs.Required.OrderBy(x => x))){
+            if (!Required.OrderBy(x => x).SequenceEqual(rhs.Required.OrderBy(x => x)))
+            {
                 return false;
             }
 
@@ -145,9 +154,30 @@ namespace UniJSON
             {
                 return false;
             }
-            foreach(var kv in Dependencies)
+            foreach (var kv in Dependencies)
             {
                 if (!kv.Value.OrderBy(x => x).SequenceEqual(rhs.Dependencies[kv.Key].OrderBy(x => x)))
+                {
+                    return false;
+                }
+            }
+
+            if (AdditionalProperties == null
+                && rhs.AdditionalProperties == null)
+            {
+                // ok
+            }
+            else if (AdditionalProperties == null)
+            {
+                return false;
+            }
+            else if (rhs.AdditionalProperties == null)
+            {
+                return false;
+            }
+            else
+            {
+                if (!AdditionalProperties.Equals(rhs.AdditionalProperties))
                 {
                     return false;
                 }
@@ -179,6 +209,15 @@ namespace UniJSON
             foreach(var x in rhs.Required)
             {
                 this.Required.Add(x);
+            }
+
+            if (rhs.AdditionalProperties != null)
+            {
+                if (AdditionalProperties != null)
+                {
+                    throw new NotImplementedException();
+                }
+                AdditionalProperties = rhs.AdditionalProperties;
             }
         }
 
@@ -217,6 +256,11 @@ namespace UniJSON
                     return true;
 
                 case "additionalProperties":
+                    {
+                        var sub = new JsonSchema();
+                        sub.Parse(fs, value, "additionalProperties");
+                        AdditionalProperties = sub;
+                    }
                     return true;
 
                 case "dependencies":

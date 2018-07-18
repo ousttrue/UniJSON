@@ -263,7 +263,7 @@ namespace UniJSON
         {
             try
             {
-                var value = (double)o;
+                var value = Convert.ToDouble(o);
                 if (Minimum.HasValue && value < Minimum.Value)
                 {
                     return new JsonSchemaValidationException(c, string.Format("minimum: {0}<{1}", value, Minimum.Value));
