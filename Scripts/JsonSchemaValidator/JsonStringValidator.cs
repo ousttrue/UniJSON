@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 
 namespace UniJSON
@@ -82,27 +83,32 @@ namespace UniJSON
             return false;
         }
 
-        public bool Validate(object o)
+        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
         {
+            if (o == null)
+            {
+                return new JsonSchemaValidationException(c, "null");
+            }
+
             var value = o as string;
-            if (string.IsNullOrEmpty(value))
+            if (value.All(x => Char.IsWhiteSpace(x)))
             {
-                return false;
+                return new JsonSchemaValidationException(c, "whitespace");
             }
 
-            if (value.Length < MinLength)
+            if (MinLength.HasValue && value.Length < MinLength)
             {
-                return false;
+                return new JsonSchemaValidationException(c, string.Format("minlength: {0}<{1}", value.Length, MinLength.Value));
             }
-            if (value.Length > MaxLength)
+            if (MaxLength.HasValue && value.Length > MaxLength)
             {
-                return false;
+                return new JsonSchemaValidationException(c, string.Format("maxlength: {0}>{1}", value.Length, MaxLength.Value));
             }
 
-            return true;
+            return null;
         }
 
-        public void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
         {
             f.Value((string)o);
         }

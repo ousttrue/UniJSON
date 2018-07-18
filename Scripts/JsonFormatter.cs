@@ -123,11 +123,12 @@ namespace UniJSON
             m_w.Write("null");
         }
 
-        public void BeginList()
+        public ActionDisposer BeginList()
         {
             CommaCheck();
             m_w.Write('[');
             m_stack.Push(new Context(Current.ARRAY));
+            return new ActionDisposer(EndList);
         }
 
         public void EndList()
@@ -136,11 +137,12 @@ namespace UniJSON
             m_stack.Pop();
         }
 
-        public void BeginMap()
+        public ActionDisposer BeginMap()
         {
             CommaCheck();
             m_w.Write('{');
             m_stack.Push(new Context(Current.OBJECT));
+            return new ActionDisposer(EndMap);
         }
 
         public void EndMap()
@@ -151,11 +153,8 @@ namespace UniJSON
 
         protected virtual System.Reflection.MethodInfo GetMethod<T>(Expression<Func<T>> expression)
         {
-            var t = typeof(T);
-
             var formatterType = GetType();
             var method = formatterType.GetMethod("Value", new Type[] { typeof(T) });
-
             return method;
         }
 

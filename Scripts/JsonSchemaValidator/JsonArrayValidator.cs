@@ -93,30 +93,36 @@ namespace UniJSON
             return false;
         }
 
-        public bool Validate(object o)
+        public JsonSchemaValidationException Validate(JsonSchemaValidationContext context, object o)
         {
             if (o == null)
             {
-                return false;
+                return new JsonSchemaValidationException(context, "null");
             }
 
             if(MinItems.HasValue && o.GetCount() < MinItems.Value)
             {
-                return false;
+                return new JsonSchemaValidationException(context, "minitems");
             }
 
-            return true;
+            return null;
         }
 
-        public void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
         {
             var array = o as IEnumerable;
-            f.BeginList();
-            foreach(var x in array)
+
+            using (f.BeginList())
             {
-                Items.Validator.Serialize(f, x);
+                int i = 0;
+                foreach (var x in array)
+                {
+                    using (c.Push(i++))
+                    {
+                        Items.Validator.Serialize(f, c, x);
+                    }
+                }
             }
-            f.EndList();
         }
     }
 }

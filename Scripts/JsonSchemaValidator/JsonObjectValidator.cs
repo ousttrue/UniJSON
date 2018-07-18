@@ -235,31 +235,35 @@ namespace UniJSON
             return false;
         }
 
-        public bool Validate(object o)
+        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
         {
             if (o == null)
             {
-                return false;
+                return new JsonSchemaValidationException(c, "null");
             }
 
             if (Required != null)
             {
                 foreach (var x in Required)
                 {
-                    var value=o.GetValue(x);
-                    if (!Properties[x].Validator.Validate(value))
+                    using (c.Push(x))
                     {
-                        return false;
+                        var value = o.GetValue(x);
+                        var ex = Properties[x].Validator.Validate(c, value);
+                        if (ex != null)
+                        {
+                            return ex;
+                        }
                     }
                 }
             }
 
-            return true;
+            return null;
         }
 
         Dictionary<string, object> m_validValueMap = new Dictionary<string, object>();
 
-        public void Serialize(JsonFormatter f, Object o)
+        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, Object o)
         {
             // validate properties
             m_validValueMap.Clear();
@@ -267,47 +271,54 @@ namespace UniJSON
             {
                 var value = o.GetValue(kv.Key);
                 var v = kv.Value.Validator;
-                if (v != null && v.Validate(value))
+                using (c.Push(kv.Key))
                 {
-                    m_validValueMap.Add(kv.Key, value);
+                    if (v != null && v.Validate(c, value) == null)
+                    {
+                        m_validValueMap.Add(kv.Key, value);
+                    }
                 }
             }
 
-            f.BeginMap();
-            foreach (var kv in Properties)
+            using (f.BeginMap())
             {
-                object value;
-                if (!m_validValueMap.TryGetValue(kv.Key, out value))
+                foreach (var kv in Properties)
                 {
-                    continue;
-                }
-
-                string[] dependencies;
-                if (Dependencies.TryGetValue(kv.Key, out dependencies))
-                {
-                    // check dependencies
-                    bool hasDependencies = true;
-                    foreach(var x in dependencies)
-                    {
-                        if (!m_validValueMap.ContainsKey(x))
-                        {
-                            hasDependencies = false;
-                            break;
-                        }
-                    }
-                    if (!hasDependencies)
+                    object value;
+                    if (!m_validValueMap.TryGetValue(kv.Key, out value))
                     {
                         continue;
                     }
+
+                    string[] dependencies;
+                    if (Dependencies.TryGetValue(kv.Key, out dependencies))
+                    {
+                        // check dependencies
+                        bool hasDependencies = true;
+                        foreach (var x in dependencies)
+                        {
+                            if (!m_validValueMap.ContainsKey(x))
+                            {
+                                hasDependencies = false;
+                                break;
+                            }
+                        }
+                        if (!hasDependencies)
+                        {
+                            continue;
+                        }
+                    }
+
+                    // key
+                    f.Key(kv.Key);
+
+                    // value
+                    using (c.Push(kv.Key))
+                    {
+                        kv.Value.Validator.Serialize(f, c, value);
+                    }
                 }
-
-                // key
-                f.Key(kv.Key);
-
-                // value
-                kv.Value.Validator.Serialize(f, value);
             }
-            f.EndMap();
         }
     }
 }

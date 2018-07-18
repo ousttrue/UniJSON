@@ -27,12 +27,12 @@ namespace UniJSON
             return false;
         }
 
-        public bool Validate(object o)
+        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
         {
-            return true;
+            return null;
         }
 
-        public void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
         {
             f.Value((bool)o);
         }

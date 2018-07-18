@@ -163,12 +163,19 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public bool Validate(object o)
+        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
         {
-            return Values.Contains((string)o);
+            if (Values.Contains((string)o))
+            {
+                return null;
+            }
+            else
+            {
+                return new JsonSchemaValidationException(c, string.Format("{0} is not valid enum", o));
+            }
         }
 
-        public void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
         {
             f.Value((string)o);
         }
@@ -223,12 +230,19 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public bool Validate(object o)
+        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
         {
-            return (Values.Contains((int)o));
+            if (Values.Contains((int)o))
+            {
+                return null;
+            }
+            else
+            {
+                return new JsonSchemaValidationException(c, string.Format("{0} is not valid enum", o));
+            }
         }
 
-        public void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
         {
             f.Value((int)o);
         }

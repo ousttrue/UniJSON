@@ -133,30 +133,30 @@ namespace UniJSON
             ExclusiveMinimum = rhs.ExclusiveMinimum;
         }
 
-        public bool Validate(object o)
+        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
         {
             try
             {
                 var value = (int)o;
                 if (Minimum.HasValue && value < Minimum.Value)
                 {
-                    return false;
+                    return new JsonSchemaValidationException(c, string.Format("minimum: {0}<{1}", value, Minimum.Value));
                 }
 
                 if (Maximum.HasValue && value > Maximum.Value)
                 {
-                    return false;
+                    return new JsonSchemaValidationException(c, string.Format("maximum: {0}>{1}", value, Maximum.Value));
                 }
 
-                return true;
+                return null;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return false;
+                return new JsonSchemaValidationException(c, ex);
             }
         }
 
-        public void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
         {
             f.Value((int)o);
         }
@@ -259,30 +259,30 @@ namespace UniJSON
             return false;
         }
 
-        public bool Validate(object o)
+        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
         {
             try
             {
                 var value = (double)o;
                 if (Minimum.HasValue && value < Minimum.Value)
                 {
-                    return false;
+                    return new JsonSchemaValidationException(c, string.Format("minimum: {0}<{1}", value, Minimum.Value));
                 }
 
                 if (Maximum.HasValue && value > Maximum.Value)
                 {
-                    return false;
+                    return new JsonSchemaValidationException(c, string.Format("maximum: {0}>{1}", value, Maximum.Value));
                 }
 
-                return true;
+                return null;
             }
-            catch
+            catch(Exception ex)
             {
-                return false;
+                return new JsonSchemaValidationException(c, ex);
             }
         }
 
-        public void Serialize(JsonFormatter f, object o)
+        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
         {           
             f.Value(Convert.ToDouble(o));
         }

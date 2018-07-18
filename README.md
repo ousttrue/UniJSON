@@ -16,12 +16,13 @@ JSON serializer and deserializer and schema utilities for Unity(.Net3.5)
 
 ## ToDo
 
+* [x] anyOf to enum
+* [ ] string.pattern
+* [x] enum.values
 * [x] array.items
-* [x] enum anyOf
 * [x] object.required
 * [x] object.dependencies
-* [x] enum.values
-* [ ] string.pattern
+* [ ] object.additionalProperties
 * [ ] default value
 
 ## Example

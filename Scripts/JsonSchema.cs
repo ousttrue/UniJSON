@@ -328,8 +328,16 @@ namespace UniJSON
 
         public string Serialize(Object o)
         {
+            var c = new JsonSchemaValidationContext(o);
+
+            var ex = Validator.Validate(c, o);
+            if (ex!=null)
+            {
+                throw ex;
+            }
+
             var f = new JsonFormatter();
-            Validator.Serialize(f, o);
+            Validator.Serialize(f, c, o);
             return f.ToString();
         }
     }
