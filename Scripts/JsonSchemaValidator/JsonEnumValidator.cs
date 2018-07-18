@@ -165,7 +165,7 @@ namespace UniJSON
 
         public bool Validate(object o)
         {
-            return true;
+            return Values.Contains((string)o);
         }
 
         public void Serialize(JsonFormatter f, object o)
@@ -225,7 +225,7 @@ namespace UniJSON
 
         public bool Validate(object o)
         {
-            return true;
+            return (Values.Contains((int)o));
         }
 
         public void Serialize(JsonFormatter f, object o)

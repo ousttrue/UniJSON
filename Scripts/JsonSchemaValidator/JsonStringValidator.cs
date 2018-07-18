@@ -84,7 +84,21 @@ namespace UniJSON
 
         public bool Validate(object o)
         {
-            // allow null
+            var value = o as string;
+            if (string.IsNullOrEmpty(value))
+            {
+                return false;
+            }
+
+            if (value.Length < MinLength)
+            {
+                return false;
+            }
+            if (value.Length > MaxLength)
+            {
+                return false;
+            }
+
             return true;
         }
 
