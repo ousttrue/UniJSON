@@ -137,19 +137,47 @@ namespace UniJSON
         [Test]
         public void IntEnumValidator()
         {
-            Assert.Fail();
+            var c = new JsonSchemaValidationContext("test");
+
+            {
+                var v = new JsonIntEnumValidator();
+                v.Values = new int[] { 1, 2 };
+                Assert.Null(v.Validate(c, 1));
+                Assert.NotNull(v.Validate(c, 3));
+            }
         }
 
         [Test]
         public void ArrayValidator()
         {
-            Assert.Fail();
+            var c = new JsonSchemaValidationContext("test");
+
+            {
+                var v = new JsonArrayValidator();
+                v.MaxItems = 1;
+                Assert.Null(v.Validate(c, new object[] { 0 }));
+                Assert.NotNull(v.Validate(c, new object[] { 0, 1 }));
+            }
+            {
+                var v = new JsonArrayValidator();
+                v.MinItems = 1;
+                Assert.Null(v.Validate(c, new object[] { 0 }));
+                Assert.NotNull(v.Validate(c, new object[] { }));
+            }
         }
 
+        /// <summary>
+        /// ToDo
+        /// </summary>
         [Test]
         public void ObjectValidator()
         {
-            Assert.Fail();
+            var c = new JsonSchemaValidationContext("test");
+
+            {
+                var v = new JsonObjectValidator();
+                v.MinProperties = 1;
+            }
         }
     }
 }

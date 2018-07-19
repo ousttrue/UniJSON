@@ -17,6 +17,8 @@ namespace UniJSON
             get; set;
         }
 
+        // additionalItems
+
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.4.3
         /// </summary>
@@ -32,6 +34,10 @@ namespace UniJSON
         {
             get; set;
         }
+
+        // uniqueItems
+
+        // contains
 
         public override int GetHashCode()
         {
@@ -100,9 +106,14 @@ namespace UniJSON
                 return new JsonSchemaValidationException(context, "null");
             }
 
-            if(MinItems.HasValue && o.GetCount() < MinItems.Value)
+            if (MaxItems.HasValue && o.GetCount() > MaxItems.Value)
             {
-                return new JsonSchemaValidationException(context, "minitems");
+                return new JsonSchemaValidationException(context, "maxOtems");
+            }
+
+            if (MinItems.HasValue && o.GetCount() < MinItems.Value)
+            {
+                return new JsonSchemaValidationException(context, "minItems");
             }
 
             return null;
