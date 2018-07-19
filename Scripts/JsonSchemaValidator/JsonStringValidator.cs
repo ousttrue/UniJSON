@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-
+using System.Text.RegularExpressions;
 
 namespace UniJSON
 {
@@ -14,7 +14,7 @@ namespace UniJSON
         /// </summary>
         public int? MaxLength
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
@@ -22,13 +22,13 @@ namespace UniJSON
         /// </summary>
         public int? MinLength
         {
-            get; private set;
+            get; set;
         }
 
         /// <summary>
         /// http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.3.3
         /// </summary>
-        public string Pattern
+        public Regex Pattern
         {
             get; set;
         }
@@ -45,7 +45,22 @@ namespace UniJSON
 
             if (MaxLength != rhs.MaxLength) return false;
             if (MinLength != rhs.MinLength) return false;
-            if (Pattern != rhs.Pattern) return false;
+
+            if (Pattern == null && rhs.Pattern == null)
+            {
+            }
+            else if (Pattern == null)
+            {
+                return false;
+            }
+            else if (rhs.Pattern == null)
+            {
+                return false;
+            }
+            else if (Pattern.ToString() != rhs.Pattern.ToString())
+            {
+                return false;
+            }
 
             return true;
         }
@@ -76,7 +91,7 @@ namespace UniJSON
                     return true;
 
                 case "pattern":
-                    Pattern = value.GetString();
+                    Pattern = new Regex(value.GetString().Replace("\\\\", "\\"));
                     return true;
             }
 
@@ -103,6 +118,11 @@ namespace UniJSON
             if (MaxLength.HasValue && value.Length > MaxLength)
             {
                 return new JsonSchemaValidationException(c, string.Format("maxlength: {0}>{1}", value.Length, MaxLength.Value));
+            }
+
+            if(Pattern!=null && !Pattern.IsMatch(value))
+            {
+                return new JsonSchemaValidationException(c, string.Format("pattern: {0} not match {1}", Pattern, value));
             }
 
             return null;

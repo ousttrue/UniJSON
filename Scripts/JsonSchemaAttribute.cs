@@ -50,7 +50,7 @@ namespace UniJSON
         /// <summary>
         /// skip validator comparison
         /// </summary>
-        public bool Empty;
+        public bool SkipSchemaComparison;
     }
 
     public class JsonSchemaAttribute : BaseJsonSchemaAttribute { }

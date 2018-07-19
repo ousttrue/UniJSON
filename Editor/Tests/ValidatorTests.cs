@@ -87,19 +87,51 @@ namespace UniJSON
         [Test]
         public void BoolValidator()
         {
-            Assert.Fail();
         }
 
         [Test]
         public void StringValidator()
         {
-            Assert.Fail();
+            var c = new JsonSchemaValidationContext("test");
+
+            {
+                var v = new JsonStringValidator();
+                v.MinLength = 1;
+                Assert.Null(v.Validate(c, "a"));
+                Assert.NotNull(v.Validate(c, ""));
+            }
+            {
+                var v = new JsonStringValidator();
+                v.MaxLength = 1;
+                Assert.Null(v.Validate(c, "a"));
+                Assert.NotNull(v.Validate(c, "ab"));
+            }
+            {
+                var v = new JsonStringValidator();
+                v.Pattern = new System.Text.RegularExpressions.Regex("abc");
+                Assert.Null(v.Validate(c, "abc"));
+                Assert.NotNull(v.Validate(c, "ab"));
+            }
+            {
+                var v = new JsonStringValidator();
+                v.Pattern = new System.Text.RegularExpressions.Regex("ab+");
+                Assert.Null(v.Validate(c, "abb"));
+                Assert.Null(v.Validate(c, "ab"));
+                Assert.NotNull(v.Validate(c, "a"));
+            }
         }
 
         [Test]
         public void StringEnumValidator()
         {
-            Assert.Fail();
+            var c = new JsonSchemaValidationContext("test");
+
+            {
+                var v = new JsonStringEnumValidator();
+                v.Values = new string[] { "a", "b" };
+                Assert.Null(v.Validate(c, "a"));
+                Assert.NotNull(v.Validate(c, "c"));
+            }
         }
 
         [Test]

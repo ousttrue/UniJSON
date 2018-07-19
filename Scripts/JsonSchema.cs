@@ -20,7 +20,7 @@ namespace UniJSON
         /// <summary>
         /// Skip validator comparison
         /// </summary>
-        public bool Empty { get; set; }
+        public bool SkipComparison { get; set; }
 
         public override string ToString()
         {
@@ -42,8 +42,8 @@ namespace UniJSON
         public bool Equals(JsonSchema rhs)
         {
             // skip comparison
-            if (Empty) return true;
-            if (rhs.Empty) return true;
+            if (SkipComparison) return true;
+            if (rhs.SkipComparison) return true;
             return Validator.Equals(rhs.Validator);
         }
 
@@ -98,10 +98,10 @@ namespace UniJSON
             }
 
             IJsonSchemaValidator validator = null;
-            bool empty = a.Empty;
+            bool skipComparison = a.SkipSchemaComparison;
             if (t == typeof(object))
             {
-                empty = true;
+                skipComparison = true;
             }
 
             if (a.EnumValues != null)
@@ -122,7 +122,7 @@ namespace UniJSON
                 Title = a.Title,
                 Description = a.Description,
                 Validator = validator,
-                Empty = empty
+                SkipComparison = skipComparison
             };
 
             return schema;
@@ -262,7 +262,7 @@ namespace UniJSON
 
             if (Validator == null)
             {
-                Empty = true;
+                SkipComparison = true;
             }
         }
 

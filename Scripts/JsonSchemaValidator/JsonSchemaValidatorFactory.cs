@@ -136,7 +136,7 @@ namespace UniJSON
                         {
                             if (a.Pattern != null)
                             {
-                                v.Pattern = a.Pattern;
+                                v.Pattern = new System.Text.RegularExpressions.Regex(a.Pattern);
                             }
                         }
                         return v;
@@ -170,7 +170,7 @@ namespace UniJSON
                                 {
                                     var sub = new JsonSchema
                                     {
-                                        Empty = ia.Empty,
+                                        SkipComparison = ia.SkipSchemaComparison,
                                         Validator = Create(t.GetElementType(), ia, null)
                                     };
                                     v.Items = sub;
@@ -179,7 +179,7 @@ namespace UniJSON
                                 {
                                     var sub = new JsonSchema
                                     {
-                                        Empty = ia.Empty,
+                                        SkipComparison = ia.SkipSchemaComparison,
                                         Validator = Create(t.GetGenericArguments().First(), ia, null)
                                     };
                                     v.Items = sub;
