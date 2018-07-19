@@ -67,6 +67,11 @@ namespace UniJSON
             return Int32.Parse(Segment.ToString());
         }
 
+        public Single GetSingle()
+        {
+            return Single.Parse(Segment.ToString());
+        }
+
         public Double GetDouble()
         {
             return Double.Parse(Segment.ToString());
