@@ -37,7 +37,7 @@ namespace UniJSON
 
         public static readonly JsonValue Empty = new JsonValue
         {
-            ParentIndex=-1
+            ParentIndex = -1
         };
 
         public override string ToString()
@@ -79,7 +79,8 @@ namespace UniJSON
 
         public String GetString()
         {
-            return Segment.ToString().Substring(1, Segment.Count - 2);
+            var quoted = Segment.ToString();
+            return JsonString.Unquote(quoted);
         }
     }
 }

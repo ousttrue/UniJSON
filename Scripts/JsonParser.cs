@@ -20,7 +20,7 @@ namespace UniJSON
                 case '"': return JsonValueType.String;
                 case 't': return JsonValueType.Boolean;
                 case 'f': return JsonValueType.Boolean;
-                case 'n': return JsonValueType.Unknown;
+                case 'n': return JsonValueType.Null;
 
                 case '-': // fall through
                 case '0': // fall through

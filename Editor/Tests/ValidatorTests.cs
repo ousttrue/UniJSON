@@ -172,7 +172,7 @@ namespace UniJSON
         [Test]
         public void ObjectValidator()
         {
-            var c = new JsonSchemaValidationContext("test");
+            //var c = new JsonSchemaValidationContext("test");
 
             {
                 var v = new JsonObjectValidator();
