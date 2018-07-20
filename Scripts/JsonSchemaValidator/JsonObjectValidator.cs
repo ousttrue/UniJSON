@@ -292,7 +292,7 @@ namespace UniJSON
                 {
                     using (c.Push(x))
                     {
-                        var value = o.GetValue(x);
+                        var value = o.GetValueByKey(x);
                         var ex = Properties[x].Validator.Validate(c, value);
                         if (ex != null)
                         {
@@ -313,7 +313,7 @@ namespace UniJSON
             m_validValueMap.Clear();
             foreach (var kv in Properties)
             {
-                var value = o.GetValue(kv.Key);
+                var value = o.GetValueByKey(kv.Key);
                 var v = kv.Value.Validator;
                 using (c.Push(kv.Key))
                 {

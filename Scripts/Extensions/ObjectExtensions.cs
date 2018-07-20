@@ -5,7 +5,7 @@ namespace UniJSON
 {
     public static class ObjectExtensions
     {
-        public static Object GetValue(this Object self, String key)
+        public static Object GetValueByKey(this Object self, String key)
         {
             var t = self.GetType();
             var fi = t.GetField(key);
