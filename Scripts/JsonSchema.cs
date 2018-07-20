@@ -91,10 +91,16 @@ namespace UniJSON
             }
             if (a == null)
             {
-                a = new JsonSchemaAttribute
-                {
-                    Title = t.Name,
-                };
+                a = new JsonSchemaAttribute();
+            }
+            if (string.IsNullOrEmpty(a.Title)) {
+                a.Title = t.Name;
+            }
+
+            if(ia == null)
+            {
+                ia = t.GetCustomAttributes(typeof(ItemJsonSchemaAttribute), true)
+                    .FirstOrDefault() as ItemJsonSchemaAttribute;
             }
 
             IJsonSchemaValidator validator = null;

@@ -67,7 +67,10 @@ namespace UniJSON
             }
         }
 
-        public static IJsonSchemaValidator Create(JsonValueType valueType, Type t = null, BaseJsonSchemaAttribute a = null, ItemJsonSchemaAttribute ia = null)
+        public static IJsonSchemaValidator Create(JsonValueType valueType, 
+            Type t = null, 
+            BaseJsonSchemaAttribute a = null, 
+            ItemJsonSchemaAttribute ia = null)
         {
             switch (valueType)
             {
@@ -198,6 +201,7 @@ namespace UniJSON
                             {
                                 v.MinProperties = a.MinProperties;
                             }
+
                             // props
                             foreach (var prop in GetProperties(t, a.ExportFlags))
                             {
@@ -212,6 +216,17 @@ namespace UniJSON
                                 }
                             }
                         }
+
+                        if (ia != null)
+                        {
+                            var sub = new JsonSchema
+                            {
+                                SkipComparison = ia.SkipSchemaComparison,
+                                Validator = Create(typeof(object), ia, null)
+                            };
+                            v.AdditionalProperties = sub;
+                        }
+
                         return v;
                     }
 

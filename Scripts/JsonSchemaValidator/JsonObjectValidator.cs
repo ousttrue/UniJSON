@@ -63,7 +63,7 @@ namespace UniJSON
         /// </summary>
         public JsonSchema AdditionalProperties
         {
-            get; private set;
+            get; set;
         }
 
         Dictionary<string, string[]> m_depndencies;
