@@ -22,10 +22,10 @@ namespace UniJSON
 
             var it = root.Traverse().GetEnumerator();
 
-            it.MoveNext(); Assert.AreEqual("$", new JsonPath(it.Current).ToString());
-            it.MoveNext(); Assert.AreEqual("$.a", new JsonPath(it.Current).ToString());
-            it.MoveNext(); Assert.AreEqual("$.a[0]", new JsonPath(it.Current).ToString());
-            it.MoveNext(); Assert.AreEqual("$.a[0].aa", new JsonPath(it.Current).ToString());
+            it.MoveNext(); Assert.AreEqual("$", new JsonPointer(it.Current).ToString());
+            it.MoveNext(); Assert.AreEqual("$.a", new JsonPointer(it.Current).ToString());
+            it.MoveNext(); Assert.AreEqual("$.a[0]", new JsonPointer(it.Current).ToString());
+            it.MoveNext(); Assert.AreEqual("$.a[0].aa", new JsonPointer(it.Current).ToString());
         }
 
         [Test]

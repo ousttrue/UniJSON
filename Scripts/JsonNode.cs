@@ -1,28 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+
 
 namespace UniJSON
 {
-    public struct JsonPath
+    public struct JsonPointer
     {
         String[] m_path;
-        public JsonPath(JsonNode node)
+        public JsonPointer(JsonNode node)
         {
             m_path = node.Path().Select(x => GetKeyFromParent(x)).ToArray();
         }
 
         public override string ToString()
         {
-            return String.Join("", m_path);
+            return String.Join("/", m_path);
         }
 
         static string GetKeyFromParent(JsonNode json)
         {
             if (!json.HasParent)
             {
-                return "$";
+                return "";
             }
 
             var parent = json.Parent;
@@ -30,12 +30,12 @@ namespace UniJSON
             {
                 case JsonValueType.Array:
                     {
-                        return "[" + parent.IndexOf(json) + "]";
+                        return parent.IndexOf(json).ToString();
                     }
 
                 case JsonValueType.Object:
                     {
-                        return "." + parent.KeyOf(json);
+                        return parent.KeyOf(json);
                     }
 
                 default:
@@ -53,13 +53,13 @@ namespace UniJSON
 
     public struct JsonDiff
     {
-        public JsonPath Path;
+        public JsonPointer Path;
         public JsonDiffType DiffType;
         public string Msg;
 
         public JsonDiff(JsonNode node, JsonDiffType diffType, string msg)
         {
-            Path = new JsonPath(node);
+            Path = new JsonPointer(node);
             DiffType = diffType;
             Msg = msg;
         }
@@ -133,7 +133,7 @@ namespace UniJSON
             return false;
         }
 
-        public IEnumerable<JsonDiff> Diff(JsonNode rhs, JsonPath path = default(JsonPath))
+        public IEnumerable<JsonDiff> Diff(JsonNode rhs, JsonPointer path = default(JsonPointer))
         {
             switch (Value.ValueType)
             {
