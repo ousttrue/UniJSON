@@ -113,7 +113,6 @@ namespace UniJSON
                 case JsonValueType.Number:
                 case JsonValueType.Integer:
                 case JsonValueType.String:
-                case JsonValueType.Array:
                     if (!Equals(rhs))
                     {
                         yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(this), JsonDiff.ValueChanged);
@@ -121,37 +120,77 @@ namespace UniJSON
                     yield break;
             }
 
-            if (rhs.Value.ValueType != JsonValueType.Object)
+            if (Value.ValueType != rhs.Value.ValueType)
             {
                 yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(this), JsonDiff.ValueChanged);
                 yield break;
             }
 
-            var l = ObjectItems.ToDictionary(x => x.Key, x => x.Value);
-            var r = rhs.ObjectItems.ToDictionary(x => x.Key, x => x.Value);
-
-            foreach (var kv in l)
+            if (Value.ValueType == JsonValueType.Object)
             {
-                JsonNode x;
-                if (r.TryGetValue(kv.Key, out x))
+
+                var l = ObjectItems.ToDictionary(x => x.Key, x => x.Value);
+                var r = rhs.ObjectItems.ToDictionary(x => x.Key, x => x.Value);
+
+                foreach (var kv in l)
                 {
-                    // Found
-                    foreach(var y in kv.Value.Diff(x))
+                    JsonNode x;
+                    if (r.TryGetValue(kv.Key, out x))
                     {
-                        yield return y;
+                        r.Remove(kv.Key);
+                        // Found
+                        foreach (var y in kv.Value.Diff(x))
+                        {
+                            yield return y;
+                        }
+                    }
+                    else
+                    {
+                        // Removed
+                        yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(kv.Value), JsonDiff.KeyRemoved);
                     }
                 }
-                else
+
+                foreach (var kv in r)
                 {
-                    // Removed
-                    yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(kv.Value), JsonDiff.KeyRemoved);
+                    // Addded
+                    yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(kv.Value), JsonDiff.KeyAdded);
                 }
             }
-
-            foreach(var kv in r)
+            else if (Value.ValueType == JsonValueType.Array)
             {
-                // Addded
-                yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(kv.Value), JsonDiff.KeyAdded);
+                var ll = ArrayItems.GetEnumerator();
+                var rr = rhs.ArrayItems.GetEnumerator();
+                while(true)
+                {
+                    var lll = ll.MoveNext();
+                    var rrr = rr.MoveNext();
+                    if(lll && rrr)
+                    {
+                        // found
+                        foreach (var y in ll.Current.Diff(rr.Current))
+                        {
+                            yield return y;
+                        }
+                    }
+                    else if(lll)
+                    {
+                        yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(ll.Current), JsonDiff.KeyRemoved);
+                    }
+                    else if (rrr)
+                    {
+                        yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(rr.Current), JsonDiff.KeyAdded);
+                    }
+                    else
+                    {
+                        // end
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                throw new NotImplementedException();
             }
         }
 
