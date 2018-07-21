@@ -106,12 +106,18 @@ namespace UniJSON
                 return new JsonSchemaValidationException(context, "null");
             }
 
-            if (MaxItems.HasValue && o.GetCount() > MaxItems.Value)
+            var count = o.GetCount();
+            if (count == 0)
+            {
+                return new JsonSchemaValidationException(context, "empty");
+            }
+
+            if (MaxItems.HasValue && count > MaxItems.Value)
             {
                 return new JsonSchemaValidationException(context, "maxOtems");
             }
 
-            if (MinItems.HasValue && o.GetCount() < MinItems.Value)
+            if (MinItems.HasValue && count < MinItems.Value)
             {
                 return new JsonSchemaValidationException(context, "minItems");
             }

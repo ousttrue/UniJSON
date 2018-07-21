@@ -7,6 +7,57 @@ namespace UniJSON
 {
     public struct JsonNode
     {
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is JsonNode))
+            {
+                return false;
+            }
+
+            var rhs = (JsonNode)obj;
+
+            if (Value.ValueType != rhs.Value.ValueType)
+            {
+                return false;
+            }
+
+            switch (Value.ValueType)
+            {
+                case JsonValueType.Null:
+                    return true;
+
+                case JsonValueType.Boolean:
+                    return Value.GetBoolean() == rhs.GetBoolean();
+
+                case JsonValueType.Integer:
+                    return Value.GetInt32() == rhs.GetInt32();
+
+                case JsonValueType.Number:
+                    return Value.GetDouble() == rhs.GetDouble();
+
+                case JsonValueType.String:
+                    return Value.GetString() == rhs.GetString();
+
+                case JsonValueType.Array:
+                    return ArrayItems.SequenceEqual(rhs.ArrayItems);
+
+                case JsonValueType.Object:
+                    {
+                        var l = ObjectItems.ToDictionary(x => x.Key, x => x.Value);
+                        var r = rhs.ObjectItems.ToDictionary(x => x.Key, x => x.Value);
+                        l.Equals(r);
+                        return ObjectItems.OrderBy(x => x.Key).SequenceEqual(rhs.ObjectItems.OrderBy(x => x.Key));
+                    }
+            }
+
+            return false;
+        }
+
         public readonly List<JsonValue> Values;
         int m_index;
         public JsonValue Value
