@@ -40,15 +40,44 @@ namespace UniJSON
 
                 default:
                     throw new NotImplementedException();
-            }           
+            }
         }
     }
 
-    public enum JsonDiff
+    public enum JsonDiffType
     {
         KeyAdded,
         KeyRemoved,
         ValueChanged,
+    }
+
+    public struct JsonDiff
+    {
+        public JsonPath Path;
+        public JsonDiffType DiffType;
+        public string Msg;
+
+        public JsonDiff(JsonNode node, JsonDiffType diffType, string msg)
+        {
+            Path = new JsonPath(node);
+            DiffType = diffType;
+            Msg = msg;
+        }
+
+        public override string ToString()
+        {
+            switch (DiffType)
+            {
+                case JsonDiffType.KeyAdded:
+                    return string.Format("+ {0}: {1}", Path, Msg);
+                case JsonDiffType.KeyRemoved:
+                    return string.Format("- {0}: {1}", Path, Msg);
+                case JsonDiffType.ValueChanged:
+                    return string.Format("= {0}: {1}", Path, Msg);
+                default:
+                    throw new NotImplementedException();
+            }
+        }
     }
 
     public struct JsonNode
@@ -104,7 +133,7 @@ namespace UniJSON
             return false;
         }
 
-        public IEnumerable<KeyValuePair<JsonPath, JsonDiff>> Diff(JsonNode rhs, JsonPath path = default(JsonPath))
+        public IEnumerable<JsonDiff> Diff(JsonNode rhs, JsonPath path = default(JsonPath))
         {
             switch (Value.ValueType)
             {
@@ -115,14 +144,14 @@ namespace UniJSON
                 case JsonValueType.String:
                     if (!Equals(rhs))
                     {
-                        yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(this), JsonDiff.ValueChanged);
+                        yield return new JsonDiff(this, JsonDiffType.ValueChanged, string.Format("{0} => {1}", Value, rhs.Value));
                     }
                     yield break;
             }
 
             if (Value.ValueType != rhs.Value.ValueType)
             {
-                yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(this), JsonDiff.ValueChanged);
+                yield return new JsonDiff(this, JsonDiffType.ValueChanged, string.Format("{0} => {1}", Value.ValueType, rhs.Value));
                 yield break;
             }
 
@@ -147,14 +176,14 @@ namespace UniJSON
                     else
                     {
                         // Removed
-                        yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(kv.Value), JsonDiff.KeyRemoved);
+                        yield return new JsonDiff(kv.Value, JsonDiffType.KeyRemoved, kv.Value.Value.ToString());
                     }
                 }
 
                 foreach (var kv in r)
                 {
                     // Addded
-                    yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(kv.Value), JsonDiff.KeyAdded);
+                    yield return new JsonDiff(kv.Value, JsonDiffType.KeyAdded, kv.Value.Value.ToString());
                 }
             }
             else if (Value.ValueType == JsonValueType.Array)
@@ -175,11 +204,11 @@ namespace UniJSON
                     }
                     else if(lll)
                     {
-                        yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(ll.Current), JsonDiff.KeyRemoved);
+                        yield return new JsonDiff(ll.Current, JsonDiffType.KeyRemoved, ll.Current.Value.ToString());
                     }
                     else if (rrr)
                     {
-                        yield return new KeyValuePair<JsonPath, JsonDiff>(new JsonPath(rr.Current), JsonDiff.KeyAdded);
+                        yield return new JsonDiff(rr.Current, JsonDiffType.KeyAdded, rr.Current.Value.ToString());
                     }
                     else
                     {

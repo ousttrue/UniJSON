@@ -42,7 +42,23 @@ namespace UniJSON
 
         public override string ToString()
         {
-            return "[" + ParentIndex + "]" + ValueType + ": " + Segment.ToString();
+            //return "[" + ParentIndex + "]" + ValueType + ": " + Segment.ToString();
+            switch (ValueType)
+            {
+                case JsonValueType.Null: 
+                case JsonValueType.Boolean:
+                case JsonValueType.Integer:
+                case JsonValueType.Number:
+                case JsonValueType.Array:
+                case JsonValueType.Object:
+                    return Segment.ToString();
+
+                case JsonValueType.String:
+                    return GetString();
+
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         public Boolean GetBoolean()
