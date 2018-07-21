@@ -89,6 +89,7 @@ namespace UniJSON
         ValueChanged,
     }
 
+
     public struct JsonDiff
     {
         public JsonPointer Path;
@@ -118,6 +119,7 @@ namespace UniJSON
         }
     }
 
+
     public struct JsonNode
     {
         public override int GetHashCode()
@@ -134,7 +136,12 @@ namespace UniJSON
 
             var rhs = (JsonNode)obj;
 
-            if (Value.ValueType != rhs.Value.ValueType)
+            if((Value.ValueType==JsonValueType.Integer||Value.ValueType==JsonValueType.Null)
+                && (rhs.Value.ValueType == JsonValueType.Integer || rhs.Value.ValueType == JsonValueType.Number))
+            {
+                // ok
+            }
+            else if (Value.ValueType != rhs.Value.ValueType)
             {
                 return false;
             }
@@ -148,8 +155,6 @@ namespace UniJSON
                     return Value.GetBoolean() == rhs.GetBoolean();
 
                 case JsonValueType.Integer:
-                    return Value.GetInt32() == rhs.GetInt32();
-
                 case JsonValueType.Number:
                     return Value.GetDouble() == rhs.GetDouble();
 
@@ -425,6 +430,7 @@ namespace UniJSON
                 throw new InvalidOperationException();
             }
 
+            /*
             switch (key)
             {
                 case "title":
@@ -432,6 +438,7 @@ namespace UniJSON
                     // skip
                     return;
             }
+            */
 
             Values.Add(new JsonValue(new StringSegment("\"" + key + "\""), JsonValueType.String, m_index));
             AddNode(node);
@@ -473,7 +480,20 @@ namespace UniJSON
             }
             else
             {
-                var child = this[jsonPointer[0]];
+                JsonNode child;
+                try
+                {
+                    child = this[jsonPointer[0]];
+                }
+                catch(KeyNotFoundException)
+                {
+                    // key
+                    Values.Add(new JsonValue(new StringSegment(JsonString.Quote(jsonPointer[0])), JsonValueType.String, m_index));
+                    // value
+                    Values.Add(new JsonValue(new StringSegment(), JsonValueType.Object, m_index));
+
+                    child = this[jsonPointer[0]];
+                }
                 return child.GetNode(jsonPointer.Unshift());
             }
         }
@@ -486,6 +506,17 @@ namespace UniJSON
                 ParentIndex=node.Value.ParentIndex,
                 Segment=new StringSegment(JsonString.Quote(value)),
                 ValueType=JsonValueType.String               
+            };
+        }
+
+        public void SetValue(string jsonPointer, int value)
+        {
+            var node = GetNode(new JsonPointer(jsonPointer));
+            Values[node.m_index] = new JsonValue
+            {
+                ParentIndex = node.Value.ParentIndex,
+                Segment = new StringSegment(value.ToString()),
+                ValueType = JsonValueType.Integer
             };
         }
     }
