@@ -1,30 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Text;
 
 namespace UniJSON
 {
     public struct JsonPointer
     {
-        String[] m_path;
+        public ArraySegment<String> Path
+        {
+            get;
+            private set;
+        }
+
+        public string this[int index]
+        {
+            get
+            {
+                return Path.Array[Path.Offset + index];
+            }
+        }
+
+        public JsonPointer Unshift()
+        {
+            return new JsonPointer
+            {
+                Path = new ArraySegment<string>(Path.Array, Path.Offset + 1, Path.Count - 1)
+            };
+        }
+
         public JsonPointer(JsonNode node)
         {
-            m_path = node.Path().Select(x => GetKeyFromParent(x)).ToArray();
+            Path = new ArraySegment<string>(node.Path().Skip(1).Select(x => GetKeyFromParent(x)).ToArray());
+        }
+
+        public JsonPointer(string pointer)
+        {
+            if (!pointer.StartsWith("/"))
+            {
+                throw new ArgumentException();
+            }
+            var splited = pointer.Split('/');
+            Path = new ArraySegment<string>(splited, 1, splited.Length - 1);
         }
 
         public override string ToString()
         {
-            return String.Join("/", m_path);
+            if (Path.Count == 0)
+            {
+                return "/";
+            }
+
+            var sb = new StringBuilder();
+            var end = Path.Offset + Path.Count;
+            for(int i=Path.Offset; i<end; ++i)
+            {
+                sb.Append('/');
+                sb.Append(Path.Array[i]);
+            }
+            return sb.ToString();
         }
 
         static string GetKeyFromParent(JsonNode json)
         {
-            if (!json.HasParent)
-            {
-                return "";
-            }
-
             var parent = json.Parent;
             switch (parent.Value.ValueType)
             {
@@ -419,6 +457,36 @@ namespace UniJSON
                     parent.AddNode(kv.Key, kv.Value);
                 }
             }
+        }
+
+        public JsonNode GetNode(JsonPointer jsonPointer)
+        {
+            if (jsonPointer.Path.Count==0)
+            {
+                return this;
+            }
+
+            int index;
+            if(int.TryParse(jsonPointer[0], out index)){
+                var child = this[index];
+                return child.GetNode(jsonPointer.Unshift());
+            }
+            else
+            {
+                var child = this[jsonPointer[0]];
+                return child.GetNode(jsonPointer.Unshift());
+            }
+        }
+
+        public void SetValue(string jsonPointer, string value)
+        {
+            var node = GetNode(new JsonPointer(jsonPointer));
+            Values[node.m_index] = new JsonValue
+            {
+                ParentIndex=node.Value.ParentIndex,
+                Segment=new StringSegment(JsonString.Quote(value)),
+                ValueType=JsonValueType.String               
+            };
         }
     }
 
