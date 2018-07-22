@@ -286,6 +286,11 @@ namespace UniJSON
                 return new JsonSchemaValidationException(c, "null");
             }
 
+            if (Properties.Count == 0)
+            {
+                return new JsonSchemaValidationException(c, "no properties");
+            }
+
             if (Required != null)
             {
                 foreach (var x in Required)
