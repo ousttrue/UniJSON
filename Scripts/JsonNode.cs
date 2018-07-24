@@ -136,7 +136,7 @@ namespace UniJSON
 
             var rhs = (JsonNode)obj;
 
-            if((Value.ValueType==JsonValueType.Integer||Value.ValueType==JsonValueType.Null)
+            if ((Value.ValueType == JsonValueType.Integer || Value.ValueType == JsonValueType.Null)
                 && (rhs.Value.ValueType == JsonValueType.Integer || rhs.Value.ValueType == JsonValueType.Number))
             {
                 // ok
@@ -233,11 +233,11 @@ namespace UniJSON
             {
                 var ll = ArrayItems.GetEnumerator();
                 var rr = rhs.ArrayItems.GetEnumerator();
-                while(true)
+                while (true)
                 {
                     var lll = ll.MoveNext();
                     var rrr = rr.MoveNext();
-                    if(lll && rrr)
+                    if (lll && rrr)
                     {
                         // found
                         foreach (var y in ll.Current.Diff(rr.Current))
@@ -245,7 +245,7 @@ namespace UniJSON
                             yield return y;
                         }
                     }
-                    else if(lll)
+                    else if (lll)
                     {
                         yield return new JsonDiff(ll.Current, JsonDiffType.KeyRemoved, ll.Current.Value.ToString());
                     }
@@ -390,7 +390,7 @@ namespace UniJSON
             int i = 0;
             foreach (var v in ArrayItems)
             {
-                if (v.m_index==child.m_index)
+                if (v.m_index == child.m_index)
                 {
                     return i;
                 }
@@ -466,58 +466,132 @@ namespace UniJSON
             }
         }
 
-        public JsonNode GetNode(JsonPointer jsonPointer)
+        public IEnumerable<JsonNode> GetNodes(JsonPointer jsonPointer)
         {
-            if (jsonPointer.Path.Count==0)
+            if (jsonPointer.Path.Count == 0)
             {
-                return this;
+                yield return this;
+                yield break;
             }
 
-            int index;
-            if(int.TryParse(jsonPointer[0], out index)){
-                var child = this[index];
-                return child.GetNode(jsonPointer.Unshift());
+            if (Value.ValueType == JsonValueType.Array)
+            {
+                // array
+                if (jsonPointer[0] == "*")
+                {
+                    // wildcard
+                    foreach (var child in ArrayItems)
+                    {
+                        foreach (var childChild in child.GetNodes(jsonPointer.Unshift()))
+                        {
+                            yield return childChild;
+                        }
+                    }
+                }
+                else
+                {
+                    int index;
+                    if (!int.TryParse(jsonPointer[0], out index))
+                    {
+                        throw new KeyNotFoundException();
+                    }
+                    var child = this[index];
+                    foreach (var childChild in child.GetNodes(jsonPointer.Unshift()))
+                    {
+                        yield return childChild;
+                    }
+                }
+            }
+            else if (Value.ValueType == JsonValueType.Object)
+            {
+                // object
+                if (jsonPointer[0] == "*")
+                {
+                    // wildcard
+                    foreach (var kv in ObjectItems)
+                    {
+                        foreach (var childChild in kv.Value.GetNodes(jsonPointer.Unshift()))
+                        {
+                            yield return childChild;
+                        }
+                    }
+                }
+                else
+                {
+                    JsonNode child;
+                    try
+                    {
+                        child = this[jsonPointer[0]];
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                        // key
+                        Values.Add(new JsonValue(new StringSegment(JsonString.Quote(jsonPointer[0])), JsonValueType.String, m_index));
+                        // value
+                        Values.Add(new JsonValue(new StringSegment(), JsonValueType.Object, m_index));
+
+                        child = this[jsonPointer[0]];
+                    }
+                    foreach (var childChild in child.GetNodes(jsonPointer.Unshift()))
+                    {
+                        yield return childChild;
+                    }
+                }
             }
             else
             {
-                JsonNode child;
-                try
-                {
-                    child = this[jsonPointer[0]];
-                }
-                catch(KeyNotFoundException)
-                {
-                    // key
-                    Values.Add(new JsonValue(new StringSegment(JsonString.Quote(jsonPointer[0])), JsonValueType.String, m_index));
-                    // value
-                    Values.Add(new JsonValue(new StringSegment(), JsonValueType.Object, m_index));
+                throw new NotImplementedException();
+            }
+        }
 
-                    child = this[jsonPointer[0]];
-                }
-                return child.GetNode(jsonPointer.Unshift());
+        void SetValue(JsonPointer jsonPointer, Func<int, JsonValue> createNodeValue)
+        {
+            foreach (var node in GetNodes(jsonPointer))
+            {
+                Values[node.m_index] = createNodeValue(node.Value.ParentIndex);
             }
         }
 
         public void SetValue(string jsonPointer, string value)
         {
-            var node = GetNode(new JsonPointer(jsonPointer));
-            Values[node.m_index] = new JsonValue
+            SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
             {
-                ParentIndex=node.Value.ParentIndex,
-                Segment=new StringSegment(JsonString.Quote(value)),
-                ValueType=JsonValueType.String               
-            };
+                ParentIndex = parentIndex,
+                Segment = new StringSegment(JsonString.Quote(value)),
+                ValueType = JsonValueType.String
+            });
         }
 
         public void SetValue(string jsonPointer, int value)
         {
-            var node = GetNode(new JsonPointer(jsonPointer));
-            Values[node.m_index] = new JsonValue
+            SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
             {
-                ParentIndex = node.Value.ParentIndex,
+                ParentIndex = parentIndex,
                 Segment = new StringSegment(value.ToString()),
                 ValueType = JsonValueType.Integer
-            };
+            });
+        }
+
+        public void SetValue(string jsonPointer, bool value)
+        {
+            SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
+            {
+                ParentIndex = parentIndex,
+                Segment = new StringSegment(value.ToString().ToLower()),
+                ValueType = JsonValueType.Boolean
+            });
+        }
+
+        public void RemoveValue(string jsonPointer)
+        {
+            foreach (var node in GetNodes(new JsonPointer(jsonPointer)))
+            {
+                if (node.Parent.Value.ValueType == JsonValueType.Object)
+                {
+                    Values[node.m_index - 1] = JsonValue.Empty; // remove key
+                }
+                Values[node.m_index] = JsonValue.Empty; // remove
+            }
         }
     }
 
