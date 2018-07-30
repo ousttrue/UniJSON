@@ -65,5 +65,7 @@ namespace UniJSON
         JsonSchemaValidationException Validate(JsonSchemaValidationContext context, Object o);
 
         void Serialize(JsonFormatter f, JsonSchemaValidationContext context, Object o);
+
+        void ToJson(JsonFormatter f);
     }
 }

@@ -36,5 +36,10 @@ namespace UniJSON
         {
             f.Value((bool)o);
         }
+
+        public void ToJson(JsonFormatter f)
+        {
+            f.Key("type"); f.Value("bool");
+        }
     }
 }

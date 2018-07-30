@@ -369,5 +369,21 @@ namespace UniJSON
                 }
             }
         }
+
+        public void ToJson(JsonFormatter f)
+        {
+            f.Key("type"); f.Value("object");
+            if (Properties.Count > 0)
+            {
+                f.Key("properties");
+                f.BeginMap();
+                foreach (var kv in Properties)
+                {
+                    f.Key(kv.Key);
+                    kv.Value.ToJson(f);
+                }
+                f.EndMap();
+            }
+        }
     }
 }

@@ -132,5 +132,10 @@ namespace UniJSON
         {
             f.Value((string)o);
         }
+
+        public void ToJson(JsonFormatter f)
+        {
+            f.Key("type"); f.Value("string");
+        }
     }
 }

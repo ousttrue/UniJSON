@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace UniJSON
 {
@@ -246,6 +247,9 @@ namespace UniJSON
             {typeof(float), JsonValueType.Number },
             {typeof(string), JsonValueType.String },
             {typeof(bool), JsonValueType.Boolean },
+
+            // Unity types
+            {typeof(Vector3), JsonValueType.Array },
         };
 
         static JsonValueType ToJsonType(Type t)
@@ -270,7 +274,7 @@ namespace UniJSON
                 return JsonValueType.Object;
             }
 
-            throw new NotImplementedException();
+            throw new NotImplementedException(string.Format("No JsonType for {0}", t));
         }
 
         public static IJsonSchemaValidator Create(Type t, BaseJsonSchemaAttribute a, ItemJsonSchemaAttribute ia)

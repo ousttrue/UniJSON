@@ -179,6 +179,11 @@ namespace UniJSON
         {
             f.Value((string)o);
         }
+
+        public void ToJson(JsonFormatter f)
+        {
+            f.Key("type"); f.Value("string");
+        }
     }
 
     public class JsonIntEnumValidator : IJsonSchemaValidator
@@ -245,6 +250,11 @@ namespace UniJSON
         public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
         {
             f.Value((int)o);
+        }
+
+        public void ToJson(JsonFormatter f)
+        {
+            f.Key("type"); f.Value("integer");
         }
     }
 }

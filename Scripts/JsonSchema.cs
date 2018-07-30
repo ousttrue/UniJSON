@@ -346,5 +346,13 @@ namespace UniJSON
             Validator.Serialize(f, c, o);
             return f.ToString();
         }
+
+        public void ToJson(JsonFormatter f)
+        {
+            f.BeginMap();
+            f.Key("title"); f.Value(Title);
+            Validator.ToJson(f);
+            f.EndMap();
+        }
     }
 }

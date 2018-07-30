@@ -208,6 +208,11 @@ namespace UniJSON
         {
             f.Value((int)o);
         }
+
+        public void ToJson(JsonFormatter f)
+        {
+            f.Key("type"); f.Value("integer");
+        }
     }
 
     /// <summary>
@@ -387,6 +392,11 @@ namespace UniJSON
         public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
         {           
             f.Value(Convert.ToDouble(o));
+        }
+
+        public void ToJson(JsonFormatter f)
+        {
+            f.Key("type"); f.Value("number");
         }
     }
 }
