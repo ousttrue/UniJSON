@@ -10,6 +10,7 @@ namespace UniJSON
         /// <summary>
         /// http://json-schema.org/examples.html
         /// </summary>
+        [JsonSchema(Title="Person")]
         public class Person
         {
             [JsonSchema(Required = true)]
@@ -32,6 +33,10 @@ namespace UniJSON
             Assert.AreEqual("Age in years", v.Properties["age"].Description);
             //Assert.AreEqual(0, s.Properties["age"].Minimum);
             Assert.AreEqual(new[] { "firstName", "lastName" }, v.Required);
+
+            var f = new JsonFormatter(2);
+            s.ToJson(f);
+            Debug.Log(f.ToString());
         }
 
         public enum ProjectionType

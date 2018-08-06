@@ -42,9 +42,24 @@ namespace UniJSON
 
         Stack<Context> m_stack = new Stack<Context>();
 
-        public JsonFormatter()
+        string m_indent;
+        void Indent()
+        {
+            if (!string.IsNullOrEmpty(m_indent))
+            {
+                m_w.Write('\n');
+                for (int i=0; i<m_stack.Count-1; ++i)
+                {
+                    m_w.Write(m_indent);                
+                }
+            }
+        }
+
+        public JsonFormatter(int indent=0)
             : this(new StringBuilderStore(new StringBuilder()))
-        { }
+        {
+            m_indent =  new string(Enumerable.Range(0, indent).Select(x => ' ').ToArray());
+        }
 
         public JsonFormatter(IStore w)
         {
@@ -133,6 +148,10 @@ namespace UniJSON
 
         public void EndList()
         {
+            if (m_stack.Peek().Current != Current.ARRAY)
+            {
+                throw new InvalidOperationException();
+            }
             m_w.Write(']');
             m_stack.Pop();
         }
@@ -147,8 +166,13 @@ namespace UniJSON
 
         public void EndMap()
         {
-            m_w.Write('}');
+            if (m_stack.Peek().Current != Current.OBJECT)
+            {
+                throw new InvalidOperationException();
+            }
             m_stack.Pop();
+            Indent();
+            m_w.Write('}');
         }
 
         protected virtual System.Reflection.MethodInfo GetMethod<T>(Expression<Func<T>> expression)
@@ -179,6 +203,7 @@ namespace UniJSON
         public void Key(String key)
         {
             CommaCheck(true);
+            Indent();
             m_w.Write(JsonString.Quote(key));
             m_w.Write(':');
         }

@@ -93,9 +93,6 @@ namespace UniJSON
             {
                 a = new JsonSchemaAttribute();
             }
-            if (string.IsNullOrEmpty(a.Title)) {
-                a.Title = t.Name;
-            }
 
             if(ia == null)
             {
@@ -350,7 +347,10 @@ namespace UniJSON
         public void ToJson(JsonFormatter f)
         {
             f.BeginMap();
-            f.Key("title"); f.Value(Title);
+            if (!string.IsNullOrEmpty(Title))
+            {
+                f.Key("title"); f.Value(Title);
+            }
             Validator.ToJson(f);
             f.EndMap();
         }
