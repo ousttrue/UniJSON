@@ -2,9 +2,18 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine;
 using System.Linq.Expressions;
 using System.Globalization;
+#if UNIJSON_PROFILING
+public struct Vector3
+{
+    public float x;
+    public float y;
+    public float z;
+}
+#else
+using UnityEngine;
+#endif
 
 namespace UniJSON
 {
