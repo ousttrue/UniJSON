@@ -34,8 +34,7 @@ namespace UniJSON
                 case '8': // fall through
                 case '9': // fall through
                     {
-                        int tmp;
-                        if (int.TryParse(segment.ToString(), out tmp))
+                        if (segment.IsInt)
                         {
                             return JsonValueType.Integer;
                         }

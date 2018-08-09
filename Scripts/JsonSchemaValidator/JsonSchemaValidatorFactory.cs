@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+#if UNIJSON_PROFILING
+#else
 using UnityEngine;
+#endif
+
 
 namespace UniJSON
 {

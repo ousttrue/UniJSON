@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
+#if UNIJSON_PROFILING
 namespace UniJSONPRofiling
 {
     class Program
@@ -13,7 +10,7 @@ namespace UniJSONPRofiling
         {
             var json = File.ReadAllText(args[0], Encoding.UTF8);
             var parsed = UniJSON.JsonParser.Parse(json);
-
         }
     }
 }
+#endif

@@ -75,5 +75,39 @@ namespace UniJSON
             }
             return false;
         }
+
+        public bool IsInt
+        {
+            get
+            {
+                for(int i=0; i<Count; ++i)
+                {
+                    var c = this[i];
+                    if(c == '0'
+                        || c =='1'
+                        || c == '2'
+                        || c == '3'
+                        || c == '4'
+                        || c == '5'
+                        || c == '6'
+                        || c == '7'
+                        || c == '8'
+                        || c == '9'
+                        )
+                    {
+                        // ok
+                    }
+                    else if (i == 0 && c == '-')
+                    {
+                        // ok
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
     }
 }
