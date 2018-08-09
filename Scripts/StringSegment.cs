@@ -80,11 +80,12 @@ namespace UniJSON
         {
             get
             {
-                for(int i=0; i<Count; ++i)
+                bool isInt = false;
+                for (int i = 0; i < Count; ++i)
                 {
                     var c = this[i];
-                    if(c == '0'
-                        || c =='1'
+                    if (c == '0'
+                        || c == '1'
                         || c == '2'
                         || c == '3'
                         || c == '4'
@@ -96,14 +97,19 @@ namespace UniJSON
                         )
                     {
                         // ok
+                        isInt = true;
                     }
                     else if (i == 0 && c == '-')
                     {
                         // ok
                     }
-                    else
+                    else if (c == '.' || c == 'e')
                     {
                         return false;
+                    }
+                    else
+                    {
+                        return isInt;
                     }
                 }
                 return true;
