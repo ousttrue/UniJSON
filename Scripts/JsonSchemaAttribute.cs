@@ -56,5 +56,5 @@ namespace UniJSON
 
     public class JsonSchemaAttribute : BaseJsonSchemaAttribute { }
 
-    public class ItemJsonSchemaAttribute : BaseJsonSchemaAttribute { }
+    public class ItemJsonSchemaAttribute : JsonSchemaAttribute { }
 }
