@@ -229,6 +229,12 @@ namespace UniJSON
             m_w.Write(x ? "true" : "false");
         }
 
+        public void Value(JsonNode node)
+        {
+            CommaCheck();
+            m_w.Write(node.Value.Segment.ToString());
+        }
+
         /*
         public void Value<T>(T x) where T : struct, IConvertible
         {

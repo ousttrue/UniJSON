@@ -41,7 +41,8 @@ namespace UniJSON
         /// </summary>
         public Dictionary<string, JsonSchema> Properties
         {
-            get {
+            get
+            {
                 if (m_props == null)
                 {
                     m_props = new Dictionary<string, JsonSchema>();
@@ -206,7 +207,7 @@ namespace UniJSON
                 }
             }
 
-            foreach(var x in rhs.Required)
+            foreach (var x in rhs.Required)
             {
                 this.Required.Add(x);
             }
@@ -265,7 +266,7 @@ namespace UniJSON
 
                 case "dependencies":
                     {
-                        foreach(var kv in value.ObjectItems)
+                        foreach (var kv in value.ObjectItems)
                         {
                             Dependencies.Add(kv.Key, kv.Value.ArrayItems.Select(x => x.GetString()).ToArray());
                         }

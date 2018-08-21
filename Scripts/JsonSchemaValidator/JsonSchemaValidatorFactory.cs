@@ -39,7 +39,11 @@ namespace UniJSON
                 // for array item
                 var ia = fi.GetCustomAttributes(typeof(ItemJsonSchemaAttribute), true).FirstOrDefault() as ItemJsonSchemaAttribute;
 
-                if (a != null)
+                if(a==null)
+                {
+                    int x = 0;
+                }
+                else
                 {
                     yield return new JsonSchemaItem
                     {
