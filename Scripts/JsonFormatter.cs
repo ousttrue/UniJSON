@@ -64,10 +64,13 @@ namespace UniJSON
             }
         }
 
-        public JsonFormatter(int indent=0)
+        string m_colon;
+
+        public JsonFormatter(int indent = 0)
             : this(new StringBuilderStore(new StringBuilder()))
         {
-            m_indent =  new string(Enumerable.Range(0, indent).Select(x => ' ').ToArray());
+            m_indent = new string(Enumerable.Range(0, indent).Select(x => ' ').ToArray());
+            m_colon = indent == 0 ? ":" : ": ";
         }
 
         public JsonFormatter(IStore w)
@@ -214,7 +217,7 @@ namespace UniJSON
             CommaCheck(true);
             Indent();
             m_w.Write(JsonString.Quote(key));
-            m_w.Write(':');
+            m_w.Write(m_colon);
         }
 
         public void Value(String key)
