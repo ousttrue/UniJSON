@@ -52,9 +52,19 @@ namespace UniJSON
         /// skip validator comparison
         /// </summary>
         public bool SkipSchemaComparison;
+
+        public void Merge(BaseJsonSchemaAttribute rhs)
+        {
+            if (rhs == null) return;
+
+            if (string.IsNullOrEmpty(Title))
+            {
+                Title = rhs.Title;
+            }
+        }
     }
 
     public class JsonSchemaAttribute : BaseJsonSchemaAttribute { }
 
-    public class ItemJsonSchemaAttribute : JsonSchemaAttribute { }
+    public class ItemJsonSchemaAttribute : BaseJsonSchemaAttribute { }
 }

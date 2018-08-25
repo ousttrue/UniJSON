@@ -115,31 +115,27 @@ namespace UniJSON
         }
 
         public static JsonSchema FromType(Type t,
-            JsonSchemaAttribute a = null, // field attribute
+            BaseJsonSchemaAttribute a = null, // field attribute
             ItemJsonSchemaAttribute ia = null
             )
         {
-            // get class attribute
+            // class attribute
             var aa = t.GetCustomAttributes(typeof(JsonSchemaAttribute), true)
                 .FirstOrDefault() as JsonSchemaAttribute;
-            if (a == null)
+            if (a != null)
             {
-                a = aa;
+                a.Merge(aa);
             }
             else
             {
-                if (aa != null)
+                if (aa == null)
                 {
-                    // ToDo
-                    if (string.IsNullOrEmpty(a.Title))
-                    {
-                        a.Title = aa.Title;
-                    }
+                    a = new JsonSchemaAttribute();
                 }
-            }
-            if (a == null)
-            {
-                a = new JsonSchemaAttribute();
+                else
+                {
+                    a = aa;
+                }
             }
 
             if (ia == null)

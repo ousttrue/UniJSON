@@ -126,7 +126,7 @@ namespace UniJSON
 #if true
                     if (!value.Equals(pair.Value))
                     {
-                        Console.WriteLine(string.Format("{0}", pair.Key));
+                        Console.WriteLine(string.Format("{0} is not equals", pair.Key));
                         var l = pair.Value.Validator;
                         var r = value.Validator;
                         return false;
