@@ -85,12 +85,12 @@ namespace UniJSON
 
         public Single GetSingle()
         {
-            return Single.Parse(Segment.ToString());
+            return Single.Parse(Segment.ToString(), CultureInfo.InvariantCulture);
         }
 
         public Double GetDouble()
         {
-            return Double.Parse(Segment.ToString());
+            return Double.Parse(Segment.ToString(), CultureInfo.InvariantCulture);
         }
 
         public String GetString()
