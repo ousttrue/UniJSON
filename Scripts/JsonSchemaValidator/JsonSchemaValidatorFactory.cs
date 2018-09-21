@@ -41,7 +41,7 @@ namespace UniJSON
 
                 if (a == null)
                 {
-                    int x = 0;
+                    //int x = 0;
                 }
                 else
                 {
