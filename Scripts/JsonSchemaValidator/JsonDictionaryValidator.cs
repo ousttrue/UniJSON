@@ -215,7 +215,7 @@ namespace UniJSON
                 {
                     using (c.Push(x))
                     {
-                        var value = o.GetValueByKey(x);
+                        /*var value =*/ o.GetValueByKey(x);
                     }
                 }
             }
