@@ -272,7 +272,7 @@ namespace UniJSON
             {typeof(bool), JsonValueType.Boolean },
 
             // Unity types
-            {typeof(Vector3), JsonValueType.Array },
+            {typeof(Vector3), JsonValueType.Object },
         };
 
         static JsonValueType ToJsonType(Type t)
