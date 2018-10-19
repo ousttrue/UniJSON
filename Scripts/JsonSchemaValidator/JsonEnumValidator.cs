@@ -165,7 +165,18 @@ namespace UniJSON
 
         public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
         {
-            if (Values.Contains((string)o))
+            var t = o.GetType();
+            string value = null;
+            if (t.IsEnum)
+            {
+                value = Enum.GetName(t, o);
+            }
+            else
+            {
+                value = (string)o;
+            }
+
+            if (Values.Contains(value))
             {
                 return null;
             }
