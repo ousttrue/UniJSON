@@ -53,7 +53,7 @@ namespace UniJSON
 
             var sb = new StringBuilder();
             var end = Path.Offset + Path.Count;
-            for(int i=Path.Offset; i<end; ++i)
+            for (int i = Path.Offset; i < end; ++i)
             {
                 sb.Append('/');
                 sb.Append(Path.Array[i]);
@@ -656,7 +656,7 @@ namespace UniJSON
             {
                 foreach (var x in self.ArrayItems)
                 {
-                    foreach(var y in x.Traverse())
+                    foreach (var y in x.Traverse())
                     {
                         yield return y;
                     }
@@ -678,7 +678,7 @@ namespace UniJSON
         {
             if (self.HasParent)
             {
-                foreach(var x in self.Parent.Path())
+                foreach (var x in self.Parent.Path())
                 {
                     yield return x;
                 }
