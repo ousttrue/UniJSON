@@ -17,7 +17,6 @@ namespace UniJSON.MsgPack
                 var parsed = MsgPackParser.Parse(bytes);
                 Assert.True(parsed.IsNull);
             }
-
         }
 
         [Test]

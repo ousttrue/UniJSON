@@ -53,8 +53,8 @@ namespace UniJSON.MsgPack
         {
             var i128 = Enumerable.Range(0, 128).ToArray();
             var i129 = Enumerable.Range(0, 129).ToArray();
-            var bytes128 = MsgPackFormatter.Format(i128);
-            var bytes129 = MsgPackFormatter.Format(i129);
+            var bytes128 = new MsgPackFormatter().Value(i128).GetStore().Bytes;
+            var bytes129 = new MsgPackFormatter().Value(i129).GetStore().Bytes;
             var deserialized = MsgPackParser.Parse(bytes128);
 
             Assert.AreEqual(i128, deserialized);
