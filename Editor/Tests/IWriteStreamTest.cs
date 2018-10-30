@@ -28,9 +28,9 @@ namespace UniJSON
         [Test]
         public void ArrayStoreTest()
         {
-            var store = new ArrayStore(1);
+            var store = new BytesStore(1);
 
-            store.Write(1, 2, 3);
+            store.WriteValues(1, 2, 3);
             Assert.True(new Byte[] { 1, 2, 3 }.SequenceEqual(store.Bytes.ToEnumerable()));
 
             store.Write(4);

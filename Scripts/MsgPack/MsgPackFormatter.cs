@@ -15,7 +15,7 @@ namespace UniJSON.MsgPack
             m_store = store;
         }
 
-        public MsgPackFormatter() : this(new ArrayStore())
+        public MsgPackFormatter() : this(new BytesStore())
         {
         }
 
