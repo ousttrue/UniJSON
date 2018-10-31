@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UniJSON
 {
-    public static class FormatterExtensions
+    public static partial class FormatterExtensions
     {
         public static IFormatter Value(this IFormatter f, object x)
         {
@@ -141,7 +141,6 @@ namespace UniJSON
             return f;
         }
 
-        #region KeyValue
         public static void KeyValue<T>(this IFormatter f, Expression<Func<T>> expression)
         {
             var func = expression.Compile();
@@ -155,11 +154,9 @@ namespace UniJSON
                 }
                 f.Key(body.Member.Name);
 
-                var method = f.GetMethod(expression);
-                method.Invoke(f, new object[] { value });
+                f.Value(value);
             }
         }
-        #endregion
 
         public static ActionDisposer BeginListDisposable(this JsonFormatter f)
         {

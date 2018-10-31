@@ -38,7 +38,5 @@ namespace UniJSON
 
         IFormatter Value(Single x);
         IFormatter Value(Double x);
-
-        System.Reflection.MethodInfo GetMethod<T>(Expression<Func<T>> expression);
     }
 }

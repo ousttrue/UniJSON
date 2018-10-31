@@ -462,12 +462,5 @@ namespace UniJSON.MsgPack
         {
             return m_store;
         }
-
-        public System.Reflection.MethodInfo GetMethod<T>(Expression<Func<T>> expression)
-        {
-            var formatterType = GetType();
-            var method = formatterType.GetMethod("Value", new Type[] { typeof(T) });
-            return method;
-        }
     }
 }
