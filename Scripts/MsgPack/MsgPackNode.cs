@@ -606,12 +606,33 @@ namespace UniJSON.MsgPack
             return GetBody();
         }
 
+        public string GetString()
+        {
+            if (!Value.Format.IsString())
+            {
+                throw new MsgPackTypeException("Not str");
+            }
+            var bytes = GetBody();
+            return Encoding.UTF8.GetString(bytes.Array, bytes.Offset, bytes.Count);
+        }
+
         #region  Collection
         public int Count
         {
             get
             {
-                return Children.Count();
+                if (Value.Format.IsArray())
+                {
+                    return Children.Count();
+                }
+                else if (Value.Format.IsMap())
+                {
+                    return Children.Count() / 2;
+                }
+                else
+                {
+                    throw new MsgPackTypeException("Not array or map");
+                }
             }
         }
 
@@ -627,7 +648,7 @@ namespace UniJSON.MsgPack
         {
             get
             {
-                throw new NotImplementedException();
+                return Value.Format.IsMap();
             }
         }
 
@@ -651,11 +672,31 @@ namespace UniJSON.MsgPack
             }
         }
 
-        public MsgPackNode this[string i]
+        public MsgPackNode this[string key]
         {
             get
             {
-                throw new NotImplementedException();
+                if (!IsMap)
+                {
+                    throw new MsgPackTypeException("Not map");
+                }
+                var it = Children.GetEnumerator();
+                while (it.MoveNext())
+                {
+                    var current = it.Current;
+
+                    if (!it.MoveNext())
+                    {
+                        throw new MsgPackTypeException("No value");
+                    }
+
+                    if (current.GetString() == key)
+                    {
+                        return it.Current;
+                    }
+                }
+
+                throw new KeyNotFoundException();
             }
         }
         #endregion
