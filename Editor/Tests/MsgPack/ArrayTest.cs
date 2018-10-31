@@ -51,13 +51,27 @@ namespace UniJSON.MsgPack
         [Test]
         public void array129()
         {
-            var i128 = Enumerable.Range(0, 128).ToArray();
-            var i129 = Enumerable.Range(0, 129).ToArray();
-            var bytes128 = new MsgPackFormatter().Value(i128).GetStore().Bytes;
-            var bytes129 = new MsgPackFormatter().Value(i129).GetStore().Bytes;
-            var deserialized = MsgPackParser.Parse(bytes128);
+            {
+                var i128 = Enumerable.Range(0, 128).ToArray();
+                var bytes128 = new MsgPackFormatter().Value(i128).GetStore().Bytes;
+                var deserialized = MsgPackParser.Parse(bytes128);
+                Assert.AreEqual(128, deserialized.Count);
+                for (int i = 0; i < i128.Length; ++i)
+                {
+                    Assert.AreEqual(i128[i], deserialized[i].GetValue());
+                }
+            }
 
-            Assert.AreEqual(i128, deserialized);
+            {
+                var i129 = Enumerable.Range(0, 129).ToArray();
+                var bytes129 = new MsgPackFormatter().Value(i129).GetStore().Bytes;
+                var deserialized = MsgPackParser.Parse(bytes129);
+                Assert.AreEqual(129, deserialized.Count);
+                for (int i = 0; i < i129.Length; ++i)
+                {
+                    Assert.AreEqual(i129[i], deserialized[i].GetValue());
+                }
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Linq;
 using UnityEngine;
 
 namespace UniJSON
@@ -9,12 +10,14 @@ namespace UniJSON
     {
         public static IFormatter Value(this IFormatter f, object x)
         {
-            var t = x.GetType();
             if (x == null)
             {
                 f.Null();
+                return f;
             }
-            else if (t == typeof(Boolean))
+
+            var t = x.GetType();
+            if (t == typeof(Boolean))
             {
                 f.Value((Boolean)x);
             }
@@ -75,6 +78,37 @@ namespace UniJSON
             foreach (var x in a)
             {
                 f.Value(x);
+            }
+            f.EndList();
+            return f;
+        }
+
+        static Action<T> GetValueMethod<T>(this IFormatter f)
+        {
+            var mi = typeof(IFormatter).GetMethods().First(x =>
+            {
+                if (x.Name != "Value")
+                {
+                    return false;
+                }
+                var args = x.GetParameters();
+                return args.Length == 1 && args[0].ParameterType == typeof(T);
+            });
+            return t =>
+            {
+
+                mi.Invoke(f, new object[] { t });
+
+            };
+        }
+
+        public static IFormatter Value<T>(this IFormatter f, T[] a)
+        {
+            f.BeginList(a.Length);
+            var method = f.GetValueMethod<T>();
+            foreach (var x in a)
+            {
+                method(x);
             }
             f.EndList();
             return f;

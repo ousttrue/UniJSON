@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace UniJSON.MsgPack
@@ -610,7 +611,7 @@ namespace UniJSON.MsgPack
         {
             get
             {
-                throw new NotImplementedException();
+                return Children.Count();
             }
         }
 
@@ -618,7 +619,7 @@ namespace UniJSON.MsgPack
         {
             get
             {
-                throw new NotImplementedException();
+                return Value.Format.IsArray();
             }
         }
 
@@ -642,7 +643,11 @@ namespace UniJSON.MsgPack
         {
             get
             {
-                throw new NotImplementedException();
+                if (!IsArray)
+                {
+                    throw new MsgPackTypeException("Not array");
+                }
+                return Children.Skip(i).First();
             }
         }
 
