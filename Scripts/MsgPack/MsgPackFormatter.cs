@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 
@@ -460,6 +461,13 @@ namespace UniJSON.MsgPack
         public IStore GetStore()
         {
             return m_store;
+        }
+
+        public System.Reflection.MethodInfo GetMethod<T>(Expression<Func<T>> expression)
+        {
+            var formatterType = GetType();
+            var method = formatterType.GetMethod("Value", new Type[] { typeof(T) });
+            return method;
         }
     }
 }

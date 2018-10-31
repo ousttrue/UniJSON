@@ -142,13 +142,6 @@ namespace UniJSON
         }
 
         #region KeyValue
-        static System.Reflection.MethodInfo _GetMethod<T>(Expression<Func<T>> expression)
-        {
-            var formatterType = typeof(IFormatter);
-            var method = formatterType.GetMethod("Value", new Type[] { typeof(T) });
-            return method;
-        }
-
         public static void KeyValue<T>(this IFormatter f, Expression<Func<T>> expression)
         {
             var func = expression.Compile();
@@ -162,7 +155,7 @@ namespace UniJSON
                 }
                 f.Key(body.Member.Name);
 
-                var method = _GetMethod(expression);
+                var method = f.GetMethod(expression);
                 method.Invoke(f, new object[] { value });
             }
         }
