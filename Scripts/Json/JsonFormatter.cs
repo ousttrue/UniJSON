@@ -17,7 +17,7 @@ using UnityEngine;
 
 namespace UniJSON
 {
-    public class JsonFormatter : IFormatter
+    public class JsonFormatter
     {
         IStore m_w;
         protected IStore Store
@@ -139,31 +139,21 @@ namespace UniJSON
             m_stack.Push(top);
         }
 
-        public IFormatter Value(JsonNode node)
-        {
-            CommaCheck();
-            m_w.Write(node.Value.Segment.ToString());
-            return this;
-        }
-
-        #region IFormatter
-        public IFormatter Null()
+        public void Null()
         {
             CommaCheck();
             m_w.Write("null");
-            return this;
         }
 
-        public IFormatter BeginList(int _ = -1)
+        public ActionDisposer BeginList()
         {
             CommaCheck();
             m_w.Write('[');
             m_stack.Push(new Context(Current.ARRAY));
-            //return new ActionDisposer(EndList);
-            return this;
+            return new ActionDisposer(EndList);
         }
 
-        public IFormatter EndList()
+        public void EndList()
         {
             if (m_stack.Peek().Current != Current.ARRAY)
             {
@@ -171,19 +161,17 @@ namespace UniJSON
             }
             m_w.Write(']');
             m_stack.Pop();
-            return this;
         }
 
-        public IFormatter BeginMap(int _ = -1)
+        public ActionDisposer BeginMap()
         {
             CommaCheck();
             m_w.Write('{');
             m_stack.Push(new Context(Current.OBJECT));
-            //return new ActionDisposer(EndMap);
-            return this;
+            return new ActionDisposer(EndMap);
         }
 
-        public IFormatter EndMap()
+        public void EndMap()
         {
             if (m_stack.Peek().Current != Current.OBJECT)
             {
@@ -192,100 +180,176 @@ namespace UniJSON
             m_stack.Pop();
             Indent();
             m_w.Write('}');
-            return this;
         }
 
-        public IFormatter Key(String key)
+        protected virtual System.Reflection.MethodInfo GetMethod<T>(Expression<Func<T>> expression)
+        {
+            var formatterType = GetType();
+            var method = formatterType.GetMethod("Value", new Type[] { typeof(T) });
+            return method;
+        }
+
+        public void KeyValue<T>(Expression<Func<T>> expression)
+        {
+            var func = expression.Compile();
+            var value = func();
+            if (value != null)
+            {
+                var body = expression.Body as MemberExpression;
+                if (body == null)
+                {
+                    body = ((UnaryExpression)expression.Body).Operand as MemberExpression;
+                }
+                Key(body.Member.Name);
+
+                var method = GetMethod(expression);
+                method.Invoke(this, new object[] { value });
+            }
+        }
+
+        public void Key(String key)
         {
             CommaCheck(true);
             Indent();
             m_w.Write(JsonString.Quote(key));
             m_w.Write(m_colon);
-            return this;
         }
 
-        public IFormatter Value(String key)
+        public void Value(String key)
         {
             CommaCheck();
             m_w.Write(JsonString.Quote(key));
-            return this;
         }
 
-        public IFormatter Value(ArraySegment<Byte> value)
-        {
-            throw new NotImplementedException("Json not support Byte[]");
-        }
-
-        public IFormatter Value(Boolean x)
+        public void Value(Boolean x)
         {
             CommaCheck();
             m_w.Write(x ? "true" : "false");
-            return this;
         }
 
-        public IFormatter Value(SByte x)
+        public void Value(JsonNode node)
         {
             CommaCheck();
-            m_w.Write(x.ToString());
-            return this;
-        }
-        public IFormatter Value(Int16 x)
-        {
-            CommaCheck();
-            m_w.Write(x.ToString());
-            return this;
-        }
-        public IFormatter Value(Int32 x)
-        {
-            CommaCheck();
-            m_w.Write(x.ToString());
-            return this;
-        }
-        public IFormatter Value(Int64 x)
-        {
-            CommaCheck();
-            m_w.Write(x.ToString());
-            return this;
+            m_w.Write(node.Value.Segment.ToString());
         }
 
-        public IFormatter Value(Byte x)
+        /*
+        public void Value<T>(T x) where T : struct, IConvertible
         {
-            CommaCheck();
-            m_w.Write(x.ToString());
-            return this;
+            Value(Convert.ToInt32(x));
         }
-        public IFormatter Value(UInt16 x)
+        */
+
+        public void Value(SByte x)
         {
             CommaCheck();
             m_w.Write(x.ToString());
-            return this;
         }
-        public IFormatter Value(UInt32 x)
+        public void Value(Int16 x)
         {
             CommaCheck();
             m_w.Write(x.ToString());
-            return this;
         }
-        public IFormatter Value(UInt64 x)
+        public void Value(Int32 x)
         {
             CommaCheck();
             m_w.Write(x.ToString());
-            return this;
+        }
+        public void Value(Int64 x)
+        {
+            CommaCheck();
+            m_w.Write(x.ToString());
         }
 
-        public IFormatter Value(Single x)
+        public void Value(Byte x)
+        {
+            CommaCheck();
+            m_w.Write(x.ToString());
+        }
+        public void Value(UInt16 x)
+        {
+            CommaCheck();
+            m_w.Write(x.ToString());
+        }
+        public void Value(UInt32 x)
+        {
+            CommaCheck();
+            m_w.Write(x.ToString());
+        }
+        public void Value(UInt64 x)
+        {
+            CommaCheck();
+            m_w.Write(x.ToString());
+        }
+
+        public void Value(Single x)
         {
             CommaCheck();
             m_w.Write(x.ToString("R", CultureInfo.InvariantCulture));
-            return this;
         }
-        public IFormatter Value(Double x)
+        public void Value(Double x)
         {
             CommaCheck();
             m_w.Write(x.ToString("R", CultureInfo.InvariantCulture));
-            return this;
         }
-        #endregion
+        public void Value(Vector3 v)
+        {
+            //CommaCheck();
+            BeginMap();
+            Key("x"); Value(v.x);
+            Key("y"); Value(v.y);
+            Key("z"); Value(v.z);
+            EndMap();
+        }
+
+        public void Value(string[] a)
+        {
+            BeginList();
+            foreach (var x in a)
+            {
+                Value(x);
+            }
+            EndList();
+        }
+        public void Value(List<string> a)
+        {
+            BeginList();
+            foreach (var x in a)
+            {
+                Value(x);
+            }
+            EndList();
+        }
+
+        public void Value(double[] a)
+        {
+            BeginList();
+            foreach (var x in a)
+            {
+                Value(x);
+            }
+            EndList();
+        }
+
+        public void Value(float[] a)
+        {
+            BeginList();
+            foreach (var x in a)
+            {
+                Value(x);
+            }
+            EndList();
+        }
+
+        public void Value(int[] a)
+        {
+            BeginList();
+            foreach (var x in a)
+            {
+                Value(x);
+            }
+            EndList();
+        }
 
         public void Bytes(ArraySegment<Byte> x)
         {
@@ -304,13 +368,6 @@ namespace UniJSON
         {
             CommaCheck();
             m_w.Write(formated);
-        }
-
-        public System.Reflection.MethodInfo GetMethod<T>(Expression<Func<T>> expression)
-        {
-            var formatterType = GetType();
-            var method = formatterType.GetMethod("Value", new Type[] { typeof(T) });
-            return method;
         }
     }
 }

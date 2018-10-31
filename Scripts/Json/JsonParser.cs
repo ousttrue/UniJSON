@@ -4,6 +4,11 @@ using System.Collections.Generic;
 
 namespace UniJSON
 {
+    public class JsonParseResult
+    {
+        public List<JsonValue> Values = new List<JsonValue>();
+    }
+
     public static class JsonParser
     {
         static JsonValueType GetValueType(StringSegment segment)
@@ -260,14 +265,14 @@ namespace UniJSON
                 case JsonValueType.Number:
                 case JsonValueType.Null:
                     {
-                        var value = ParsePrimitive(segment, valueType, parentIndex);
+                        var value= ParsePrimitive(segment, valueType, parentIndex);
                         values.Add(value);
                         return value;
                     }
 
                 case JsonValueType.String:
                     {
-                        var value = ParseString(segment, parentIndex);
+                        var value= ParseString(segment, parentIndex);
                         values.Add(value);
                         return value;
                     }
@@ -286,7 +291,7 @@ namespace UniJSON
                     {
                         var index = values.Count;
                         values.Add(new JsonValue()); // placeholder
-                        var current = ParseObject(segment, values, index);
+                        var current=ParseObject(segment, values, index);
                         values[index] = new JsonValue(new StringSegment(segment.Value, segment.Offset, current.Offset + 1 - segment.Offset),
                             JsonValueType.Object, parentIndex);
                         return values[index];
