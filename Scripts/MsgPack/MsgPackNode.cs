@@ -596,6 +596,15 @@ namespace UniJSON.MsgPack
             }
         }
 
+        public ArraySegment<Byte> GetBytes()
+        {
+            if (!Value.Format.IsBinary())
+            {
+                throw new MsgPackTypeException("Not bin");
+            }
+            return GetBody();
+        }
+
         #region  Collection
         public int Count
         {

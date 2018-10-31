@@ -13,8 +13,8 @@ namespace UniJSON.MsgPack
             var src = new Byte[] { 0, 1, 2 };
             var bytes = new MsgPackFormatter().Value(src).GetStore().Bytes;
 
-            var v = MsgPackParser.Parse(bytes).GetValue();
-            Assert.AreEqual(src, v);
+            var v = MsgPackParser.Parse(bytes).GetBytes();
+            Assert.True(src.SequenceEqual(v.ToEnumerable()));
         }
 
         [Test]
@@ -23,8 +23,8 @@ namespace UniJSON.MsgPack
             var src = Enumerable.Range(0, 50).Select(x => (Byte)x).ToArray();
             var bytes = new MsgPackFormatter().Value(src).GetStore().Bytes;
 
-            var v = MsgPackParser.Parse(bytes).GetValue();
-            Assert.AreEqual(src.ToArray(), v);
+            var v = MsgPackParser.Parse(bytes).GetBytes();
+            Assert.True(src.SequenceEqual(v.ToEnumerable()));
         }
     }
 }
