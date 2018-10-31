@@ -17,9 +17,7 @@ namespace UniJSON.MsgPack
                 0x3f, 0x8c, 0xcc, 0xcd
             };
 
-            var f = new MsgPackFormatter();
-            f.Value(float_be);
-            var bytes = f.GetStore().Bytes;
+            var bytes = new MsgPackFormatter().Value(i).GetStore().Bytes;
 
             var value = MsgPackParser.Parse(bytes);
             var body = value.GetBody();
@@ -36,7 +34,7 @@ namespace UniJSON.MsgPack
                 0x3f, 0xf1, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9a,
             };
 
-            var bytes = new MsgPackFormatter().Value(double_be).GetStore().Bytes;
+            var bytes = new MsgPackFormatter().Value(i).GetStore().Bytes;
 
             var value = MsgPackParser.Parse(bytes);
             var body = value.GetBody();

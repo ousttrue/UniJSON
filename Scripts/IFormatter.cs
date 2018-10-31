@@ -21,6 +21,8 @@ namespace UniJSON
 
         IFormatter Value(String x);
 
+        IFormatter Value(ArraySegment<Byte> bytes);
+
         IFormatter Value(Boolean x);
 
         IFormatter Value(Byte x);

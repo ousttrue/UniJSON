@@ -91,6 +91,11 @@ namespace UniJSON
             return f;
         }
 
+        public static IFormatter Value(this IFormatter f, Byte[] value)
+        {
+            return f.Value(new ArraySegment<Byte>(value));
+        }
+
         public static IFormatter Value(this IFormatter f, Vector3 v)
         {
             //CommaCheck();
@@ -102,6 +107,7 @@ namespace UniJSON
             return f;
         }
 
+        #region KeyValue
         static System.Reflection.MethodInfo GetMethod<T>(Expression<Func<T>> expression)
         {
             var formatterType = typeof(IFormatter);
@@ -126,6 +132,7 @@ namespace UniJSON
                 method.Invoke(f, new object[] { value });
             }
         }
+        #endregion
 
         public static ActionDisposer BeginListDisposable(this JsonFormatter f)
         {

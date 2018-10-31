@@ -211,6 +211,11 @@ namespace UniJSON
             return this;
         }
 
+        public IFormatter Value(ArraySegment<Byte> value)
+        {
+            throw new NotImplementedException("Json not support Byte[]");
+        }
+
         public IFormatter Value(Boolean x)
         {
             CommaCheck();

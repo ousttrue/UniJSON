@@ -417,7 +417,7 @@ namespace UniJSON.MsgPack
             return this;
         }
 
-        public IFormatter Bytes(ArraySegment<byte> bytes)
+        public IFormatter Value(ArraySegment<byte> bytes)
         {
             if (bytes.Count < 0xFF)
             {
@@ -440,10 +440,12 @@ namespace UniJSON.MsgPack
             return this;
         }
 
-        public void Bytes(IEnumerable<byte> raw, int count)
-        {
-            Bytes(new ArraySegment<byte>(raw.Take(count).ToArray()));
-        }
+        /*
+                public void Bytes(IEnumerable<byte> raw, int count)
+                {
+                    Value(new ArraySegment<byte>(raw.Take(count).ToArray()));
+                }
+                */
 
         public void Dump(ArraySegment<byte> formatted)
         {

@@ -414,7 +414,7 @@ namespace UniJSON.MsgPack
         public static MsgPackNode Parse(ArraySegment<Byte> bytes)
         {
             var values = new List<MsgPackValue>();
-            var current = _Parse(bytes, values, 0);
+            _Parse(bytes, values, 0);
             return new MsgPackNode(values);
         }
     }
