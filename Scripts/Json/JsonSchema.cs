@@ -235,7 +235,10 @@ namespace UniJSON
                     #region Validation
                     // http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.1
                     case "type":
-                        Validator = JsonSchemaValidatorFactory.Create(kv.Value.GetString());
+                        if (Validator == null)
+                        {
+                            Validator = JsonSchemaValidatorFactory.Create(kv.Value.GetString());
+                        }
                         break;
 
                     case "enum":
