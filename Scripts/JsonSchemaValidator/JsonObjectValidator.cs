@@ -359,13 +359,16 @@ namespace UniJSON
                         }
                     }
 
-                    // key
-                    f.Key(kv.Key);
-
-                    // value
-                    using (c.Push(kv.Key))
+                    if (kv.Value.Validator.Validate(c, value) == null)
                     {
-                        kv.Value.Validator.Serialize(f, c, value);
+                        // key
+                        f.Key(kv.Key);
+
+                        // value
+                        using (c.Push(kv.Key))
+                        {
+                            kv.Value.Validator.Serialize(f, c, value);
+                        }
                     }
                 }
             }
