@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace UniJSON
 {
@@ -166,17 +167,47 @@ namespace UniJSON
             }
         }
 
-        /// <summary>
-        /// ToDo
-        /// </summary>
+        class Hoge
+        {
+            [JsonSchema(Required = true, Minimum = 1)]
+            public int Value;
+        }
+
         [Test]
         public void ObjectValidator()
         {
-            //var c = new JsonSchemaValidationContext("test");
+            var c = new JsonSchemaValidationContext("test");
+            {
+                var s = JsonSchema.FromType<Hoge>();
+                Assert.Null(s.Validator.Validate(c, new Hoge { Value = 1 }));
+                Assert.NotNull(s.Validator.Validate(c, new Hoge { Value = 0 }));
+            }
+        }
+
+        [Test]
+        public void DictionaryValidator()
+        {
+            var c = new JsonSchemaValidationContext("test");
 
             {
-                var v = new JsonObjectValidator();
+                var s = JsonSchema.FromType<Dictionary<string, int>>();
+                Assert.True(s.Validator is JsonDictionaryValidator<int>);
+
+                var v = s.Validator as JsonDictionaryValidator<int>;
                 v.MinProperties = 1;
+                v.AdditionalProperties = JsonSchema.FromType<int>();
+                (v.AdditionalProperties.Validator as JsonIntValidator).Minimum = 0;
+
+                Assert.Null(s.Validator.Validate(c, new Dictionary<string, int>
+                {
+                    {"POSITION", 0}
+                }));
+
+                var result = s.Validator.Validate(c, new Dictionary<string, int>
+                {
+                    {"POSITION", -1}
+                });
+                Assert.NotNull(result);
             }
         }
     }

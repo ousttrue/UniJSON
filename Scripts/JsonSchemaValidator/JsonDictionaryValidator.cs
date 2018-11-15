@@ -209,6 +209,12 @@ namespace UniJSON
                 return new JsonSchemaValidationException(c, "null");
             }
 
+            var d = o as IDictionary<string, T>;
+            if (d == null)
+            {
+                return new JsonSchemaValidationException(c, "not dictionary");
+            }
+
             if (Required != null)
             {
                 foreach (var x in Required)
@@ -217,6 +223,19 @@ namespace UniJSON
                     {
                         /*var value =*/
                         o.GetValueByKey(x);
+                    }
+                }
+            }
+
+            if (AdditionalProperties != null)
+            {
+                foreach (var kv in d)
+                {
+                    c.Push(kv.Key);
+                    var result= AdditionalProperties.Validator.Validate(c, kv.Value);
+                    if (result != null)
+                    {
+                        return result;
                     }
                 }
             }
