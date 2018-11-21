@@ -49,6 +49,13 @@ namespace UniJSON
             }
         }
 
+        /// <summary>
+        /// Expected null, boolean, integer, number
+        /// </summary>
+        /// <param name="segment"></param>
+        /// <param name="valueType"></param>
+        /// <param name="parentIndex"></param>
+        /// <returns></returns>
         static JsonValue ParsePrimitive(Utf8String segment, JsonValueType valueType, int parentIndex)
         {
             int i = 1;
@@ -70,37 +77,62 @@ namespace UniJSON
         static JsonValue ParseString(Utf8String segment, int parentIndex)
         {
             int i = 1;
-            for (; i < segment.ByteLength; ++i)
+            while(i < segment.ByteLength)
             {
-                if (segment[i] == '\"')
+                var b = segment[i];
+                if (b <= 0x7F)
                 {
-                    return new JsonValue(segment.SubString(0, i + 1), JsonValueType.String, parentIndex);
-                }
-                else if (segment[i] == '\\')
-                {
-                    switch ((char)segment[i + 1])
+                    // ascii
+                    if (b == '\"')
                     {
-                        case '"': // fall through
-                        case '\\': // fall through
-                        case '/': // fall through
-                        case 'b': // fall through
-                        case 'f': // fall through
-                        case 'n': // fall through
-                        case 'r': // fall through
-                        case 't': // fall through
-                                  // skip next
-                            i += 1;
-                            break;
-
-                        case 'u': // unicode
-                                  // skip next 4
-                            i += 4;
-                            break;
-
-                        default:
-                            // unkonw escape
-                            throw new JsonParseException("unknown escape: " + segment.SubString(i));
+                        // closed
+                        return new JsonValue(segment.SubString(0, i + 1), JsonValueType.String, parentIndex);
                     }
+                    else if (b == '\\')
+                    {
+                        // escaped
+                        switch ((char)segment[i + 1])
+                        {
+                            case '"': // fall through
+                            case '\\': // fall through
+                            case '/': // fall through
+                            case 'b': // fall through
+                            case 'f': // fall through
+                            case 'n': // fall through
+                            case 'r': // fall through
+                            case 't': // fall through
+                                      // skip next
+                                i += 1;
+                                break;
+
+                            case 'u': // unicode
+                                      // skip next 4
+                                i += 4;
+                                break;
+
+                            default:
+                                // unkonw escape
+                                throw new JsonParseException("unknown escape: " + segment.SubString(i));
+                        }
+                    }
+
+                    ++i;
+                }
+                else if(b < 0xDF)
+                {
+                    i += 2;
+                }
+                else if(b < 0xEF)
+                {
+                    i += 3;
+                }
+                else if(b < 0xF7)
+                {
+                    i += 4;
+                }
+                else
+                {
+                    throw new JsonParseException("invalid utf8");
                 }
             }
             throw new JsonParseException("no close string: " + segment.SubString(i));
@@ -247,7 +279,7 @@ namespace UniJSON
             return current;
         }
 
-        public static JsonValue Parse(Utf8String segment, List<JsonValue> values, int parentIndex)
+        static JsonValue Parse(Utf8String segment, List<JsonValue> values, int parentIndex)
         {
             // skip white space
             int pos;
