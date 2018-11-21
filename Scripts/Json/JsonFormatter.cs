@@ -222,10 +222,12 @@ namespace UniJSON
             m_w.Write(JsonString.Quote(key));
         }
 
+        static Utf8String s_true = Utf8String.FromString("true");
+        static Utf8String s_false = Utf8String.FromString("false");
         public void Value(Boolean x)
         {
             CommaCheck();
-            m_w.Write(x ? "true" : "false");
+            m_w.Write(x ? s_true.Bytes : s_false.Bytes);
         }
 
         public void Value(JsonNode node)

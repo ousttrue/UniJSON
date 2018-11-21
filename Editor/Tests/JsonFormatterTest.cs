@@ -22,10 +22,27 @@ namespace UniJSON
         [Test]
         public void NullTest()
         {
-            var nullbytes = Encoding.UTF8.GetBytes("null");
+            var bytes = Encoding.UTF8.GetBytes("null");
             var json = new JsonFormatter();
             json.Null();
-            Assert.True(json.GetStore().Bytes.ToEnumerable().SequenceEqual(nullbytes));
+            Assert.True(json.GetStore().Bytes.ToEnumerable().SequenceEqual(bytes));
+        }
+
+        [Test]
+        public void BooleanTest()
+        {
+            {
+                var bytes = Encoding.UTF8.GetBytes("true");
+                var json = new JsonFormatter();
+                json.Value(true);
+                Assert.True(json.GetStore().Bytes.ToEnumerable().SequenceEqual(bytes));
+            }
+            {
+                var bytes = Encoding.UTF8.GetBytes("false");
+                var json = new JsonFormatter();
+                json.Value(false);
+                Assert.True(json.GetStore().Bytes.ToEnumerable().SequenceEqual(bytes));
+            }
         }
     }
 }
