@@ -16,6 +16,9 @@ JSON serializer and deserializer and schema utilities for Unity(.Net3.5)
 
 ## ToDo
 
+* [ ] Utf8String Escape
+* [ ] itoa
+
 * [x] anyOf to enum
 * [ ] string.pattern
 * [x] enum.values

@@ -193,6 +193,59 @@ namespace UniJSON
         {
             return new Utf8String(l.Bytes.Concat(r.Bytes));
         }
+
+        public bool IsInt
+        {
+            get
+            {
+                bool isInt = false;
+                for (int i = 0; i < ByteLength; ++i)
+                {
+                    var c = this[i];
+                    if (c == '0'
+                        || c == '1'
+                        || c == '2'
+                        || c == '3'
+                        || c == '4'
+                        || c == '5'
+                        || c == '6'
+                        || c == '7'
+                        || c == '8'
+                        || c == '9'
+                        )
+                    {
+                        // ok
+                        isInt = true;
+                    }
+                    else if (i == 0 && c == '-')
+                    {
+                        // ok
+                    }
+                    else if (c == '.' || c == 'e')
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return isInt;
+                    }
+                }
+                return true;
+            }
+        }
+
+        public bool TrySearch(Func<byte, bool> pred, out int pos)
+        {
+            pos = 0;
+            for (; pos < ByteLength; ++pos)
+            {
+                if (pred(this[pos]))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     public static class Utf8StringExtensions

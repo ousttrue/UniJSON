@@ -440,7 +440,7 @@ namespace UniJSON
             }
             */
 
-            Values.Add(new JsonValue(new StringSegment("\"" + key + "\""), JsonValueType.String, m_index));
+            Values.Add(new JsonValue(Utf8String.FromString("\"" + key + "\""), JsonValueType.String, m_index));
             AddNode(node);
         }
 
@@ -526,9 +526,9 @@ namespace UniJSON
                     catch (KeyNotFoundException)
                     {
                         // key
-                        Values.Add(new JsonValue(new StringSegment(JsonString.Quote(jsonPointer[0])), JsonValueType.String, m_index));
+                        Values.Add(new JsonValue(Utf8String.FromString(JsonString.Quote(jsonPointer[0])), JsonValueType.String, m_index));
                         // value
-                        Values.Add(new JsonValue(new StringSegment(), JsonValueType.Object, m_index));
+                        Values.Add(new JsonValue(default(Utf8String), JsonValueType.Object, m_index));
 
                         child = this[jsonPointer[0]];
                     }
@@ -562,7 +562,7 @@ namespace UniJSON
             SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
             {
                 ParentIndex = parentIndex,
-                Segment = new StringSegment(JsonString.Quote(value)),
+                Segment = Utf8String.FromString(JsonString.Quote(value)),
                 ValueType = JsonValueType.String
             });
         }
@@ -572,7 +572,7 @@ namespace UniJSON
             SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
             {
                 ParentIndex = parentIndex,
-                Segment = new StringSegment(value.ToString()),
+                Segment = Utf8String.FromString(value.ToString()),
                 ValueType = JsonValueType.Integer
             });
         }
@@ -582,7 +582,7 @@ namespace UniJSON
             SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
             {
                 ParentIndex = parentIndex,
-                Segment = new StringSegment(value.ToString()),
+                Segment = Utf8String.FromString(value.ToString()),
                 ValueType = JsonValueType.Integer
             });
         }
@@ -592,7 +592,7 @@ namespace UniJSON
             SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
             {
                 ParentIndex = parentIndex,
-                Segment = new StringSegment(value.ToString().ToLower()),
+                Segment = Utf8String.FromString(value.ToString().ToLower()),
                 ValueType = JsonValueType.Boolean
             });
         }

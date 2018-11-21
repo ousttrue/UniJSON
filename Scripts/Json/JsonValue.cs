@@ -24,11 +24,11 @@ namespace UniJSON
 
     public struct JsonValue
     {
-        public StringSegment Segment;
+        public Utf8String Segment;
         public JsonValueType ValueType;
         public int ParentIndex;
 
-        public JsonValue(StringSegment segment, JsonValueType valueType, int parentIndex)
+        public JsonValue(Utf8String segment, JsonValueType valueType, int parentIndex)
         {
             Segment = segment;
             ValueType = valueType;

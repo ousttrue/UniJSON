@@ -11,9 +11,9 @@ namespace UniJSON
 
     public static class JsonParser
     {
-        static JsonValueType GetValueType(StringSegment segment)
+        static JsonValueType GetValueType(Utf8String segment)
         {
-            switch (segment[0])
+            switch ((char)segment[0])
             {
                 case '{': return JsonValueType.Object;
                 case '[': return JsonValueType.Array;
@@ -49,12 +49,12 @@ namespace UniJSON
             }
         }
 
-        static JsonValue ParsePrimitive(StringSegment segment, JsonValueType valueType, int parentIndex)
+        static JsonValue ParsePrimitive(Utf8String segment, JsonValueType valueType, int parentIndex)
         {
             int i = 1;
-            for (; i < segment.Count; ++i)
+            for (; i < segment.ByteLength; ++i)
             {
-                if (Char.IsWhiteSpace(segment[i])
+                if (Char.IsWhiteSpace((char)segment[i])
                     || segment[i] == '}'
                     || segment[i] == ']'
                     || segment[i] == ','
@@ -64,21 +64,21 @@ namespace UniJSON
                     break;
                 }
             }
-            return new JsonValue(segment.Take(i), valueType, parentIndex);
+            return new JsonValue(segment.SubString(0, i), valueType, parentIndex);
         }
 
-        static JsonValue ParseString(StringSegment segment, int parentIndex)
+        static JsonValue ParseString(Utf8String segment, int parentIndex)
         {
             int i = 1;
-            for (; i < segment.Count; ++i)
+            for (; i < segment.ByteLength; ++i)
             {
                 if (segment[i] == '\"')
                 {
-                    return new JsonValue(segment.Take(i + 1), JsonValueType.String, parentIndex);
+                    return new JsonValue(segment.SubString(0, i + 1), JsonValueType.String, parentIndex);
                 }
                 else if (segment[i] == '\\')
                 {
-                    switch (segment[i + 1])
+                    switch ((char)segment[i + 1])
                     {
                         case '"': // fall through
                         case '\\': // fall through
@@ -99,28 +99,28 @@ namespace UniJSON
 
                         default:
                             // unkonw escape
-                            throw new JsonParseException("unknown escape: " + segment.Skip(i));
+                            throw new JsonParseException("unknown escape: " + segment.SubString(i));
                     }
                 }
             }
-            throw new JsonParseException("no close string: " + segment.Skip(i));
+            throw new JsonParseException("no close string: " + segment.SubString(i));
         }
 
-        static StringSegment ParseArray(StringSegment segment, List<JsonValue> values, int parentIndex)
+        static Utf8String ParseArray(Utf8String segment, List<JsonValue> values, int parentIndex)
         {
             var closeChar = ']';
             bool isFirst = true;
-            var current = segment.Skip(1);
+            var current = segment.SubString(1);
             while (true)
             {
                 {
                     // skip white space
                     int nextToken;
-                    if (!current.TrySearch(x => !Char.IsWhiteSpace(x), out nextToken))
+                    if (!current.TrySearch(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
                         throw new JsonParseException("no white space expected");
                     }
-                    current = current.Skip(nextToken);
+                    current = current.SubString(nextToken);
                 }
 
                 {
@@ -143,42 +143,42 @@ namespace UniJSON
                     {
                         throw new JsonParseException("',' expected");
                     }
-                    current = current.Skip(keyPos + 1);
+                    current = current.SubString(keyPos + 1);
                 }
 
                 {
                     // skip white space
                     int nextToken;
-                    if (!current.TrySearch(x => !Char.IsWhiteSpace(x), out nextToken))
+                    if (!current.TrySearch(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
                         throw new JsonParseException("not whitespace expected");
                     }
-                    current = current.Skip(nextToken);
+                    current = current.SubString(nextToken);
                 }
 
                 // value
                 var value = Parse(current, values, parentIndex);
-                current = current.Skip(value.Segment.Count);
+                current = current.SubString(value.Segment.ByteLength);
             }
 
             return current;
         }
 
-        static StringSegment ParseObject(StringSegment segment, List<JsonValue> values, int parentIndex)
+        static Utf8String ParseObject(Utf8String segment, List<JsonValue> values, int parentIndex)
         {
             var closeChar = '}';
             bool isFirst = true;
-            var current = segment.Skip(1);
+            var current = segment.SubString(1);
             while (true)
             {
                 {
                     // skip white space
                     int nextToken;
-                    if (!current.TrySearch(x => !Char.IsWhiteSpace(x), out nextToken))
+                    if (!current.TrySearch(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
                         throw new JsonParseException("no white space expected");
                     }
-                    current = current.Skip(nextToken);
+                    current = current.SubString(nextToken);
                 }
 
                 {
@@ -200,17 +200,17 @@ namespace UniJSON
                     {
                         throw new JsonParseException("',' expected");
                     }
-                    current = current.Skip(keyPos + 1);
+                    current = current.SubString(keyPos + 1);
                 }
 
                 {
                     // skip white space
                     int nextToken;
-                    if (!current.TrySearch(x => !Char.IsWhiteSpace(x), out nextToken))
+                    if (!current.TrySearch(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
                         throw new JsonParseException("not whitespace expected");
                     }
-                    current = current.Skip(nextToken);
+                    current = current.SubString(nextToken);
                 }
 
                 // key
@@ -219,7 +219,7 @@ namespace UniJSON
                 {
                     throw new JsonParseException("object key must string: " + key.Segment);
                 }
-                current = current.Skip(key.Segment.Count);
+                current = current.SubString(key.Segment.ByteLength);
 
                 // search ':'
                 int valuePos;
@@ -227,35 +227,35 @@ namespace UniJSON
                 {
                     throw new JsonParseException(": is not found");
                 }
-                current = current.Skip(valuePos + 1);
+                current = current.SubString(valuePos + 1);
 
                 {
                     // skip white space
                     int nextToken;
-                    if (!current.TrySearch(x => !Char.IsWhiteSpace(x), out nextToken))
+                    if (!current.TrySearch(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
                         throw new JsonParseException("not whitespace expected");
                     }
-                    current = current.Skip(nextToken);
+                    current = current.SubString(nextToken);
                 }
 
                 // value
                 var value = Parse(current, values, parentIndex);
-                current = current.Skip(value.Segment.Count);
+                current = current.SubString(value.Segment.ByteLength);
             }
 
             return current;
         }
 
-        public static JsonValue Parse(StringSegment segment, List<JsonValue> values, int parentIndex)
+        public static JsonValue Parse(Utf8String segment, List<JsonValue> values, int parentIndex)
         {
             // skip white space
             int pos;
-            if (!segment.TrySearch(x => !char.IsWhiteSpace(x), out pos))
+            if (!segment.TrySearch(x => !char.IsWhiteSpace((char)x), out pos))
             {
                 throw new JsonParseException("only whitespace");
             }
-            segment = segment.Skip(pos);
+            segment = segment.SubString(pos);
 
             var valueType = GetValueType(segment);
             switch (valueType)
@@ -282,7 +282,7 @@ namespace UniJSON
                         var index = values.Count;
                         values.Add(new JsonValue()); // placeholder
                         var current = ParseArray(segment, values, index);
-                        values[index] = new JsonValue(new StringSegment(segment.Value, segment.Offset, current.Offset + 1 - segment.Offset),
+                        values[index] = new JsonValue(segment.SubString(0, current.Bytes.Offset + 1 - segment.Bytes.Offset),
                             JsonValueType.Array, parentIndex);
                         return values[index];
                     }
@@ -292,7 +292,7 @@ namespace UniJSON
                         var index = values.Count;
                         values.Add(new JsonValue()); // placeholder
                         var current=ParseObject(segment, values, index);
-                        values[index] = new JsonValue(new StringSegment(segment.Value, segment.Offset, current.Offset + 1 - segment.Offset),
+                        values[index] = new JsonValue(segment.SubString(0, current.Bytes.Offset + 1 - segment.Bytes.Offset),
                             JsonValueType.Object, parentIndex);
                         return values[index];
                     }
@@ -304,8 +304,13 @@ namespace UniJSON
 
         public static JsonNode Parse(String json)
         {
+            return Parse(Utf8String.FromString(json));
+        }
+
+        public static JsonNode Parse(Utf8String json)
+        {
             var result = new List<JsonValue>();
-            var value = Parse(new StringSegment(json), result, -1);
+            var value = Parse(json, result, -1);
             if (value.ValueType != JsonValueType.Array && value.ValueType != JsonValueType.Object)
             {
                 result.Add(value);
