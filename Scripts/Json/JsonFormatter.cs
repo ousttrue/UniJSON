@@ -62,7 +62,7 @@ namespace UniJSON
         string m_colon;
 
         public JsonFormatter(int indent = 0)
-            : this(new StringBuilderStore(new StringBuilder()))
+            : this(new BytesStore(128))
         {
             m_indent = new string(Enumerable.Range(0, indent).Select(x => ' ').ToArray());
             m_colon = indent == 0 ? ":" : ": ";
@@ -210,15 +210,22 @@ namespace UniJSON
 
         public void Key(String key)
         {
-            CommaCheck(true);
-            Indent();
-            m_w.Write(JsonString.Quote(key));
+            _Value(key, true);
             m_w.Write(m_colon);
         }
 
         public void Value(String key)
         {
-            CommaCheck();
+            _Value(key, false);
+        }
+
+        void _Value(String key, bool isKey)
+        {
+            CommaCheck(isKey);
+            if (isKey)
+            {
+                Indent();
+            }
             m_w.Write(JsonString.Quote(key));
         }
 

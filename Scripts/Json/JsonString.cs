@@ -16,9 +16,9 @@ namespace UniJSON
             }
 
             var it = s.ToCharArray().Cast<char>().GetEnumerator();
-            while(it.MoveNext())
+            while (it.MoveNext())
             {
-                switch(it.Current)
+                switch (it.Current)
                 {
                     case '"':
                     case '\\':
@@ -68,6 +68,12 @@ namespace UniJSON
             Escape(s, w);
             w.Write('"');
         }
+
+        /// <summary>
+        /// Added " and Escape
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="w"></param>
         public static string Quote(string s)
         {
             var sb = new StringBuilder();
