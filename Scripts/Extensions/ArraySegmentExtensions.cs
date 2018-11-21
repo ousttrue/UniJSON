@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace UniJSON
 {
-    public static partial class ArraySegmentExtensions
+    public static class ArraySegmentExtensions
     {
         public static IEnumerable<T> ToEnumerable<T>(this ArraySegment<T> self)
         {
@@ -50,12 +50,18 @@ namespace UniJSON
             }
             return array;
         }
-    }
 
-    public static partial class ArraySegmentExtensions
-    {
-        #region JSON
+        public static byte[] Concat(this byte[] lhs, ArraySegment<byte> rhs)
+        {
+            return new ArraySegment<byte>(lhs).Concat(rhs);
+        }
 
-        #endregion
+        public static byte[] Concat(this ArraySegment<byte> lhs, ArraySegment<byte> rhs)
+        {
+            var bytes = new byte[lhs.Count + rhs.Count];
+            Buffer.BlockCopy(lhs.Array, lhs.Offset, bytes, 0, lhs.Count);
+            Buffer.BlockCopy(rhs.Array, rhs.Offset, bytes, lhs.Count, rhs.Count);
+            return bytes;
+        }
     }
 }
