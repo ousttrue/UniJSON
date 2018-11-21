@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using UnityEngine;
-
+using System.Linq;
+using System.Text;
 
 namespace UniJSON
 {
@@ -16,6 +17,15 @@ namespace UniJSON
 
             var json = formatter.ToString();
             Debug.Log(json);
+        }
+
+        [Test]
+        public void NullTest()
+        {
+            var nullbytes = Encoding.UTF8.GetBytes("null");
+            var json = new JsonFormatter();
+            json.Null();
+            Assert.True(json.GetStore().Bytes.ToEnumerable().SequenceEqual(nullbytes));
         }
     }
 }

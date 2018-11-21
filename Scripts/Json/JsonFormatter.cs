@@ -139,10 +139,11 @@ namespace UniJSON
             m_stack.Push(top);
         }
 
+        static Utf8String s_null = Utf8String.FromString("null");
         public void Null()
         {
             CommaCheck();
-            m_w.Write("null");
+            m_w.Write(s_null.Bytes);
         }
 
         public ActionDisposer BeginList()
