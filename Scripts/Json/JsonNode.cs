@@ -122,6 +122,11 @@ namespace UniJSON
 
     public struct JsonNode
     {
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
+
         public override int GetHashCode()
         {
             return base.GetHashCode();

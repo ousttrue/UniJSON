@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq.Expressions;
 using System.Globalization;
+using System.Reflection;
 #if UNIJSON_PROFILING
 public struct Vector3
 {
@@ -14,6 +15,7 @@ public struct Vector3
 #else
 using UnityEngine;
 #endif
+
 
 namespace UniJSON
 {
@@ -378,6 +380,50 @@ namespace UniJSON
         {
             CommaCheck();
             m_w.Write(formated);
+        }
+
+        static Dictionary<Type, object> s_typeMap = new Dictionary<Type, object>()
+        {
+            {typeof(int), GetValueMethod<int>()},
+            {typeof(float), GetValueMethod<float>()},
+            {typeof(double), GetValueMethod<double>()},
+            {typeof(bool), GetValueMethod<bool>()},
+        };
+
+        [ThreadStatic]
+        static Dictionary<Type, object> tl_typeMap;
+
+        static object GetValueMethod<T>()
+        {
+            var mi = typeof(JsonFormatter).GetMethod("Value", new Type[] { typeof(T) });
+            var self = Expression.Parameter(typeof(JsonFormatter), "f");
+            var arg = Expression.Parameter(typeof(T), "value");
+            var call = Expression.Call(self, mi, arg);
+
+            var lambda = Expression.Lambda(call, self, arg);
+            return lambda.Compile();
+        }
+
+        public void Serialize<T>(T arg)
+        {
+            if (arg == null)
+            {
+                Null();
+                return;
+            }
+
+            if (tl_typeMap == null)
+            {
+                tl_typeMap = s_typeMap.ToDictionary(kv => kv.Key, kv => kv.Value);
+            }
+
+            object serializer;
+            if (!tl_typeMap.TryGetValue(typeof(T), out serializer))
+            {
+                throw new NotImplementedException();
+            }
+
+            ((Action<JsonFormatter, T>)serializer)(this, arg);
         }
     }
 }
