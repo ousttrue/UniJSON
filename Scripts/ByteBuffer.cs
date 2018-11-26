@@ -11,10 +11,28 @@ namespace UniJSON
             get { return new ArraySegment<byte>(m_buffer, 0, Count); }
         }
 
+        public ByteBuffer()
+        {
+
+        }
+
+        public ByteBuffer(Byte[] buffer)
+        {
+            m_buffer = buffer;
+        }
+
         int m_used;
         public int Count
         {
             get { return m_used; }
+        }
+
+        public int Remain
+        {
+            get {
+                if (m_buffer == null) return 0;
+                return m_buffer.Length - m_used;
+            }
         }
 
         void Ensure(int size)
