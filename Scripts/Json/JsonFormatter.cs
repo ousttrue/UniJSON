@@ -382,26 +382,32 @@ namespace UniJSON
             m_w.Write(formated);
         }
 
-        static Dictionary<Type, object> s_typeMap = new Dictionary<Type, object>()
+        struct GenericSerializer<T>
         {
-            {typeof(int), GetValueMethod<int>()},
-            {typeof(float), GetValueMethod<float>()},
-            {typeof(double), GetValueMethod<double>()},
-            {typeof(bool), GetValueMethod<bool>()},
-        };
+            delegate void Serializer(JsonFormatter f, T t);
 
-        [ThreadStatic]
-        static Dictionary<Type, object> tl_typeMap;
+            static Action<JsonFormatter, T> GetSerializer()
+            {
+                var mi = typeof(JsonFormatter).GetMethod("Value", new Type[] { typeof(T) });
+                var self = Expression.Parameter(typeof(JsonFormatter), "f");
+                var arg = Expression.Parameter(typeof(T), "value");
+                var call = Expression.Call(self, mi, arg);
 
-        static object GetValueMethod<T>()
-        {
-            var mi = typeof(JsonFormatter).GetMethod("Value", new Type[] { typeof(T) });
-            var self = Expression.Parameter(typeof(JsonFormatter), "f");
-            var arg = Expression.Parameter(typeof(T), "value");
-            var call = Expression.Call(self, mi, arg);
+                var lambda = Expression.Lambda(call, self, arg);
+                return (Action<JsonFormatter, T>)lambda.Compile();
+            }
 
-            var lambda = Expression.Lambda(call, self, arg);
-            return lambda.Compile();
+            [ThreadStatic]
+            static Serializer tl_serializer;
+
+            public void Serialize(JsonFormatter f, T t)
+            {
+                if (tl_serializer == null)
+                {
+                    tl_serializer = new Serializer(GetSerializer());
+                }
+                tl_serializer(f, t);
+            }
         }
 
         public void Serialize<T>(T arg)
@@ -412,18 +418,7 @@ namespace UniJSON
                 return;
             }
 
-            if (tl_typeMap == null)
-            {
-                tl_typeMap = s_typeMap.ToDictionary(kv => kv.Key, kv => kv.Value);
-            }
-
-            object serializer;
-            if (!tl_typeMap.TryGetValue(typeof(T), out serializer))
-            {
-                throw new NotImplementedException();
-            }
-
-            ((Action<JsonFormatter, T>)serializer)(this, arg);
+            (default(GenericSerializer<T>)).Serialize(this, arg);
         }
     }
 }
