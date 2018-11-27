@@ -396,7 +396,7 @@ namespace UniJSON
                     return (JsonFormatter f, T value) =>  schema.Serialize(f, value);
                 }
 
-                throw new NotImplementedException();
+                //throw new NotImplementedException();
             }
 
             static readonly Serializer tl_serializer = new Serializer(GetSerializer(typeof(T)));
