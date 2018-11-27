@@ -340,7 +340,7 @@ namespace UniJSON
             delegate void Serializer(JsonFormatter f, T t);
 
             static Action<JsonFormatter, T> GetSerializer(Type t)
-            {
+            {               
                 var mi = typeof(JsonFormatter).GetMethod("Value", new Type[] { t });
                 if (mi != null)
                 {
@@ -376,14 +376,7 @@ namespace UniJSON
             {
                 if (tl_serializer == null)
                 {
-                    if (typeof(T) == typeof(object))
-                    {
-                        tl_serializer = new Serializer(GetSerializer(t.GetType()));
-                    }
-                    else
-                    {
-                        tl_serializer = new Serializer(GetSerializer(typeof(T)));
-                    }
+                    tl_serializer = new Serializer(GetSerializer(typeof(T)));
                 }
                 tl_serializer(f, t);
             }

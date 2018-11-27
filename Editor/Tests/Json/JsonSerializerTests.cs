@@ -30,8 +30,7 @@ namespace UniJSON
             SerializeValue(new[] { true, false }, "[true,false]");
             SerializeValue(new[] { "ascii" }, "[\"ascii\"]");
             SerializeValue(new List<int> { 1 }, "[1]");
-
-            //SerializeValue(new object[] { 1 }, "[1]");
+            //SerializeValue(new object[] { null, 1, "a" }, "[null,1,\"a\"]");
         }
     }
 }
