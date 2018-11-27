@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 
 
@@ -442,6 +438,11 @@ namespace UniJSON.MsgPack
         public IStore GetStore()
         {
             return m_store;
+        }
+
+        public void Serialize<T>(T value)
+        {
+            throw new NotImplementedException();
         }
     }
 }

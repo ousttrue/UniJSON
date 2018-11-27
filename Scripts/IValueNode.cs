@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 
 namespace UniJSON
@@ -19,7 +20,6 @@ namespace UniJSON
         int Count { get; }
         int ValueIndex { get; }
 
-        //object GetValue();
         bool GetBoolean();
     }
 
@@ -61,6 +61,11 @@ namespace UniJSON
                 }
             }
             throw new KeyNotFoundException();
+        }
+
+        public static void Deserialize<S, T>(this S self, ref T value) where S : IValueNode
+        {
+            throw new NotImplementedException();
         }
     }
 }

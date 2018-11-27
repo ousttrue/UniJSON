@@ -20,18 +20,25 @@ namespace UniJSON
             public void Register<A0, A1>(string method, Action<A0, A1> action)
             {
                 throw new NotImplementedException();
-                /*
-                m_map.Add(method, (args, f) =>
-                {
-                    var it=args.
-                    action(args[0])
-                });
-                */
             }
 
             public void Register<A0, A1, R>(string method, Func<A0, A1, R> action)
             {
-                throw new NotImplementedException();
+                m_map.Add(method, (args, f) =>
+                {
+                    var it = args.ArrayItems.GetEnumerator();
+
+                    var a0 = default(A0);
+                    it.MoveNext();
+                    it.Current.Deserialize(ref a0);
+
+                    var a1 = default(A1);
+                    it.MoveNext();
+                    it.Current.Deserialize(ref a1);
+
+                    var r = action(a0, a1);
+                    f.Serialize(r);
+                });
             }
 
             public void Call(string method, IValueNode args, IFormatter f = null)
