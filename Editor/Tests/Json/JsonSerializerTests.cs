@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
 
+
 namespace UniJSON
 {
     public class JsonSerializerTests
@@ -31,6 +32,12 @@ namespace UniJSON
             SerializeValue(new[] { "ascii" }, "[\"ascii\"]");
             SerializeValue(new List<int> { 1 }, "[1]");
             //SerializeValue(new object[] { null, 1, "a" }, "[null,1,\"a\"]");
+
+            SerializeValue(new Dictionary<string, object> { }, "{}");
+            SerializeValue(new Dictionary<string, object> { {"a", 1} }, "{\"a\":1}");
+            SerializeValue(new Dictionary<string, object> { { "a",
+                    new Dictionary<string, object>{
+                    } } }, "{\"a\":{}}");
         }
     }
 }

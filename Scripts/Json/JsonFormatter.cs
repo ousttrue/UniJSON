@@ -65,16 +65,16 @@ namespace UniJSON
         string m_colon;
 
         public JsonFormatter(int indent = 0)
-            : this(new BytesStore(128))
+            : this(new BytesStore(128), indent)
         {
-            m_indent = new string(Enumerable.Range(0, indent).Select(x => ' ').ToArray());
-            m_colon = indent == 0 ? ":" : ": ";
         }
 
-        public JsonFormatter(IStore w)
+        public JsonFormatter(IStore w, int indent = 0)
         {
             m_w = w;
             m_stack.Push(new Context(Current.ROOT));
+            m_indent = new string(Enumerable.Range(0, indent).Select(x => ' ').ToArray());
+            m_colon = indent == 0 ? ":" : ": ";
         }
 
         public override string ToString()
@@ -340,30 +340,54 @@ namespace UniJSON
             delegate void Serializer(JsonFormatter f, T t);
 
             static Action<JsonFormatter, T> GetSerializer(Type t)
-            {               
-                var mi = typeof(JsonFormatter).GetMethod("Value", new Type[] { t });
-                if (mi != null)
+            {
                 {
-                    // premitives
-                    var self = Expression.Parameter(typeof(JsonFormatter), "f");
-                    var arg = Expression.Parameter(t, "value");
-                    var call = Expression.Call(self, mi, arg);
+                    // primitive
+                    var mi = typeof(JsonFormatter).GetMethod("Value", new Type[] { t });
+                    if (mi != null)
+                    {
+                        // premitives
+                        var self = Expression.Parameter(typeof(JsonFormatter), "f");
+                        var arg = Expression.Parameter(t, "value");
+                        var call = Expression.Call(self, mi, arg);
 
-                    var lambda = Expression.Lambda(call, self, arg);
-                    return (Action<JsonFormatter, T>)lambda.Compile();
+                        var lambda = Expression.Lambda(call, self, arg);
+                        return (Action<JsonFormatter, T>)lambda.Compile();
+                    }
                 }
 
-                var ienumerable = t.GetInterfaces().FirstOrDefault(x =>
-                x.IsGenericType
-                && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)
-                );
-                if (ienumerable != null)
                 {
-                    var self = Expression.Parameter(typeof(JsonFormatter), "f");
-                    var arg = Expression.Parameter(t, "value");
-                    var call = Expression.Call(self, "SerializeArray", ienumerable.GetGenericArguments(), arg);
-                    var lambda = Expression.Lambda(call, self, arg);
-                    return (Action<JsonFormatter, T>)lambda.Compile();
+                    // dictionary
+                    var idictionary = t.GetInterfaces().FirstOrDefault(x =>
+                    x.IsGenericType
+                    && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+                    && x.GetGenericArguments()[0] == typeof(string)
+                    );
+                    if (idictionary != null)
+                    {
+                        var mi = typeof(JsonFormatter).GetMethod("SerializeDictionary", new Type[] { t });
+                        var self = Expression.Parameter(typeof(JsonFormatter), "f");
+                        var arg = Expression.Parameter(t, "value");
+                        var call = Expression.Call(self, mi, arg);
+                        var lambda = Expression.Lambda(call, self, arg);
+                        return (Action<JsonFormatter, T>)lambda.Compile();
+                    }
+                }
+
+                {
+                    // list
+                    var ienumerable = t.GetInterfaces().FirstOrDefault(x =>
+                    x.IsGenericType
+                    && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                    );
+                    if (ienumerable != null)
+                    {
+                        var self = Expression.Parameter(typeof(JsonFormatter), "f");
+                        var arg = Expression.Parameter(t, "value");
+                        var call = Expression.Call(self, "SerializeArray", ienumerable.GetGenericArguments(), arg);
+                        var lambda = Expression.Lambda(call, self, arg);
+                        return (Action<JsonFormatter, T>)lambda.Compile();
+                    }
                 }
 
                 throw new NotImplementedException();
@@ -382,6 +406,17 @@ namespace UniJSON
             }
         }
 
+        public void SerializeDictionary(IDictionary<string, object> dictionary)
+        {
+            BeginMap();
+            foreach (var kv in dictionary)
+            {
+                Key(kv.Key);
+                SerializeObject(kv.Value);
+            }
+            EndMap();
+        }
+
         public void SerializeArray<T>(IEnumerable<T> values)
         {
             BeginList();
@@ -390,6 +425,11 @@ namespace UniJSON
                 Serialize(value);
             }
             EndList();
+        }
+
+        public void SerializeObject(object value)
+        {
+            typeof(JsonFormatter).GetMethod("Serialize").MakeGenericMethod(value.GetType()).Invoke(this, new object[] { value });
         }
 
         public void Serialize<T>(T arg)
