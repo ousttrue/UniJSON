@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Generic;
+
 
 namespace UniJSON
 {
@@ -7,14 +9,39 @@ namespace UniJSON
     {
         class RpcDispatcher
         {
-            public void Register<A0>(Action<A0> action)
-            {
+            delegate void Callback(IValueNode args, IFormatter f);
+            Dictionary<string, Callback> m_map = new Dictionary<string, Callback>();
 
+            public void Register<A0>(string method, Action<A0> action)
+            {
+                throw new NotImplementedException();
             }
 
-            public void Call(IValueNode parsed, IFormatter f = null)
+            public void Register<A0, A1>(string method, Action<A0, A1> action)
             {
+                throw new NotImplementedException();
+                /*
+                m_map.Add(method, (args, f) =>
+                {
+                    var it=args.
+                    action(args[0])
+                });
+                */
+            }
 
+            public void Register<A0, A1, R>(string method, Func<A0, A1, R> action)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Call(string method, IValueNode args, IFormatter f = null)
+            {
+                Callback callback;
+                if (!m_map.TryGetValue(method, out callback))
+                {
+                    throw new KeyNotFoundException();
+                }
+                callback(args, f);
             }
         }
 
@@ -43,7 +70,7 @@ namespace UniJSON
                     JsonParser.Parse("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"num1\",\"params\":[1]}"),
                     JsonParser.Parse(new Utf8String(request)));
 
-                
+
             }
             {
                 var request = rpc.Request("num2", 2, true);
@@ -64,12 +91,14 @@ namespace UniJSON
         public void DispatcherTest()
         {
             var dispatcher = new RpcDispatcher();
+            dispatcher.Register("add", (int a, int b) => a + b);
 
             var rpc = new JsonRpc();
             var request = rpc.Request("add", 1, 2);
 
             var f = new JsonFormatter();
-            dispatcher.Call(JsonParser.Parse(new Utf8String(request)), f);
+            var parsed = JsonParser.Parse(new Utf8String(request));
+            dispatcher.Call(parsed["method"].GetString(), parsed["params"], f);
 
             Assert.AreEqual("3", new Utf8String(f.GetStore().Bytes));
         }
