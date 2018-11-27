@@ -118,15 +118,15 @@ namespace UniJSON
 
                     ++i;
                 }
-                else if(b < 0xDF)
+                else if(b <= 0xDF)
                 {
                     i += 2;
                 }
-                else if(b < 0xEF)
+                else if(b <= 0xEF)
                 {
                     i += 3;
                 }
-                else if(b < 0xF7)
+                else if(b <= 0xF7)
                 {
                     i += 4;
                 }

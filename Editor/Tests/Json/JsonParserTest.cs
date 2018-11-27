@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.IO;
 using System.Linq;
 
 
@@ -313,6 +314,12 @@ namespace UniJSON
         {
             var json = "{";
             Assert.Catch(typeof(JsonParseException), () => JsonParser.Parse(json));
+        }
+
+        [Test]
+        public void Utf8Test()
+        {
+            JsonParser.Parse("\"５\"");
         }
     }
 }
