@@ -9,6 +9,14 @@ namespace UniJSON.MsgPack
     {
         public readonly List<MsgPackValue> Values;
         int m_index;
+        public int ValueIndex
+        {
+            get
+            {
+                return m_index;
+            }
+        }
+
         public MsgPackValue Value
         {
             get { return Values[m_index]; }
@@ -33,7 +41,7 @@ namespace UniJSON.MsgPack
                 return Value.ParentIndex >= 0 && Value.ParentIndex < Values.Count;
             }
         }
-        public MsgPackNode Parent
+        public IValueNode Parent
         {
             get
             {
@@ -657,6 +665,32 @@ namespace UniJSON.MsgPack
             get
             {
                 return Value.Format == MsgPackType.NIL;
+            }
+        }
+
+        public IEnumerable<IValueNode> ArrayItems
+        {
+            get
+            {
+                if (!IsArray) throw new MsgPackTypeException("is not array");
+                return Children.Select(x => x as IValueNode);
+            }
+        }
+
+        public IEnumerable<KeyValuePair<string, IValueNode>> ObjectItems
+        {
+            get
+            {
+                if (!IsMap) throw new MsgPackTypeException("is not map");
+                if (!this.IsMap) throw new JsonValueException("is not object");
+                var it = Children.GetEnumerator();
+                while (it.MoveNext())
+                {
+                    var key = it.Current.GetString();
+
+                    it.MoveNext();
+                    yield return new KeyValuePair<string, IValueNode>(key, it.Current);
+                }
             }
         }
 

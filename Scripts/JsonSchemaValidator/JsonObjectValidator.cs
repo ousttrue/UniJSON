@@ -236,7 +236,7 @@ namespace UniJSON
 
                 case "required":
                     {
-                        foreach (var req in value.ArrayItems)
+                        foreach (var req in value.ArrayItemsRaw)
                         {
                             m_required.Add(req.GetString());
                         }
@@ -245,7 +245,7 @@ namespace UniJSON
 
                 case "properties":
                     {
-                        foreach (var prop in value.ObjectItems)
+                        foreach (var prop in value.ObjectItemsRaw)
                         {
                             AddProperty(fs, prop.Key, prop.Value);
                         }
@@ -266,9 +266,9 @@ namespace UniJSON
 
                 case "dependencies":
                     {
-                        foreach (var kv in value.ObjectItems)
+                        foreach (var kv in value.ObjectItemsRaw)
                         {
-                            Dependencies.Add(kv.Key, kv.Value.ArrayItems.Select(x => x.GetString()).ToArray());
+                            Dependencies.Add(kv.Key, kv.Value.ArrayItemsRaw.Select(x => x.GetString()).ToArray());
                         }
                     }
                     return true;

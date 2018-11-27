@@ -1,87 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+
 
 namespace UniJSON
 {
-    public struct JsonPointer
-    {
-        public ArraySegment<String> Path
-        {
-            get;
-            private set;
-        }
-
-        public string this[int index]
-        {
-            get
-            {
-                return Path.Array[Path.Offset + index];
-            }
-        }
-
-        public JsonPointer Unshift()
-        {
-            return new JsonPointer
-            {
-                Path = new ArraySegment<string>(Path.Array, Path.Offset + 1, Path.Count - 1)
-            };
-        }
-
-        public JsonPointer(JsonNode node)
-        {
-            Path = new ArraySegment<string>(node.Path().Skip(1).Select(x => GetKeyFromParent(x)).ToArray());
-        }
-
-        public JsonPointer(string pointer)
-        {
-            if (!pointer.StartsWith("/"))
-            {
-                throw new ArgumentException();
-            }
-            var splited = pointer.Split('/');
-            Path = new ArraySegment<string>(splited, 1, splited.Length - 1);
-        }
-
-        public override string ToString()
-        {
-            if (Path.Count == 0)
-            {
-                return "/";
-            }
-
-            var sb = new StringBuilder();
-            var end = Path.Offset + Path.Count;
-            for (int i = Path.Offset; i < end; ++i)
-            {
-                sb.Append('/');
-                sb.Append(Path.Array[i]);
-            }
-            return sb.ToString();
-        }
-
-        static string GetKeyFromParent(JsonNode json)
-        {
-            var parent = json.Parent;
-            switch (parent.Value.ValueType)
-            {
-                case JsonValueType.Array:
-                    {
-                        return parent.IndexOf(json).ToString();
-                    }
-
-                case JsonValueType.Object:
-                    {
-                        return parent.KeyOf(json);
-                    }
-
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-    }
-
     public enum JsonDiffType
     {
         KeyAdded,
@@ -89,14 +12,13 @@ namespace UniJSON
         ValueChanged,
     }
 
-
-    public struct JsonDiff
+    public struct JsonDiff<T> where T : IValueNode, new()
     {
         public JsonPointer Path;
         public JsonDiffType DiffType;
         public string Msg;
 
-        public JsonDiff(JsonNode node, JsonDiffType diffType, string msg)
+        public JsonDiff(T node, JsonDiffType diffType, string msg)
         {
             Path = new JsonPointer(node);
             DiffType = diffType;
@@ -120,7 +42,7 @@ namespace UniJSON
     }
 
 
-    public struct JsonNode:IValueNode
+    public struct JsonNode : IValueNode
     {
         public bool IsNull
         {
@@ -148,20 +70,6 @@ namespace UniJSON
                     default: throw new NotImplementedException();
                 }
             }
-        }
-
-        public int IndexOf(JsonNode child)
-        {
-            int i = 0;
-            foreach (var v in ArrayItems)
-            {
-                if (v.m_index == child.m_index)
-                {
-                    return i;
-                }
-                ++i;
-            }
-            throw new KeyNotFoundException();
         }
 
         public override string ToString()
@@ -209,21 +117,21 @@ namespace UniJSON
                     return Value.GetString() == rhs.GetString();
 
                 case JsonValueType.Array:
-                    return ArrayItems.SequenceEqual(rhs.ArrayItems);
+                    return ArrayItemsRaw.SequenceEqual(rhs.ArrayItemsRaw);
 
                 case JsonValueType.Object:
                     {
-                        var l = ObjectItems.ToDictionary(x => x.Key, x => x.Value);
-                        var r = rhs.ObjectItems.ToDictionary(x => x.Key, x => x.Value);
+                        var l = ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
+                        var r = rhs.ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
                         l.Equals(r);
-                        return ObjectItems.OrderBy(x => x.Key).SequenceEqual(rhs.ObjectItems.OrderBy(x => x.Key));
+                        return ObjectItemsRaw.OrderBy(x => x.Key).SequenceEqual(rhs.ObjectItemsRaw.OrderBy(x => x.Key));
                     }
             }
 
             return false;
         }
 
-        public IEnumerable<JsonDiff> Diff(JsonNode rhs, JsonPointer path = default(JsonPointer))
+        public IEnumerable<JsonDiff<JsonNode>> Diff(JsonNode rhs, JsonPointer path = default(JsonPointer))
         {
             switch (Value.ValueType)
             {
@@ -234,22 +142,22 @@ namespace UniJSON
                 case JsonValueType.String:
                     if (!Equals(rhs))
                     {
-                        yield return new JsonDiff(this, JsonDiffType.ValueChanged, string.Format("{0} => {1}", Value, rhs.Value));
+                        yield return new JsonDiff<JsonNode>(this, JsonDiffType.ValueChanged, string.Format("{0} => {1}", Value, rhs.Value));
                     }
                     yield break;
             }
 
             if (Value.ValueType != rhs.Value.ValueType)
             {
-                yield return new JsonDiff(this, JsonDiffType.ValueChanged, string.Format("{0} => {1}", Value.ValueType, rhs.Value));
+                yield return new JsonDiff<JsonNode>(this, JsonDiffType.ValueChanged, string.Format("{0} => {1}", Value.ValueType, rhs.Value));
                 yield break;
             }
 
             if (Value.ValueType == JsonValueType.Object)
             {
 
-                var l = ObjectItems.ToDictionary(x => x.Key, x => x.Value);
-                var r = rhs.ObjectItems.ToDictionary(x => x.Key, x => x.Value);
+                var l = ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
+                var r = rhs.ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
 
                 foreach (var kv in l)
                 {
@@ -266,20 +174,20 @@ namespace UniJSON
                     else
                     {
                         // Removed
-                        yield return new JsonDiff(kv.Value, JsonDiffType.KeyRemoved, kv.Value.Value.ToString());
+                        yield return new JsonDiff<JsonNode>(kv.Value, JsonDiffType.KeyRemoved, kv.Value.Value.ToString());
                     }
                 }
 
                 foreach (var kv in r)
                 {
                     // Addded
-                    yield return new JsonDiff(kv.Value, JsonDiffType.KeyAdded, kv.Value.Value.ToString());
+                    yield return new JsonDiff<JsonNode>(kv.Value, JsonDiffType.KeyAdded, kv.Value.Value.ToString());
                 }
             }
             else if (Value.ValueType == JsonValueType.Array)
             {
-                var ll = ArrayItems.GetEnumerator();
-                var rr = rhs.ArrayItems.GetEnumerator();
+                var ll = ArrayItemsRaw.GetEnumerator();
+                var rr = rhs.ArrayItemsRaw.GetEnumerator();
                 while (true)
                 {
                     var lll = ll.MoveNext();
@@ -294,11 +202,11 @@ namespace UniJSON
                     }
                     else if (lll)
                     {
-                        yield return new JsonDiff(ll.Current, JsonDiffType.KeyRemoved, ll.Current.Value.ToString());
+                        yield return new JsonDiff<JsonNode>(ll.Current, JsonDiffType.KeyRemoved, ll.Current.Value.ToString());
                     }
                     else if (rrr)
                     {
-                        yield return new JsonDiff(rr.Current, JsonDiffType.KeyAdded, rr.Current.Value.ToString());
+                        yield return new JsonDiff<JsonNode>(rr.Current, JsonDiffType.KeyAdded, rr.Current.Value.ToString());
                     }
                     else
                     {
@@ -315,6 +223,13 @@ namespace UniJSON
 
         public readonly List<JsonValue> Values;
         int m_index;
+        public int ValueIndex
+        {
+            get
+            {
+                return m_index;
+            }
+        }
         public JsonValue Value
         {
             get { return Values[m_index]; }
@@ -339,7 +254,7 @@ namespace UniJSON
                 return Value.ParentIndex >= 0 && Value.ParentIndex < Values.Count;
             }
         }
-        public JsonNode Parent
+        public IValueNode Parent
         {
             get
             {
@@ -366,7 +281,7 @@ namespace UniJSON
         {
             get
             {
-                foreach (var kv in ObjectItems)
+                foreach (var kv in ObjectItemsRaw)
                 {
                     if (kv.Key == key)
                     {
@@ -378,9 +293,16 @@ namespace UniJSON
         }
         public bool ContainsKey(string key)
         {
-            return ObjectItems.Any(x => x.Key == key);
+            return ObjectItemsRaw.Any(x => x.Key == key);
         }
-        public IEnumerable<KeyValuePair<string, JsonNode>> ObjectItems
+        public IEnumerable<KeyValuePair<string, IValueNode>> ObjectItems
+        {
+            get
+            {
+                return ObjectItemsRaw.Select(x => new KeyValuePair<string, IValueNode>(x.Key, x.Value as IValueNode));
+            }
+        }
+        public IEnumerable<KeyValuePair<string, JsonNode>> ObjectItemsRaw
         {
             get
             {
@@ -395,17 +317,6 @@ namespace UniJSON
                 }
             }
         }
-        public string KeyOf(JsonNode node)
-        {
-            foreach (var kv in ObjectItems)
-            {
-                if (node.m_index == kv.Value.m_index)
-                {
-                    return kv.Key;
-                }
-            }
-            throw new KeyNotFoundException();
-        }
         #endregion
 
         #region array interface
@@ -414,7 +325,7 @@ namespace UniJSON
             get
             {
                 int i = 0;
-                foreach (var v in ArrayItems)
+                foreach (var v in ArrayItemsRaw)
                 {
                     if (i++ == index)
                     {
@@ -424,7 +335,14 @@ namespace UniJSON
                 throw new KeyNotFoundException();
             }
         }
-        public IEnumerable<JsonNode> ArrayItems
+        public IEnumerable<IValueNode> ArrayItems
+        {
+            get
+            {
+                return ArrayItemsRaw.Select(x => x as IValueNode);
+            }
+        }
+        public IEnumerable<JsonNode> ArrayItemsRaw
         {
             get
             {
@@ -486,14 +404,14 @@ namespace UniJSON
             var parent = new JsonNode(Values, index);
             if (node.Value.ValueType == JsonValueType.Array)
             {
-                foreach (var value in node.ArrayItems)
+                foreach (var value in node.ArrayItemsRaw)
                 {
                     parent.AddNode(value);
                 }
             }
             else if (node.Value.ValueType == JsonValueType.Object)
             {
-                foreach (var kv in node.ObjectItems)
+                foreach (var kv in node.ObjectItemsRaw)
                 {
                     parent.AddNode(kv.Key, kv.Value);
                 }
@@ -514,7 +432,7 @@ namespace UniJSON
                 if (jsonPointer[0] == "*")
                 {
                     // wildcard
-                    foreach (var child in ArrayItems)
+                    foreach (var child in ArrayItemsRaw)
                     {
                         foreach (var childChild in child.GetNodes(jsonPointer.Unshift()))
                         {
@@ -542,7 +460,7 @@ namespace UniJSON
                 if (jsonPointer[0] == "*")
                 {
                     // wildcard
-                    foreach (var kv in ObjectItems)
+                    foreach (var kv in ObjectItemsRaw)
                     {
                         foreach (var childChild in kv.Value.GetNodes(jsonPointer.Unshift()))
                         {
@@ -635,7 +553,7 @@ namespace UniJSON
         {
             foreach (var node in GetNodes(new JsonPointer(jsonPointer)))
             {
-                if (node.Parent.Value.ValueType == JsonValueType.Object)
+                if (node.Parent.IsMap)
                 {
                     Values[node.m_index - 1] = JsonValue.Empty; // remove key
                 }
@@ -688,7 +606,7 @@ namespace UniJSON
             yield return self;
             if (self.Value.ValueType == JsonValueType.Array)
             {
-                foreach (var x in self.ArrayItems)
+                foreach (var x in self.ArrayItemsRaw)
                 {
                     foreach (var y in x.Traverse())
                     {
@@ -698,7 +616,7 @@ namespace UniJSON
             }
             else if (self.Value.ValueType == JsonValueType.Object)
             {
-                foreach (var kv in self.ObjectItems)
+                foreach (var kv in self.ObjectItemsRaw)
                 {
                     foreach (var y in kv.Value.Traverse())
                     {
@@ -706,19 +624,6 @@ namespace UniJSON
                     }
                 }
             }
-        }
-
-        public static IEnumerable<JsonNode> Path(this JsonNode self)
-        {
-            if (self.HasParent)
-            {
-                foreach (var x in self.Parent.Path())
-                {
-                    yield return x;
-                }
-            }
-
-            yield return self;
         }
     }
 }

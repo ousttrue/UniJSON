@@ -183,7 +183,7 @@ namespace UniJSON
                 Assert.AreEqual(2, node.Value.Segment.ByteLength);
 
                 Assert.AreEqual(JsonValueType.Object, node.Value.ValueType);
-                Assert.AreEqual(0, node.ObjectItems.Count());
+                Assert.AreEqual(0, node.ObjectItemsRaw.Count());
             }
 
             {
@@ -193,7 +193,7 @@ namespace UniJSON
                 Assert.AreEqual(json.Length, node.Value.Segment.ByteLength);
                 Assert.AreEqual(JsonValueType.Object, node.Value.ValueType);
 
-                var it = node.ObjectItems.GetEnumerator();
+                var it = node.ObjectItemsRaw.GetEnumerator();
 
                 Assert.IsTrue(it.MoveNext());
                 Assert.AreEqual("key", it.Current.Key);
@@ -209,7 +209,7 @@ namespace UniJSON
                 Assert.AreEqual(json.Length, node.Value.Segment.ByteLength);
                 Assert.AreEqual(JsonValueType.Object, node.Value.ValueType);
 
-                var it = node.ObjectItems.GetEnumerator();
+                var it = node.ObjectItemsRaw.GetEnumerator();
 
                 Assert.IsTrue(it.MoveNext());
                 Assert.AreEqual("key", it.Current.Key);
@@ -228,7 +228,7 @@ namespace UniJSON
                 Assert.AreEqual(JsonValueType.Object, node.Value.ValueType);
 
                 {
-                    var it = node.ObjectItems.GetEnumerator();
+                    var it = node.ObjectItemsRaw.GetEnumerator();
 
                     Assert.IsTrue(it.MoveNext());
                     Assert.AreEqual("key", it.Current.Key);
@@ -244,7 +244,7 @@ namespace UniJSON
                 var nested = node["key2"];
 
                 {
-                    var it = nested.ObjectItems.GetEnumerator();
+                    var it = nested.ObjectItemsRaw.GetEnumerator();
 
                     Assert.IsTrue(it.MoveNext());
                     Assert.AreEqual("nestedKey2", it.Current.Key);
@@ -294,7 +294,7 @@ namespace UniJSON
 
                 Assert.AreEqual(JsonValueType.Array, node.Value.ValueType);
 
-                var it = node.ArrayItems.GetEnumerator();
+                var it = node.ArrayItemsRaw.GetEnumerator();
 
                 Assert.IsTrue(it.MoveNext());
                 Assert.AreEqual("key", it.Current.GetString());

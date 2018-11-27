@@ -9,19 +9,19 @@ namespace UniJSON
     {
         public static IJsonSchemaValidator Create(JsonNode value)
         {
-            foreach (var x in value.ArrayItems)
+            foreach (var x in value.ArrayItemsRaw)
             {
                 switch (x.Value.ValueType)
                 {
                     case JsonValueType.Integer:
                     case JsonValueType.Number:
-                        return JsonIntEnumValidator.Create(value.ArrayItems
+                        return JsonIntEnumValidator.Create(value.ArrayItemsRaw
                             .Where(y => y.Value.ValueType == JsonValueType.Integer || y.Value.ValueType == JsonValueType.Number)
                             .Select(y => y.GetInt32())
                             );
 
                     case JsonValueType.String:
-                        return JsonStringEnumValidator.Create(value.ArrayItems
+                        return JsonStringEnumValidator.Create(value.ArrayItemsRaw
                             .Where(y => y.Value.ValueType == JsonValueType.String)
                             .Select(y => y.GetString())
                             );
