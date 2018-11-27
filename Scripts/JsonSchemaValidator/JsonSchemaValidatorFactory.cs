@@ -292,12 +292,12 @@ namespace UniJSON
                 return JsonValueType.Array;
             }
 
-            if (t.IsClass)
+            //if (t.IsClass)
             {
                 return JsonValueType.Object;
             }
 
-            throw new NotImplementedException(string.Format("No JsonType for {0}", t));
+            //throw new NotImplementedException(string.Format("No JsonType for {0}", t));
         }
 
         public static IJsonSchemaValidator Create(Type t, BaseJsonSchemaAttribute a, ItemJsonSchemaAttribute ia)

@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 
 
@@ -13,6 +14,12 @@ namespace UniJSON
 
             f.Serialize(value);
             Assert.AreEqual(json, new Utf8String(b.Bytes).ToString());
+        }
+
+        struct Point
+        {
+            public float X;
+            public float Y;
         }
 
         [Test]
@@ -38,6 +45,8 @@ namespace UniJSON
             SerializeValue(new Dictionary<string, object> { { "a",
                     new Dictionary<string, object>{
                     } } }, "{\"a\":{}}");
+
+            SerializeValue(new Point(), "{\"X\":0,\"Y\":0}");
         }
     }
 }

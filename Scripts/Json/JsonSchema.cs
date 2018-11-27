@@ -376,7 +376,7 @@ namespace UniJSON
         }
         #endregion
 
-        public string Serialize(Object o)
+        public void Serialize(JsonFormatter f, Object o)
         {
             var c = new JsonSchemaValidationContext(o);
 
@@ -386,8 +386,13 @@ namespace UniJSON
                 throw ex;
             }
 
-            var f = new JsonFormatter();
             Validator.Serialize(f, c, o);
+        }
+
+        public string Serialize(Object o)
+        {
+            var f = new JsonFormatter();
+            Serialize(f, o);
             return f.ToString();
         }
 

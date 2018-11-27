@@ -390,18 +390,19 @@ namespace UniJSON
                     }
                 }
 
+                {
+                    // reflection
+                    var schema = JsonSchema.FromType<T>();
+                    return (JsonFormatter f, T value) =>  schema.Serialize(f, value);
+                }
+
                 throw new NotImplementedException();
             }
 
-            [ThreadStatic]
-            static Serializer tl_serializer;
+            static readonly Serializer tl_serializer = new Serializer(GetSerializer(typeof(T)));
 
             public void Serialize(JsonFormatter f, T t)
             {
-                if (tl_serializer == null)
-                {
-                    tl_serializer = new Serializer(GetSerializer(typeof(T)));
-                }
                 tl_serializer(f, t);
             }
         }
