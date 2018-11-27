@@ -5,6 +5,7 @@ using System.Text;
 using System.Linq.Expressions;
 using System.Globalization;
 using System.Reflection;
+using System.Collections;
 #if UNIJSON_PROFILING
 public struct Vector3
 {
@@ -314,55 +315,6 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Value(string[] a)
-        {
-            BeginList();
-            foreach (var x in a)
-            {
-                Value(x);
-            }
-            EndList();
-        }
-        public void Value(List<string> a)
-        {
-            BeginList();
-            foreach (var x in a)
-            {
-                Value(x);
-            }
-            EndList();
-        }
-
-        public void Value(double[] a)
-        {
-            BeginList();
-            foreach (var x in a)
-            {
-                Value(x);
-            }
-            EndList();
-        }
-
-        public void Value(float[] a)
-        {
-            BeginList();
-            foreach (var x in a)
-            {
-                Value(x);
-            }
-            EndList();
-        }
-
-        public void Value(int[] a)
-        {
-            BeginList();
-            foreach (var x in a)
-            {
-                Value(x);
-            }
-            EndList();
-        }
-
         public void Bytes(ArraySegment<Byte> x)
         {
             CommaCheck();
@@ -382,19 +334,39 @@ namespace UniJSON
             m_w.Write(formated);
         }
 
+        #region Serialize
         struct GenericSerializer<T>
         {
             delegate void Serializer(JsonFormatter f, T t);
 
-            static Action<JsonFormatter, T> GetSerializer()
+            static Action<JsonFormatter, T> GetSerializer(Type t)
             {
-                var mi = typeof(JsonFormatter).GetMethod("Value", new Type[] { typeof(T) });
-                var self = Expression.Parameter(typeof(JsonFormatter), "f");
-                var arg = Expression.Parameter(typeof(T), "value");
-                var call = Expression.Call(self, mi, arg);
+                var mi = typeof(JsonFormatter).GetMethod("Value", new Type[] { t });
+                if (mi != null)
+                {
+                    // premitives
+                    var self = Expression.Parameter(typeof(JsonFormatter), "f");
+                    var arg = Expression.Parameter(t, "value");
+                    var call = Expression.Call(self, mi, arg);
 
-                var lambda = Expression.Lambda(call, self, arg);
-                return (Action<JsonFormatter, T>)lambda.Compile();
+                    var lambda = Expression.Lambda(call, self, arg);
+                    return (Action<JsonFormatter, T>)lambda.Compile();
+                }
+
+                var ienumerable = t.GetInterfaces().FirstOrDefault(x =>
+                x.IsGenericType
+                && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                );
+                if (ienumerable != null)
+                {
+                    var self = Expression.Parameter(typeof(JsonFormatter), "f");
+                    var arg = Expression.Parameter(t, "value");
+                    var call = Expression.Call(self, "SerializeArray", ienumerable.GetGenericArguments(), arg);
+                    var lambda = Expression.Lambda(call, self, arg);
+                    return (Action<JsonFormatter, T>)lambda.Compile();
+                }
+
+                throw new NotImplementedException();
             }
 
             [ThreadStatic]
@@ -404,10 +376,27 @@ namespace UniJSON
             {
                 if (tl_serializer == null)
                 {
-                    tl_serializer = new Serializer(GetSerializer());
+                    if (typeof(T) == typeof(object))
+                    {
+                        tl_serializer = new Serializer(GetSerializer(t.GetType()));
+                    }
+                    else
+                    {
+                        tl_serializer = new Serializer(GetSerializer(typeof(T)));
+                    }
                 }
                 tl_serializer(f, t);
             }
+        }
+
+        public void SerializeArray<T>(IEnumerable<T> values)
+        {
+            BeginList();
+            foreach (var value in values)
+            {
+                Serialize(value);
+            }
+            EndList();
         }
 
         public void Serialize<T>(T arg)
@@ -420,5 +409,6 @@ namespace UniJSON
 
             (default(GenericSerializer<T>)).Serialize(this, arg);
         }
+        #endregion
     }
 }

@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-
+using System.Collections.Generic;
 
 namespace UniJSON
 {
@@ -20,9 +20,18 @@ namespace UniJSON
             SerializeValue(1, "1");
             SerializeValue(1.1f, "1.1");
             SerializeValue(1.2, "1.2");
-
             SerializeValue(true, "true");
             SerializeValue(false, "false");
+            SerializeValue("ascii", "\"ascii\"");
+
+            SerializeValue(new[] { 1 }, "[1]");
+            SerializeValue(new[] { 1.1f }, "[1.1]");
+            SerializeValue(new[] { 1.2 }, "[1.2]");
+            SerializeValue(new[] { true, false }, "[true,false]");
+            SerializeValue(new[] { "ascii" }, "[\"ascii\"]");
+            SerializeValue(new List<int> { 1 }, "[1]");
+
+            //SerializeValue(new object[] { 1 }, "[1]");
         }
     }
 }
