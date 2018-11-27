@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
-using System.IO;
+
 
 namespace UniJSON.MsgPack
 {
@@ -11,7 +11,9 @@ namespace UniJSON.MsgPack
         public void nil()
         {
             {
-                var bytes = new MsgPackFormatter().Null().GetStore().Bytes;
+                var f = new MsgPackFormatter();
+                f.Null();
+                var bytes = f.GetStore().Bytes;
                 Assert.AreEqual(new Byte[] { 0xC0 }, bytes.ToEnumerable());
 
                 var parsed = MsgPackParser.Parse(bytes);
@@ -22,7 +24,9 @@ namespace UniJSON.MsgPack
         [Test]
         public void True()
         {
-            var bytes = new MsgPackFormatter().Value(true).GetStore().Bytes;
+            var f = new MsgPackFormatter();
+            f.Value(true);
+            var bytes = f.GetStore().Bytes;
             Assert.AreEqual(new Byte[] { 0xC3 }, bytes.ToEnumerable());
 
             var value = MsgPackParser.Parse(bytes);
@@ -33,7 +37,9 @@ namespace UniJSON.MsgPack
         [Test]
         public void False()
         {
-            var bytes = new MsgPackFormatter().Value(false).GetStore().Bytes;
+            var f = new MsgPackFormatter();
+            f.Value(false);
+            var bytes = f.GetStore().Bytes;
             Assert.AreEqual(new Byte[] { 0xC2 }, bytes.ToEnumerable());
 
             var value = MsgPackParser.Parse(bytes);

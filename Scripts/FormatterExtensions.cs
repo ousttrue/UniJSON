@@ -127,7 +127,8 @@ namespace UniJSON
 
         public static IFormatter Value(this IFormatter f, Byte[] value)
         {
-            return f.Value(new ArraySegment<Byte>(value));
+            f.Value(new ArraySegment<Byte>(value));
+            return f;
         }
 
         public static IFormatter Value(this IFormatter f, Vector3 v)

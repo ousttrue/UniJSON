@@ -20,7 +20,7 @@ using UnityEngine;
 
 namespace UniJSON
 {
-    public class JsonFormatter
+    public class JsonFormatter : IFormatter
     {
         IStore m_w;
         protected IStore Store
@@ -149,12 +149,11 @@ namespace UniJSON
             m_w.Write(s_null.Bytes);
         }
 
-        public ActionDisposer BeginList()
+        public void BeginList(int _ = 0)
         {
             CommaCheck();
             m_w.Write('[');
             m_stack.Push(new Context(Current.ARRAY));
-            return new ActionDisposer(EndList);
         }
 
         public void EndList()
@@ -167,12 +166,11 @@ namespace UniJSON
             m_stack.Pop();
         }
 
-        public ActionDisposer BeginMap()
+        public void BeginMap(int _ = 0)
         {
             CommaCheck();
             m_w.Write('{');
             m_stack.Push(new Context(Current.OBJECT));
-            return new ActionDisposer(EndMap);
         }
 
         public void EndMap()
@@ -246,13 +244,6 @@ namespace UniJSON
             m_w.Write(node.Value.Segment.ToString());
         }
 
-        /*
-        public void Value<T>(T x) where T : struct, IConvertible
-        {
-            Value(Convert.ToInt32(x));
-        }
-        */
-
         public void Value(SByte x)
         {
             CommaCheck();
@@ -305,6 +296,15 @@ namespace UniJSON
             CommaCheck();
             m_w.Write(x.ToString("R", CultureInfo.InvariantCulture));
         }
+
+        public void Value(ArraySegment<Byte> x)
+        {
+            CommaCheck();
+            m_w.Write('"');
+            m_w.Write(Convert.ToBase64String(x.Array, x.Offset, x.Count));
+            m_w.Write('"');
+        }
+
         public void Value(Vector3 v)
         {
             //CommaCheck();
@@ -315,17 +315,9 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Bytes(ArraySegment<Byte> x)
-        {
-            CommaCheck();
-            m_w.Write('"');
-            m_w.Write(Convert.ToBase64String(x.Array, x.Offset, x.Count));
-            m_w.Write('"');
-        }
-
         public void Bytes(IEnumerable<byte> raw, int count)
         {
-            Bytes(new ArraySegment<byte>(raw.Take(count).ToArray()));
+            Value(new ArraySegment<byte>(raw.Take(count).ToArray()));
         }
 
         public void Dump(ArraySegment<Byte> formated)
@@ -393,17 +385,27 @@ namespace UniJSON
                 {
                     // reflection
                     var schema = JsonSchema.FromType<T>();
-                    return (JsonFormatter f, T value) =>  schema.Serialize(f, value);
+                    return (JsonFormatter f, T value) => schema.Serialize(f, value);
                 }
 
                 //throw new NotImplementedException();
             }
 
+#if UNITY_EDITOR
+            static Serializer s_serializer;
+#else
             static readonly Serializer tl_serializer = new Serializer(GetSerializer(typeof(T)));
+#endif
 
             public void Serialize(JsonFormatter f, T t)
             {
-                tl_serializer(f, t);
+#if UNITY_EDITOR
+                if (s_serializer == null)
+                {
+                    s_serializer = new Serializer(GetSerializer(typeof(T)));
+                }
+#endif
+                s_serializer(f, t);
             }
         }
 
@@ -443,6 +445,6 @@ namespace UniJSON
 
             (default(GenericSerializer<T>)).Serialize(this, arg);
         }
-        #endregion
+#endregion
     }
 }

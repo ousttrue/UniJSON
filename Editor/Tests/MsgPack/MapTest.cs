@@ -11,12 +11,13 @@ namespace UniJSON.MsgPack
         [Test]
         public void fix_map()
         {
-            var bytes = new MsgPackFormatter()
-            .BeginMap(2)
-            .Key("0").Value(1)
-            .Key("2").Value(3)
-            .EndMap()
-            .GetStore().Bytes;
+            var f = new MsgPackFormatter();
+            f.BeginMap(2);
+            f.Key("0"); f.Value(1);
+            f.Key("2"); f.Value(3);
+            f.EndMap();
+            var bytes =
+            f.GetStore().Bytes;
             ;
 
             Assert.AreEqual(new Byte[]{

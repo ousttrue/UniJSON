@@ -120,8 +120,50 @@ namespace UniJSON
     }
 
 
-    public struct JsonNode
+    public struct JsonNode:IValueNode
     {
+        public bool IsNull
+        {
+            get { return Value.ValueType == JsonValueType.Null; }
+        }
+
+        public bool IsArray
+        {
+            get { return Value.ValueType == JsonValueType.Array; }
+        }
+
+        public bool IsMap
+        {
+            get { return Value.ValueType == JsonValueType.Object; }
+        }
+
+        public int Count
+        {
+            get
+            {
+                switch (Value.ValueType)
+                {
+                    case JsonValueType.Array: return Children.Count();
+                    case JsonValueType.Object: return Children.Count() / 2;
+                    default: throw new NotImplementedException();
+                }
+            }
+        }
+
+        public int IndexOf(JsonNode child)
+        {
+            int i = 0;
+            foreach (var v in ArrayItems)
+            {
+                if (v.m_index == child.m_index)
+                {
+                    return i;
+                }
+                ++i;
+            }
+            throw new KeyNotFoundException();
+        }
+
         public override string ToString()
         {
             return Value.ToString();
@@ -390,19 +432,6 @@ namespace UniJSON
                 return Children;
             }
         }
-        public int IndexOf(JsonNode child)
-        {
-            int i = 0;
-            foreach (var v in ArrayItems)
-            {
-                if (v.m_index == child.m_index)
-                {
-                    return i;
-                }
-                ++i;
-            }
-            throw new KeyNotFoundException();
-        }
         #endregion
 
         public void RemoveKey(string key)
@@ -613,15 +642,15 @@ namespace UniJSON
                 Values[node.m_index] = JsonValue.Empty; // remove
             }
         }
+
+        public bool GetBoolean()
+        {
+            return Value.GetBoolean();
+        }
     }
 
     public static class JsonNodeExtensions
     {
-        public static Boolean GetBoolean(this JsonNode self)
-        {
-            return self.Value.GetBoolean();
-        }
-
         public static Int32 GetInt32(this JsonNode self)
         {
             return self.Value.GetInt32();

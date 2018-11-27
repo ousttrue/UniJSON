@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq.Expressions;
+
 
 namespace UniJSON
 {
@@ -7,36 +7,36 @@ namespace UniJSON
     {
         IStore GetStore();
 
-        IFormatter BeginList(int n);
+        void BeginList(int n);
 
-        IFormatter EndList();
+        void EndList();
 
-        IFormatter BeginMap(int n);
+        void BeginMap(int n);
 
-        IFormatter EndMap();
+        void EndMap();
 
-        IFormatter Key(string x);
+        void Key(string x);
 
 
-        IFormatter Null();
+        void Null();
 
-        IFormatter Value(String x);
+        void Value(String x);
 
-        IFormatter Value(ArraySegment<Byte> bytes);
+        void Value(ArraySegment<Byte> bytes);
 
-        IFormatter Value(Boolean x);
+        void Value(Boolean x);
 
-        IFormatter Value(Byte x);
-        IFormatter Value(UInt16 x);
-        IFormatter Value(UInt32 x);
-        IFormatter Value(UInt64 x);
+        void Value(Byte x);
+        void Value(UInt16 x);
+        void Value(UInt32 x);
+        void Value(UInt64 x);
 
-        IFormatter Value(SByte x);
-        IFormatter Value(Int16 x);
-        IFormatter Value(Int32 x);
-        IFormatter Value(Int64 x);
+        void Value(SByte x);
+        void Value(Int16 x);
+        void Value(Int32 x);
+        void Value(Int64 x);
 
-        IFormatter Value(Single x);
-        IFormatter Value(Double x);
+        void Value(Single x);
+        void Value(Double x);
     }
 }

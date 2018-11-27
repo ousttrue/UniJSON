@@ -8,7 +8,7 @@
         bool IsMap { get; }
         int Count { get; }
 
-        object GetValue();
+        //object GetValue();
         bool GetBoolean();
     }
 }
