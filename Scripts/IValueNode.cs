@@ -80,6 +80,31 @@ namespace UniJSON
             throw new KeyNotFoundException();
         }
 
+        public static IEnumerable<IValueNode> Traverse<T>(this T self) where T : IValueNode
+        {
+            yield return self;
+            if (self.IsArray)
+            {
+                foreach (var x in self.ArrayItems)
+                {
+                    foreach (var y in x.Traverse())
+                    {
+                        yield return y;
+                    }
+                }
+            }
+            else if (self.IsMap)
+            {
+                foreach (var kv in self.ObjectItems)
+                {
+                    foreach (var y in kv.Value.Traverse())
+                    {
+                        yield return y;
+                    }
+                }
+            }
+        }
+
         #region Deserializer
         static Delegate GetDeserializer<S, T>() where S : IValueNode
         {
@@ -145,7 +170,7 @@ namespace UniJSON
             (default(GenericDeserializer<S, T>)).Deserialize(self, ref value);
         }
 
-        public static bool GetBoolean<T>(this T self) where T: IValueNode
+        public static bool GetBoolean<T>(this T self) where T : IValueNode
         {
             var value = default(bool);
             self.Deserialize(ref value);

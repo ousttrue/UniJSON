@@ -5,43 +5,6 @@ using System.Linq;
 
 namespace UniJSON
 {
-    public enum JsonDiffType
-    {
-        KeyAdded,
-        KeyRemoved,
-        ValueChanged,
-    }
-
-    public struct JsonDiff<T> where T : IValueNode, new()
-    {
-        public JsonPointer Path;
-        public JsonDiffType DiffType;
-        public string Msg;
-
-        public JsonDiff(T node, JsonDiffType diffType, string msg)
-        {
-            Path = new JsonPointer(node);
-            DiffType = diffType;
-            Msg = msg;
-        }
-
-        public override string ToString()
-        {
-            switch (DiffType)
-            {
-                case JsonDiffType.KeyAdded:
-                    return string.Format("+ {0}: {1}", Path, Msg);
-                case JsonDiffType.KeyRemoved:
-                    return string.Format("- {0}: {1}", Path, Msg);
-                case JsonDiffType.ValueChanged:
-                    return string.Format("= {0}: {1}", Path, Msg);
-                default:
-                    throw new NotImplementedException();
-            }
-        }
-    }
-
-
     public struct JsonNode : IValueNode
     {
         public bool IsNull
@@ -739,49 +702,6 @@ namespace UniJSON
                 throw new JsonValueException();
             }
             return Value.GetDouble();
-        }
-    }
-
-    public static class JsonNodeExtensions
-    {
-        public static Int32 GetInt32(this JsonNode self)
-        {
-            return self.Value.GetInt32();
-        }
-
-        public static Double GetDouble(this JsonNode self)
-        {
-            return self.Value.GetDouble();
-        }
-
-        public static string GetString(this JsonNode self)
-        {
-            return self.Value.GetString();
-        }
-
-        public static IEnumerable<JsonNode> Traverse(this JsonNode self)
-        {
-            yield return self;
-            if (self.Value.ValueType == JsonValueType.Array)
-            {
-                foreach (var x in self.ArrayItemsRaw)
-                {
-                    foreach (var y in x.Traverse())
-                    {
-                        yield return y;
-                    }
-                }
-            }
-            else if (self.Value.ValueType == JsonValueType.Object)
-            {
-                foreach (var kv in self.ObjectItemsRaw)
-                {
-                    foreach (var y in kv.Value.Traverse())
-                    {
-                        yield return y;
-                    }
-                }
-            }
         }
     }
 }
