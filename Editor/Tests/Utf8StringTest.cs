@@ -22,5 +22,16 @@ namespace UniJSON
 
             Assert.AreEqual(2, abc.IndexOf((byte)'c'));
         }
+
+        [Test]
+        public void ShortUtf8Test()
+        {
+            var a0 = Utf8String4.Create("a");
+            Assert.AreEqual("a", a0);
+            var a1 = Utf8String4.Create(new byte[] { (byte)'a', 0x00});
+            Assert.AreEqual(a0, a1);
+            var a2 = Utf8String4.Create("漢");
+            Assert.AreEqual(3, a2.ByteLength);
+        }
     }
 }

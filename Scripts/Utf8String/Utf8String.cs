@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 
 
 namespace UniJSON
 {
     public struct Utf8String
     {
+        public static readonly System.Text.Encoding Encoding = new System.Text.UTF8Encoding(false);
+
         public readonly ArraySegment<Byte> Bytes;
         public int ByteLength
         {
@@ -33,7 +34,7 @@ namespace UniJSON
 
         public static Utf8String FromString(string src)
         {
-            return new Utf8String(new UTF8Encoding(false).GetBytes(src));
+            return new Utf8String(Encoding.GetBytes(src));
         }
 
         public Utf8String Concat(Utf8String rhs)
@@ -47,7 +48,7 @@ namespace UniJSON
         public override string ToString()
         {
             if (ByteLength == 0) return "";
-            return Encoding.UTF8.GetString(Bytes.Array, Bytes.Offset, Bytes.Count);
+            return Encoding.GetString(Bytes.Array, Bytes.Offset, Bytes.Count);
         }
 
         public bool IsEmpty
