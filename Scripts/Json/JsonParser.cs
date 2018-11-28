@@ -76,66 +76,15 @@ namespace UniJSON
 
         static JsonValue ParseString(Utf8String segment, int parentIndex)
         {
-            int i = 1;
-            while(i < segment.ByteLength)
+            int pos;
+            if (segment.TrySearchAscii((Byte)'"', 1, out pos))
             {
-                var b = segment[i];
-                if (b <= 0x7F)
-                {
-                    // ascii
-                    if (b == '\"')
-                    {
-                        // closed
-                        return new JsonValue(segment.SubString(0, i + 1), JsonValueType.String, parentIndex);
-                    }
-                    else if (b == '\\')
-                    {
-                        // escaped
-                        switch ((char)segment[i + 1])
-                        {
-                            case '"': // fall through
-                            case '\\': // fall through
-                            case '/': // fall through
-                            case 'b': // fall through
-                            case 'f': // fall through
-                            case 'n': // fall through
-                            case 'r': // fall through
-                            case 't': // fall through
-                                      // skip next
-                                i += 1;
-                                break;
-
-                            case 'u': // unicode
-                                      // skip next 4
-                                i += 4;
-                                break;
-
-                            default:
-                                // unkonw escape
-                                throw new JsonParseException("unknown escape: " + segment.SubString(i));
-                        }
-                    }
-
-                    ++i;
-                }
-                else if(b <= 0xDF)
-                {
-                    i += 2;
-                }
-                else if(b <= 0xEF)
-                {
-                    i += 3;
-                }
-                else if(b <= 0xF7)
-                {
-                    i += 4;
-                }
-                else
-                {
-                    throw new JsonParseException("invalid utf8");
-                }
+                return new JsonValue(segment.SubString(0, pos + 1), JsonValueType.String, parentIndex);
             }
-            throw new JsonParseException("no close string: " + segment.SubString(i));
+            else
+            {
+                throw new JsonParseException("no close string: " + segment);
+            }
         }
 
         static Utf8String ParseArray(Utf8String segment, List<JsonValue> values, int parentIndex)
@@ -148,7 +97,7 @@ namespace UniJSON
                 {
                     // skip white space
                     int nextToken;
-                    if (!current.TrySearch(x => !Char.IsWhiteSpace((char)x), out nextToken))
+                    if (!current.TrySearchByte(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
                         throw new JsonParseException("no white space expected");
                     }
@@ -171,7 +120,7 @@ namespace UniJSON
                 {
                     // search ',' or closeChar
                     int keyPos;
-                    if (!current.TrySearch(x => x == ',', out keyPos))
+                    if (!current.TrySearchByte(x => x == ',', out keyPos))
                     {
                         throw new JsonParseException("',' expected");
                     }
@@ -181,7 +130,7 @@ namespace UniJSON
                 {
                     // skip white space
                     int nextToken;
-                    if (!current.TrySearch(x => !Char.IsWhiteSpace((char)x), out nextToken))
+                    if (!current.TrySearchByte(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
                         throw new JsonParseException("not whitespace expected");
                     }
@@ -206,7 +155,7 @@ namespace UniJSON
                 {
                     // skip white space
                     int nextToken;
-                    if (!current.TrySearch(x => !Char.IsWhiteSpace((char)x), out nextToken))
+                    if (!current.TrySearchByte(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
                         throw new JsonParseException("no white space expected");
                     }
@@ -228,7 +177,7 @@ namespace UniJSON
                 {
                     // search ',' or closeChar
                     int keyPos;
-                    if (!current.TrySearch(x => x == ',', out keyPos))
+                    if (!current.TrySearchByte(x => x == ',', out keyPos))
                     {
                         throw new JsonParseException("',' expected");
                     }
@@ -238,7 +187,7 @@ namespace UniJSON
                 {
                     // skip white space
                     int nextToken;
-                    if (!current.TrySearch(x => !Char.IsWhiteSpace((char)x), out nextToken))
+                    if (!current.TrySearchByte(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
                         throw new JsonParseException("not whitespace expected");
                     }
@@ -255,7 +204,7 @@ namespace UniJSON
 
                 // search ':'
                 int valuePos;
-                if (!current.TrySearch(x => x == ':', out valuePos))
+                if (!current.TrySearchByte(x => x == ':', out valuePos))
                 {
                     throw new JsonParseException(": is not found");
                 }
@@ -264,7 +213,7 @@ namespace UniJSON
                 {
                     // skip white space
                     int nextToken;
-                    if (!current.TrySearch(x => !Char.IsWhiteSpace((char)x), out nextToken))
+                    if (!current.TrySearchByte(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
                         throw new JsonParseException("not whitespace expected");
                     }
@@ -283,7 +232,7 @@ namespace UniJSON
         {
             // skip white space
             int pos;
-            if (!segment.TrySearch(x => !char.IsWhiteSpace((char)x), out pos))
+            if (!segment.TrySearchByte(x => !char.IsWhiteSpace((char)x), out pos))
             {
                 throw new JsonParseException("only whitespace");
             }

@@ -125,7 +125,7 @@ namespace UniJSON
 
         static bool IsSpace(Byte b)
         {
-            switch(b)
+            switch (b)
             {
                 case 0x20:
                 case 0x0a:
@@ -142,7 +142,7 @@ namespace UniJSON
         public Utf8String TrimStart()
         {
             var i = 0;
-            for(; i<ByteLength; ++i)
+            for (; i < ByteLength; ++i)
             {
                 if (!IsSpace(this[i]))
                 {
@@ -235,7 +235,7 @@ namespace UniJSON
             }
         }
 
-        public bool TrySearch(Func<byte, bool> pred, out int pos)
+        public bool TrySearchByte(Func<byte, bool> pred, out int pos)
         {
             pos = 0;
             for (; pos < ByteLength; ++pos)
@@ -245,6 +245,73 @@ namespace UniJSON
                     return true;
                 }
             }
+            return false;
+        }
+
+        public bool TrySearchAscii(Byte target, int start, out int pos)
+        {
+            int i = start;
+            while (i < ByteLength)
+            {
+                var b = Bytes.Get(i);
+                if (b <= 0x7F)
+                {
+                    // ascii
+                    if (b == target/*'\"'*/)
+                    {
+                        // closed
+                        pos = i;
+                        return true;
+                    }
+                    else if (b == '\\')
+                    {
+                        // escaped
+                        switch ((char)Bytes.Get(i + 1))
+                        {
+                            case '"': // fall through
+                            case '\\': // fall through
+                            case '/': // fall through
+                            case 'b': // fall through
+                            case 'f': // fall through
+                            case 'n': // fall through
+                            case 'r': // fall through
+                            case 't': // fall through
+                                      // skip next
+                                i += 1;
+                                break;
+
+                            case 'u': // unicode
+                                      // skip next 4
+                                i += 4;
+                                break;
+
+                            default:
+                                // unkonw escape
+                                throw new JsonParseException("unknown escape: " + SubString(i));
+                        }
+                    }
+
+                    ++i;
+                }
+                else if (b <= 0xDF)
+                {
+                    i += 2;
+                }
+                else if (b <= 0xEF)
+                {
+                    i += 3;
+                }
+                else if (b <= 0xF7)
+                {
+                    i += 4;
+                }
+                else
+                {
+                    throw new JsonParseException("invalid utf8");
+                }
+            }
+
+            pos = -1;
             return false;
         }
     }
