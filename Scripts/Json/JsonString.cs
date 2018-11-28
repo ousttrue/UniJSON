@@ -55,6 +55,86 @@ namespace UniJSON
                 }
             }
         }
+
+        public static void Escape(Utf8String s, IStore w)
+        {
+            if (s.IsEmpty)
+            {
+                return;
+            }
+
+            int i = 0;
+            while (i < s.ByteLength)
+            {
+                var b = s.Bytes.Get(i);
+                if (b <= 0x7F)
+                {
+                    switch (b)
+                    {
+                        case (Byte)'"':
+                        case (Byte)'\\':
+                        case (Byte)'/':
+                            // \\ prefix
+                            w.Write((Byte)'\\');
+                            w.Write(b);
+                            break;
+
+                        case (Byte)'\b':
+                            w.Write((Byte)'\\');
+                            w.Write((Byte)'b');
+                            break;
+                        case (Byte)'\f':
+                            w.Write((Byte)'\\');
+                            w.Write((Byte)'f');
+                            break;
+                        case (Byte)'\n':
+                            w.Write((Byte)'\\');
+                            w.Write((Byte)'n');
+                            break;
+                        case (Byte)'\r':
+                            w.Write((Byte)'\\');
+                            w.Write((Byte)'r');
+                            break;
+                        case (Byte)'\t':
+                            w.Write((Byte)'\\');
+                            w.Write((Byte)'t');
+                            break;
+
+                        default:
+                            w.Write(b);
+                            break;
+                    }
+                    // ascii
+                    ++i;
+                }
+                else if (b <= 0xDF)
+                {
+                    w.Write(b);
+                    w.Write(s.Bytes.Get(i + 1));
+                    i += 2;
+                }
+                else if (b <= 0xEF)
+                {
+                    w.Write(b);
+                    w.Write(s.Bytes.Get(i + 1));
+                    w.Write(s.Bytes.Get(i + 2));
+                    i += 3;
+                }
+                else if (b <= 0xF7)
+                {
+                    w.Write(b);
+                    w.Write(s.Bytes.Get(i + 1));
+                    w.Write(s.Bytes.Get(i + 2));
+                    w.Write(s.Bytes.Get(i + 3));
+                    i += 4;
+                }
+                else
+                {
+                    throw new JsonParseException("invalid utf8");
+                }
+            }
+        }
+
         public static string Escape(String s)
         {
             var sb = new StringBuilder();
@@ -69,6 +149,13 @@ namespace UniJSON
             w.Write('"');
         }
 
+        public static void Quote(Utf8String s, IStore w)
+        {
+            w.Write((Byte)'"');
+            Escape(s, w);
+            w.Write((Byte)'"');
+        }
+
         /// <summary>
         /// Added " and Escape
         /// </summary>
@@ -79,6 +166,13 @@ namespace UniJSON
             var sb = new StringBuilder();
             Quote(s, new StringBuilderStore(sb));
             return sb.ToString();
+        }
+
+        public static Utf8String Quote(Utf8String s)
+        {
+            var sb = new BytesStore(s.ByteLength);
+            Quote(s, sb);
+            return new Utf8String(sb.Bytes);
         }
         #endregion
 

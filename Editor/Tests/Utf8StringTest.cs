@@ -28,10 +28,26 @@ namespace UniJSON
         {
             var a0 = Utf8String4.Create("a");
             Assert.AreEqual("a", a0);
-            var a1 = Utf8String4.Create(new byte[] { (byte)'a', 0x00});
+            var a1 = Utf8String4.Create(new byte[] { (byte)'a', 0x00 });
             Assert.AreEqual(a0, a1);
             var a2 = Utf8String4.Create("漢");
             Assert.AreEqual(3, a2.ByteLength);
+        }
+
+        [Test]
+        public void QuoteTest()
+        {
+            {
+                var value = Utf8String.FromString("ho日本語ge");
+                var quoted = Utf8String.FromString("\"ho日本語ge\"");
+                Assert.AreEqual(quoted, JsonString.Quote(value));
+            }
+
+            {
+                var value = Utf8String.FromString("fuga\n  ho日本語ge");
+                var quoted = Utf8String.FromString("\"fuga\\n  ho日本語ge\"");
+                Assert.AreEqual(quoted, JsonString.Quote(value));
+            }
         }
     }
 }
