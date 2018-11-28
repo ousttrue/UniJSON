@@ -342,6 +342,7 @@ namespace UniJSON
         }
         #endregion
 
+        #region JsonPointer
         public void RemoveKey(string key)
         {
             if (Value.ValueType != JsonValueType.Object)
@@ -371,16 +372,6 @@ namespace UniJSON
             {
                 throw new InvalidOperationException();
             }
-
-            /*
-            switch (key)
-            {
-                case "title":
-                case "$schema":
-                    // skip
-                    return;
-            }
-            */
 
             Values.Add(new JsonValue(Utf8String.FromString("\"" + key + "\""), JsonValueType.String, m_index));
             AddNode(node);
@@ -491,52 +482,20 @@ namespace UniJSON
             return GetNodes(new JsonPointer(jsonPointer));
         }
 
-        void SetValue(JsonPointer jsonPointer, Func<int, JsonValue> createNodeValue)
+        public void SetValue<T>(string jsonPointer, T value)
         {
+            var f = new JsonFormatter();
+            f.Serialize(value);
+
             foreach (var node in GetNodes(jsonPointer))
             {
-                Values[node.m_index] = createNodeValue(node.Value.ParentIndex);
+                Values[node.m_index] = new JsonValue
+                {
+                    ParentIndex = node.Value.ParentIndex,
+                    Segment = new Utf8String(f.GetStore().Bytes),
+                    ValueType = JsonValueType.Boolean
+                };
             }
-        }
-
-        public void SetValue(string jsonPointer, string value)
-        {
-            SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
-            {
-                ParentIndex = parentIndex,
-                Segment = Utf8String.FromString(JsonString.Quote(value)),
-                ValueType = JsonValueType.String
-            });
-        }
-
-        public void SetValue(string jsonPointer, int value)
-        {
-            SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
-            {
-                ParentIndex = parentIndex,
-                Segment = Utf8String.FromString(value.ToString()),
-                ValueType = JsonValueType.Integer
-            });
-        }
-
-        public void SetValue(string jsonPointer, float value)
-        {
-            SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
-            {
-                ParentIndex = parentIndex,
-                Segment = Utf8String.FromString(value.ToString()),
-                ValueType = JsonValueType.Integer
-            });
-        }
-
-        public void SetValue(string jsonPointer, bool value)
-        {
-            SetValue(new JsonPointer(jsonPointer), parentIndex => new JsonValue
-            {
-                ParentIndex = parentIndex,
-                Segment = Utf8String.FromString(value.ToString().ToLower()),
-                ValueType = JsonValueType.Boolean
-            });
         }
 
         public void RemoveValue(string jsonPointer)
@@ -550,7 +509,9 @@ namespace UniJSON
                 Values[node.m_index] = JsonValue.Empty; // remove
             }
         }
+        #endregion
 
+        #region Getter
         public bool GetBoolean()
         {
             if(Value.ValueType!=JsonValueType.Boolean) throw new JsonValueException();
@@ -710,5 +671,6 @@ namespace UniJSON
             }
             return Value.GetDouble();
         }
+        #endregion
     }
 }
