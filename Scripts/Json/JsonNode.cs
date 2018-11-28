@@ -42,7 +42,7 @@ namespace UniJSON
             get { return Value.ValueType == JsonValueType.Object; }
         }
 
-        public int Count
+        public int ValueCount
         {
             get
             {

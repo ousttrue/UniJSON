@@ -718,7 +718,7 @@ namespace UniJSON.MsgPack
         }
 
         #region  Collection
-        public int Count
+        public int ValueCount
         {
             get
             {

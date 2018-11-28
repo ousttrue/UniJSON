@@ -25,7 +25,7 @@ namespace UniJSON
         bool IsMap { get; }
         IEnumerable<KeyValuePair<string, IValueNode>> ObjectItems { get; }
 
-        int Count { get; }
+        int ValueCount { get; }
         int ValueIndex { get; }
 
         Boolean GetBoolean();
