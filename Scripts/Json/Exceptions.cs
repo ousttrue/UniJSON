@@ -15,6 +15,6 @@ namespace UniJSON
 
     public class JsonValueException : Exception
     {
-        public JsonValueException(string msg) : base(msg) { }
+        public JsonValueException(string msg=null) : base(msg) { }
     }
 }

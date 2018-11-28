@@ -79,16 +79,44 @@ namespace UniJSON
             }
         }
 
+        public SByte GetInt8()
+        {
+            return SByte.Parse(Segment.ToString());
+        }
+        public Int16 GetInt16()
+        {
+            return Int16.Parse(Segment.ToString());
+        }
         public Int32 GetInt32()
         {
             return Int32.Parse(Segment.ToString());
+        }
+        public Int64 GetInt64()
+        {
+            return Int64.Parse(Segment.ToString());
+        }
+
+        public Byte GetUInt8()
+        {
+            return Byte.Parse(Segment.ToString());
+        }
+        public UInt16 GetUInt16()
+        {
+            return UInt16.Parse(Segment.ToString());
+        }
+        public UInt32 GetUInt32()
+        {
+            return UInt32.Parse(Segment.ToString());
+        }
+        public UInt64 GetUInt64()
+        {
+            return UInt64.Parse(Segment.ToString());
         }
 
         public Single GetSingle()
         {
             return Single.Parse(Segment.ToString(), CultureInfo.InvariantCulture);
         }
-
         public Double GetDouble()
         {
             return Double.Parse(Segment.ToString(), CultureInfo.InvariantCulture);

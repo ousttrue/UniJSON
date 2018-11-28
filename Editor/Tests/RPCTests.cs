@@ -107,7 +107,7 @@ namespace UniJSON
             var parsed = JsonParser.Parse(new Utf8String(request));
             dispatcher.Call(parsed["method"].GetString(), parsed["params"], f);
 
-            Assert.AreEqual("3", new Utf8String(f.GetStore().Bytes));
+            Assert.AreEqual(Utf8String.FromString("3"), new Utf8String(f.GetStore().Bytes));
         }
     }
 }

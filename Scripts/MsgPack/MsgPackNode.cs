@@ -624,6 +624,56 @@ namespace UniJSON.MsgPack
             return Encoding.UTF8.GetString(bytes.Array, bytes.Offset, bytes.Count);
         }
 
+        public SByte GetSByte()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Int16 GetInt16()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Int32 GetInt32()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Int64 GetInt64()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Byte GetByte()
+        {
+            throw new NotImplementedException();
+        }
+
+        public UInt16 GetUInt16()
+        {
+            throw new NotImplementedException();
+        }
+
+        public UInt32 GetUInt32()
+        {
+            throw new NotImplementedException();
+        }
+
+        public UInt64 GetUInt64()
+        {
+            throw new NotImplementedException();
+        }
+
+        public float GetSingle()
+        {
+            throw new NotImplementedException();
+        }
+
+        public double GetDouble()
+        {
+            throw new NotImplementedException();
+        }
+
         #region  Collection
         public int Count
         {

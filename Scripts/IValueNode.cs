@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Linq;
 
 
 namespace UniJSON
@@ -20,7 +23,18 @@ namespace UniJSON
         int Count { get; }
         int ValueIndex { get; }
 
-        bool GetBoolean();
+        Boolean GetBoolean();
+        String GetString();
+        SByte GetSByte();
+        Int16 GetInt16();
+        Int32 GetInt32();
+        Int64 GetInt64();
+        Byte GetByte();
+        UInt16 GetUInt16();
+        UInt32 GetUInt32();
+        UInt64 GetUInt64();
+        Single GetSingle();
+        Double GetDouble();
     }
 
     public static class IValueNodeExtensions
@@ -63,9 +77,77 @@ namespace UniJSON
             throw new KeyNotFoundException();
         }
 
-        public static void Deserialize<S, T>(this S self, ref T value) where S : IValueNode
+        #region Deserializer
+        static Delegate GetDeserializer<S, T>() where S : IValueNode
         {
+            var m = typeof(S).GetMethods();
+
+            // primitive
+            var mi = typeof(S).GetMethods().FirstOrDefault(x =>
+            {
+                if (!x.Name.StartsWith("Get"))
+                {
+                    return false;
+                }
+                var t = typeof(T);
+                if (!x.Name.EndsWith(typeof(T).Name))
+                {
+                    return false;
+                }
+
+                var parameters = x.GetParameters();
+                if (parameters.Length != 0)
+                {
+                    return false;
+                }
+
+                if (x.ReturnType != typeof(T))
+                {
+                    return false;
+                }
+
+                return true;
+            });
+
+            if (mi != null)
+            {
+                var self = Expression.Parameter(typeof(S), "self");
+                var call = Expression.Call(self, mi);
+                var func = Expression.Lambda(call, self);
+                return func.Compile();
+            }
+
             throw new NotImplementedException();
         }
+
+        struct GenericDeserializer<S, T> where S : IValueNode
+        {
+            delegate T Deserializer(S node);
+
+            static Deserializer s_deserializer;
+
+            public void Deserialize(S node, ref T value)
+            {
+                if (s_deserializer == null)
+                {
+                    var d = (Func<S, T>)GetDeserializer<S, T>();
+                    s_deserializer = new Deserializer(d);
+                }
+                value = s_deserializer(node);
+            }
+        }
+
+        public static void Deserialize<S, T>(this S self, ref T value) where S : IValueNode
+        {
+            (default(GenericDeserializer<S, T>)).Deserialize(self, ref value);
+        }
+
+        public static bool GetBoolean<T>(this T self) where T: IValueNode
+        {
+            var value = default(bool);
+            self.Deserialize(ref value);
+            return value;
+        }
+        #endregion
     }
 }

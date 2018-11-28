@@ -563,7 +563,162 @@ namespace UniJSON
 
         public bool GetBoolean()
         {
+            if(Value.ValueType!=JsonValueType.Boolean) throw new JsonValueException();
             return Value.GetBoolean();
+        }
+
+        public string GetString()
+        {
+            if (Value.ValueType != JsonValueType.String) throw new JsonValueException();
+            return Value.GetString();
+        }
+
+        public SByte GetSByte()
+        {
+            if (Value.ValueType == JsonValueType.Integer)
+            {
+                return Value.GetInt8();
+            }
+            else if(Value.ValueType == JsonValueType.Number)
+            {
+                return (sbyte)Value.GetDouble();
+            }
+            else
+            {
+                throw new JsonValueException();
+            }
+        }
+
+        public Int16 GetInt16()
+        {
+            if (Value.ValueType == JsonValueType.Integer)
+            {
+                return Value.GetInt16();
+            }
+            else if (Value.ValueType == JsonValueType.Number)
+            {
+                return (short)Value.GetDouble();
+            }
+            else
+            {
+                throw new JsonValueException();
+            }
+        }
+
+        public Int32 GetInt32()
+        {
+            if (Value.ValueType == JsonValueType.Integer)
+            {
+                return Value.GetInt32();
+            }
+            else if (Value.ValueType == JsonValueType.Number)
+            {
+                return (int)Value.GetDouble();
+            }
+            else
+            {
+                throw new JsonValueException();
+            }
+        }
+
+        public Int64 GetInt64()
+        {
+            if (Value.ValueType == JsonValueType.Integer)
+            {
+                return Value.GetInt64();
+            }
+            else if (Value.ValueType == JsonValueType.Number)
+            {
+                return (long)Value.GetDouble();
+            }
+            else
+            {
+                throw new JsonValueException();
+            }
+        }
+
+        public Byte GetByte()
+        {
+            if (Value.ValueType == JsonValueType.Integer)
+            {
+                return Value.GetUInt8();
+            }
+            else if (Value.ValueType == JsonValueType.Number)
+            {
+                return (byte)Value.GetDouble();
+            }
+            else
+            {
+                throw new JsonValueException();
+            }
+        }
+
+        public UInt16 GetUInt16()
+        {
+            if (Value.ValueType == JsonValueType.Integer)
+            {
+                return Value.GetUInt16();
+            }
+            else if (Value.ValueType == JsonValueType.Number)
+            {
+                return (ushort)Value.GetDouble();
+            }
+            else
+            {
+                throw new JsonValueException();
+            }
+        }
+
+        public UInt32 GetUInt32()
+        {
+            if (Value.ValueType == JsonValueType.Integer)
+            {
+                return Value.GetUInt32();
+            }
+            else if (Value.ValueType == JsonValueType.Number)
+            {
+                return (uint)Value.GetDouble();
+            }
+            else
+            {
+                throw new JsonValueException();
+            }
+        }
+
+        public UInt64 GetUInt64()
+        {
+            if (Value.ValueType == JsonValueType.Integer)
+            {
+                return Value.GetUInt64();
+            }
+            else if (Value.ValueType == JsonValueType.Number)
+            {
+                return (ulong)Value.GetDouble();
+            }
+            else
+            {
+                throw new JsonValueException();
+            }
+        }
+
+        public float GetSingle()
+        {
+            if (Value.ValueType != JsonValueType.Number
+                && Value.ValueType != JsonValueType.Integer)
+            {
+                throw new JsonValueException();
+            }
+            return Value.GetSingle();
+        }
+
+        public double GetDouble()
+        {
+            if (Value.ValueType != JsonValueType.Number
+                && Value.ValueType != JsonValueType.Integer)
+            {
+                throw new JsonValueException();
+            }
+            return Value.GetDouble();
         }
     }
 
@@ -584,23 +739,6 @@ namespace UniJSON
             return self.Value.GetString();
         }
 
-        /*
-        public static IEnumerable<KeyValuePair<string, JsonNode>> TraverseObjects(this JsonNode self)
-        {
-            foreach (var kv in self.ObjectItems)
-            {
-                yield return kv;
-
-                if (kv.Value.Value.ValueType == JsonValueType.Object)
-                {
-                    foreach (var _kv in kv.Value.TraverseObjects())
-                    {
-                        yield return _kv;
-                    }
-                }
-            }
-        }
-        */
         public static IEnumerable<JsonNode> Traverse(this JsonNode self)
         {
             yield return self;
