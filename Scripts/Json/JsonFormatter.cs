@@ -187,8 +187,8 @@ namespace UniJSON
         protected virtual System.Reflection.MethodInfo GetMethod<T>(Expression<Func<T>> expression)
         {
             var formatterType = GetType();
-            var method = formatterType.GetMethod("Value", new Type[] { typeof(T) });
-            return method;
+            var method = formatterType.GetMethod("Serialize");
+            return method.MakeGenericMethod(typeof(T));
         }
 
         public void KeyValue<T>(Expression<Func<T>> expression)
