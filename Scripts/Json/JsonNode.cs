@@ -213,9 +213,16 @@ namespace UniJSON
                 return m_index;
             }
         }
-        public JsonValue Value
+        JsonValue Value
         {
             get { return Values[m_index]; }
+        }
+        public ArraySegment<byte> Bytes
+        {
+            get
+            {
+                return Value.Segment.Bytes;
+            }
         }
         public IEnumerable<JsonNode> Children
         {

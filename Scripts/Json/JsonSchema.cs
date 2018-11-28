@@ -228,7 +228,7 @@ namespace UniJSON
                         break;
 
                     case "default":
-                        Default = kv.Value.Value.Segment;
+                        Default = kv.Value;
                         break;
                     #endregion
 

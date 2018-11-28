@@ -8,6 +8,8 @@ namespace UniJSON
 {
     public interface IValueNode
     {
+        ArraySegment<Byte> Bytes { get; }
+
         bool IsNull { get; }
         bool IsBoolean { get; }
         bool IsString { get; }

@@ -18,9 +18,16 @@ namespace UniJSON.MsgPack
             }
         }
 
-        public MsgPackValue Value
+        MsgPackValue Value
         {
             get { return Values[m_index]; }
+        }
+        public ArraySegment<byte> Bytes
+        {
+            get
+            {
+                return Value.Segment;
+            }
         }
         public IEnumerable<MsgPackNode> Children
         {

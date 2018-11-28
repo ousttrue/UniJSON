@@ -11,23 +11,23 @@ namespace UniJSON
         {
             foreach (var x in value.ArrayItemsRaw)
             {
-                switch (x.Value.ValueType)
+                if (x.IsInteger || x.IsFloat)
                 {
-                    case JsonValueType.Integer:
-                    case JsonValueType.Number:
-                        return JsonIntEnumValidator.Create(value.ArrayItemsRaw
-                            .Where(y => y.Value.ValueType == JsonValueType.Integer || y.Value.ValueType == JsonValueType.Number)
-                            .Select(y => y.GetInt32())
-                            );
+                    return JsonIntEnumValidator.Create(value.ArrayItemsRaw
+                        .Where(y => y.IsInteger || y.IsFloat)
+                        .Select(y => y.GetInt32())
+                        );
+                }
+                else if (x.IsString)
+                {
 
-                    case JsonValueType.String:
-                        return JsonStringEnumValidator.Create(value.ArrayItemsRaw
-                            .Where(y => y.Value.ValueType == JsonValueType.String)
-                            .Select(y => y.GetString())
-                            );
-
-                    default:
-                        break;
+                    return JsonStringEnumValidator.Create(value.ArrayItemsRaw
+                        .Where(y => y.IsString)
+                        .Select(y => y.GetString())
+                        );
+                }
+                else
+                {
                 }
             }
 

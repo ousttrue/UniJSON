@@ -238,11 +238,13 @@ namespace UniJSON
             m_w.Write(x ? s_true.Bytes : s_false.Bytes);
         }
 
+        /*
         public void Value(JsonNode node)
         {
             CommaCheck();
             m_w.Write(node.Value.Segment.ToString());
         }
+        */
 
         public void Value(SByte x)
         {
