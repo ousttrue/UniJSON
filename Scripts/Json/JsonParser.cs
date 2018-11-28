@@ -71,7 +71,7 @@ namespace UniJSON
                     break;
                 }
             }
-            return new JsonValue(segment.SubString(0, i), valueType, parentIndex);
+            return new JsonValue(segment.Subbytes(0, i), valueType, parentIndex);
         }
 
         static JsonValue ParseString(Utf8String segment, int parentIndex)
@@ -79,7 +79,7 @@ namespace UniJSON
             int pos;
             if (segment.TrySearchAscii((Byte)'"', 1, out pos))
             {
-                return new JsonValue(segment.SubString(0, pos + 1), JsonValueType.String, parentIndex);
+                return new JsonValue(segment.Subbytes(0, pos + 1), JsonValueType.String, parentIndex);
             }
             else
             {
@@ -263,7 +263,7 @@ namespace UniJSON
                         var index = values.Count;
                         values.Add(new JsonValue()); // placeholder
                         var current = ParseArray(segment, values, index);
-                        values[index] = new JsonValue(segment.SubString(0, current.Bytes.Offset + 1 - segment.Bytes.Offset),
+                        values[index] = new JsonValue(segment.Subbytes(0, current.Bytes.Offset + 1 - segment.Bytes.Offset),
                             JsonValueType.Array, parentIndex);
                         return values[index];
                     }
@@ -273,7 +273,7 @@ namespace UniJSON
                         var index = values.Count;
                         values.Add(new JsonValue()); // placeholder
                         var current=ParseObject(segment, values, index);
-                        values[index] = new JsonValue(segment.SubString(0, current.Bytes.Offset + 1 - segment.Bytes.Offset),
+                        values[index] = new JsonValue(segment.Subbytes(0, current.Bytes.Offset + 1 - segment.Bytes.Offset),
                             JsonValueType.Object, parentIndex);
                         return values[index];
                     }

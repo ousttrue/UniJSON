@@ -46,7 +46,7 @@ namespace UniJSON
             //return "[" + ParentIndex + "]" + ValueType + ": " + Segment.ToString();
             switch (ValueType)
             {
-                case JsonValueType.Null: 
+                case JsonValueType.Null:
                 case JsonValueType.Boolean:
                 case JsonValueType.Integer:
                 case JsonValueType.Number:
@@ -126,6 +126,11 @@ namespace UniJSON
         {
             var quoted = Segment.ToString();
             return JsonString.Unquote(quoted);
+        }
+
+        public Utf8String GetUtf8String()
+        {
+            return JsonString.Unquote(Segment);
         }
     }
 }

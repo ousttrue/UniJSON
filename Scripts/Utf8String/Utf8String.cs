@@ -115,10 +115,10 @@ namespace UniJSON
 
         public Utf8String SubString(int offset)
         {
-            return SubString(offset, ByteLength - offset);
+            return Subbytes(offset, ByteLength - offset);
         }
 
-        public Utf8String SubString(int offset, int count)
+        public Utf8String Subbytes(int offset, int count)
         {
             return new Utf8String(Bytes.Array, Bytes.Offset + offset, count);
         }

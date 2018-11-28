@@ -177,8 +177,18 @@ namespace UniJSON
         #endregion
 
         #region Unquote
-        public static void Unescape(string src, IStore w)
+        public static int Unescape(string src, IStore w)
         {
+            int writeCount = 0;
+            Action<Char> Write = c =>
+            {
+                if (w != null)
+                {
+                    w.Write(c);
+                }
+                ++writeCount;
+            };
+
             int i = 0;
             int length = src.Length - 1;
             while (i < length)
@@ -192,41 +202,136 @@ namespace UniJSON
                         case '/':
                         case '"':
                             // remove prefix
-                            w.Write(c);
+                            Write(c);
                             i += 2;
                             continue;
 
                         case 'b':
-                            w.Write('\b');
+                            Write('\b');
                             i += 2;
                             continue;
                         case 'f':
-                            w.Write('\f');
+                            Write('\f');
                             i += 2;
                             continue;
                         case 'n':
-                            w.Write('\n');
+                            Write('\n');
                             i += 2;
                             continue;
                         case 'r':
-                            w.Write('\r');
+                            Write('\r');
                             i += 2;
                             continue;
                         case 't':
-                            w.Write('\t');
+                            Write('\t');
                             i += 2;
                             continue;
                     }
                 }
 
-                w.Write(src[i]);
+                Write(src[i]);
                 i += 1;
             }
             while (i <= length)
             {
-                w.Write(src[i++]);
+                Write(src[i++]);
             }
+
+            return writeCount;
         }
+
+        public static int Unescape(Utf8String s, IStore w)
+        {
+            int writeCount = 0;
+            Action<Byte> Write = c =>
+            {
+                if (w != null)
+                {
+                    w.Write(c);
+                }
+                ++writeCount;
+            };
+
+            int i = 0;
+            int length = s.ByteLength - 1;
+            while (i < length)
+            {
+                var b = s[i];
+                if (b <= 0x7F)
+                {
+                    if (b == (Byte)'\\')
+                    {
+                        var c = s[i + 1];
+                        switch (c)
+                        {
+                            case (Byte)'\\':
+                            case (Byte)'/':
+                            case (Byte)'"':
+                                // remove prefix
+                                Write(c);
+                                i += 2;
+                                continue;
+
+                            case (Byte)'b':
+                                Write((Byte)'\b');
+                                i += 2;
+                                continue;
+                            case (Byte)'f':
+                                Write((Byte)'\f');
+                                i += 2;
+                                continue;
+                            case (Byte)'n':
+                                Write((Byte)'\n');
+                                i += 2;
+                                continue;
+                            case (Byte)'r':
+                                Write((Byte)'\r');
+                                i += 2;
+                                continue;
+                            case (Byte)'t':
+                                Write((Byte)'\t');
+                                i += 2;
+                                continue;
+                        }
+                    }
+
+                    Write(b);
+                    i += 1;
+                }
+                else if (b <= 0xDF)
+                {
+                    Write(b);
+                    Write(s.Bytes.Get(i + 1));
+                    i += 2;
+                }
+                else if (b <= 0xEF)
+                {
+                    Write(b);
+                    Write(s.Bytes.Get(i + 1));
+                    Write(s.Bytes.Get(i + 2));
+                    i += 3;
+                }
+                else if (b <= 0xF7)
+                {
+                    Write(b);
+                    Write(s.Bytes.Get(i + 1));
+                    Write(s.Bytes.Get(i + 2));
+                    Write(s.Bytes.Get(i + 3));
+                    i += 4;
+                }
+                else
+                {
+                    throw new JsonParseException("invalid utf8");
+                }
+            }
+            while (i <= length)
+            {
+                Write(s[i++]);
+            }
+
+            return writeCount;
+        }
+
         public static string Unescape(string src)
         {
             var sb = new StringBuilder();
@@ -234,16 +339,45 @@ namespace UniJSON
             return sb.ToString();
         }
 
-        public static void Unquote(string src, IStore w)
+        public static int Unquote(string src, IStore w)
         {
-            Unescape(src.Substring(1, src.Length - 2), w);
+            return Unescape(src.Substring(1, src.Length - 2), w);
         }
+
+        public static int Unquote(Utf8String src, IStore w)
+        {
+            return Unescape(src.Subbytes(1, src.ByteLength - 2), w);
+        }
+
         public static string Unquote(string src)
         {
-            var sb = new StringBuilder();
-            Unquote(src, new StringBuilderStore(sb));
-            var str = sb.ToString();
-            return str;
+            var count = Unquote(src, null);
+            if (count == src.Length - 2)
+            {
+                return src.Substring(1, src.Length - 2);
+            }
+            else
+            {
+                var sb = new StringBuilder(count);
+                Unquote(src, new StringBuilderStore(sb));
+                var str = sb.ToString();
+                return str;
+            }
+        }
+
+        public static Utf8String Unquote(Utf8String src)
+        {
+            var count = Unquote(src, null);
+            if (count == src.ByteLength - 2)
+            {
+                return src.Subbytes(1, src.ByteLength - 2);
+            }
+            else
+            {
+                var sb = new BytesStore(count);
+                Unquote(src, sb);
+                return new Utf8String(sb.Bytes);
+            }
         }
         #endregion
     }

@@ -41,12 +41,14 @@ namespace UniJSON
                 var value = Utf8String.FromString("ho日本語ge");
                 var quoted = Utf8String.FromString("\"ho日本語ge\"");
                 Assert.AreEqual(quoted, JsonString.Quote(value));
+                Assert.AreEqual(value, JsonString.Unquote(quoted));
             }
 
             {
                 var value = Utf8String.FromString("fuga\n  ho日本語ge");
                 var quoted = Utf8String.FromString("\"fuga\\n  ho日本語ge\"");
                 Assert.AreEqual(quoted, JsonString.Quote(value));
+                Assert.AreEqual(value, JsonString.Unquote(quoted));
             }
         }
     }
