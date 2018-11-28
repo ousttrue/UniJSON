@@ -49,6 +49,26 @@ namespace UniJSON
             get { return Value.ValueType == JsonValueType.Null; }
         }
 
+        public bool IsBoolean
+        {
+            get { return Value.ValueType == JsonValueType.Boolean; }
+        }
+
+        public bool IsString
+        {
+            get { return Value.ValueType == JsonValueType.String; }
+        }
+
+        public bool IsInteger
+        {
+            get { return Value.ValueType == JsonValueType.Integer; }
+        }
+
+        public bool IsFloat
+        {
+            get { return Value.ValueType == JsonValueType.Number; }
+        }
+
         public bool IsArray
         {
             get { return Value.ValueType == JsonValueType.Array; }

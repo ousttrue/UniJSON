@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+
 namespace UniJSON.MsgPack
 {
     public struct MsgPackNode : IValueNode
@@ -55,6 +56,41 @@ namespace UniJSON.MsgPack
                 }
                 return new MsgPackNode(Values, Value.ParentIndex);
             }
+        }
+
+        public bool IsNull
+        {
+            get { return Value.Format == MsgPackType.NIL; }
+        }
+
+        public bool IsBoolean
+        {
+            get { return Value.Format == MsgPackType.TRUE || Value.Format == MsgPackType.FALSE; }
+        }
+
+        public bool IsString
+        {
+            get { return Value.Format.IsString(); }
+        }
+
+        public bool IsInteger
+        {
+            get { return Value.Format.IsInteger(); }
+        }
+
+        public bool IsFloat
+        {
+            get { return Value.Format == MsgPackType.FLOAT || Value.Format == MsgPackType.DOUBLE; }
+        }
+
+        public bool IsArray
+        {
+            get { return Value.Format.IsArray(); }
+        }
+
+        public bool IsMap
+        {
+            get { return Value.Format.IsMap(); }
         }
 
         public MsgPackNode(List<MsgPackValue> values, int index = 0)
@@ -691,30 +727,6 @@ namespace UniJSON.MsgPack
                 {
                     throw new MsgPackTypeException("Not array or map");
                 }
-            }
-        }
-
-        public bool IsArray
-        {
-            get
-            {
-                return Value.Format.IsArray();
-            }
-        }
-
-        public bool IsMap
-        {
-            get
-            {
-                return Value.Format.IsMap();
-            }
-        }
-
-        public bool IsNull
-        {
-            get
-            {
-                return Value.Format == MsgPackType.NIL;
             }
         }
 

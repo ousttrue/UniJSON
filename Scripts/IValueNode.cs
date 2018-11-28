@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Linq;
+using System.Linq.Expressions;
 
 
 namespace UniJSON
@@ -10,6 +9,10 @@ namespace UniJSON
     public interface IValueNode
     {
         bool IsNull { get; }
+        bool IsBoolean { get; }
+        bool IsString { get; }
+        bool IsInteger { get; }
+        bool IsFloat { get; }
 
         bool HasParent { get; }
         IValueNode Parent { get; }
