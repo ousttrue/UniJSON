@@ -57,7 +57,7 @@ namespace UniJSON
 
                 {
                     // object[]
-                    if(t == typeof(object[]))
+                    if (t == typeof(object[]))
                     {
                         var self = Expression.Parameter(typeof(IFormatter), "f");
                         var arg = Expression.Parameter(t, "value");
@@ -79,8 +79,8 @@ namespace UniJSON
                     {
                         var self = Expression.Parameter(typeof(IFormatter), "f");
                         var arg = Expression.Parameter(t, "value");
-                        var call = Expression.Call(typeof(FormatterExtensions), "SerializeArray", 
-                            ienumerable.GetGenericArguments(), 
+                        var call = Expression.Call(typeof(FormatterExtensions), "SerializeArray",
+                            ienumerable.GetGenericArguments(),
                             self, arg);
                         var lambda = Expression.Lambda(call, self, arg);
                         return (Action<IFormatter, T>)lambda.Compile();
@@ -96,11 +96,12 @@ namespace UniJSON
                 //throw new NotImplementedException();
             }
 
+            static Serializer s_serializer
 #if UNITY_EDITOR
-            static Serializer s_serializer;
 #else
-            static readonly Serializer tl_serializer = new Serializer(GetSerializer(typeof(T)));
+             = new Serializer(GetSerializer(typeof(T)))
 #endif
+            ;
 
             public void Serialize(IFormatter f, T t)
             {
