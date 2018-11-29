@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 
@@ -7,6 +8,66 @@ namespace UniJSON
     public struct Utf8String
     {
         public static readonly System.Text.Encoding Encoding = new System.Text.UTF8Encoding(false);
+
+        public struct CodePoint
+        {
+            readonly Utf8String m_all;
+
+            public int Position
+            {
+                get;
+                private set;
+            }
+
+            int GetLength()
+            {
+                var b = m_all[Position];
+                if (b <= 0x7F)
+                {
+                    return 1;
+                }
+                else if (b <= 0xDF)
+                {
+                    return 2;
+                }
+                else if (b <= 0xEF)
+                {
+                    return 3;
+                }
+                else if (b <= 0xF7)
+                {
+                    return 4;
+                }
+                else
+                {
+                    throw new Exception("invalid utf8");
+                }
+            }
+
+            public Utf8String Current
+            {
+                get { return new Utf8String(m_all.Bytes.Array, m_all.Bytes.Offset + Position, GetLength()); }
+            }
+
+            public CodePoint(Utf8String all, int pos = 0)
+            {
+                m_all = all;
+                Position = pos;
+            }
+
+            public void Next()
+            {
+                Position += GetLength();
+            }
+
+            public bool IsValid
+            {
+                get
+                {
+                    return Position < m_all.ByteLength;
+                }
+            }
+        }
 
         public readonly ArraySegment<Byte> Bytes;
         public int ByteLength
@@ -250,23 +311,25 @@ namespace UniJSON
 
         public bool TrySearchAscii(Byte target, int start, out int pos)
         {
-            int i = start;
-            while (i < ByteLength)
+            for(var p = new CodePoint(this, start); p.IsValid; p.Next())
             {
-                var b = Bytes.Get(i);
+                var b = p.Current[0];
                 if (b <= 0x7F)
                 {
                     // ascii
                     if (b == target/*'\"'*/)
                     {
                         // closed
-                        pos = i;
+                        pos = p.Position;
                         return true;
                     }
                     else if (b == '\\')
                     {
                         // escaped
-                        switch ((char)Bytes.Get(i + 1))
+                        var next = p;
+                        next.Next();
+
+                        switch ((char)next.Current[0])
                         {
                             case '"': // fall through
                             case '\\': // fall through
@@ -277,43 +340,40 @@ namespace UniJSON
                             case 'r': // fall through
                             case 't': // fall through
                                       // skip next
-                                i += 1;
+                                p.Next();
                                 break;
 
                             case 'u': // unicode
                                       // skip next 4
-                                i += 4;
+                                p.Next();
+                                p.Next();
+                                p.Next();
+                                p.Next();
                                 break;
 
                             default:
                                 // unkonw escape
-                                throw new JsonParseException("unknown escape: " + SubString(i));
+                                throw new JsonParseException("unknown escape: " + next);
                         }
                     }
-
-                    ++i;
-                }
-                else if (b <= 0xDF)
-                {
-                    i += 2;
-                }
-                else if (b <= 0xEF)
-                {
-                    i += 3;
-                }
-                else if (b <= 0xF7)
-                {
-                    i += 4;
-                }
-                else
-                {
-                    throw new JsonParseException("invalid utf8");
                 }
             }
 
             pos = -1;
             return false;
         }
+
+        /*
+        IEnumerable<Utf8String> Split(byte delemeter)
+        {
+            var start = 0;
+            while (start < ByteLength)
+            {
+                if ()
+
+            }
+        }
+        */
     }
 
     public static class Utf8StringExtensions
