@@ -68,13 +68,17 @@ namespace UniJSON
                 var value = Utf8String.FromString("/a/b/c/");
                 var splited = value.Split((byte)'/').ToArray();
                 Assert.AreEqual(4, splited.Length);
-                /*
                 Assert.AreEqual(splited[0], Utf8String.FromString(""));
                 Assert.AreEqual(splited[1], Utf8String.FromString("a"));
                 Assert.AreEqual(splited[2], Utf8String.FromString("b"));
                 Assert.AreEqual(splited[3], Utf8String.FromString("c"));
-                */
             }
+        }
+
+        [Test]
+        public void AtoiTest()
+        {
+            Assert.AreEqual(1234, Utf8String.FromString("1234").ToInt32());
         }
     }
 }

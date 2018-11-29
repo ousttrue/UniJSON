@@ -112,6 +112,12 @@ namespace UniJSON
             return Encoding.GetString(Bytes.Array, Bytes.Offset, Bytes.Count);
         }
 
+        public string ToAscii()
+        {
+            if (ByteLength == 0) return "";
+            return System.Text.Encoding.ASCII.GetString(Bytes.Array, Bytes.Offset, Bytes.Count);
+        }
+
         public bool IsEmpty
         {
             get
@@ -387,6 +393,210 @@ namespace UniJSON
             {
                 yield return Subbytes(start, p.Position - start);
             }
+        }
+
+        #region atoi
+        public SByte ToSByte()
+        {
+            SByte value = 0;
+            var p = new CodePoint(this);
+            for (; p.IsValid; p.Next())
+            {
+                var b = p.Current[0];
+                switch (b)
+                {
+                    case 0x30: value = (SByte)(value * 10); break;
+                    case 0x31: value = (SByte)(value * 10 + 1); break;
+                    case 0x32: value = (SByte)(value * 10 + 2); break;
+                    case 0x33: value = (SByte)(value * 10 + 3); break;
+                    case 0x34: value = (SByte)(value * 10 + 4); break;
+                    case 0x35: value = (SByte)(value * 10 + 5); break;
+                    case 0x36: value = (SByte)(value * 10 + 6); break;
+                    case 0x37: value = (SByte)(value * 10 + 7); break;
+                    case 0x38: value = (SByte)(value * 10 + 8); break;
+                    case 0x39: value = (SByte)(value * 10 + 9); break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+            }
+            return value;
+        }
+        public Int16 ToInt16()
+        {
+            Int16 value = 0;
+            var p = new CodePoint(this);
+            for (; p.IsValid; p.Next())
+            {
+                var b = p.Current[0];
+                switch (b)
+                {
+                    case 0x30: value = (Int16)(value * 10); break;
+                    case 0x31: value = (Int16)(value * 10 + 1); break;
+                    case 0x32: value = (Int16)(value * 10 + 2); break;
+                    case 0x33: value = (Int16)(value * 10 + 3); break;
+                    case 0x34: value = (Int16)(value * 10 + 4); break;
+                    case 0x35: value = (Int16)(value * 10 + 5); break;
+                    case 0x36: value = (Int16)(value * 10 + 6); break;
+                    case 0x37: value = (Int16)(value * 10 + 7); break;
+                    case 0x38: value = (Int16)(value * 10 + 8); break;
+                    case 0x39: value = (Int16)(value * 10 + 9); break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+            }
+            return value;
+        }
+        public Int32 ToInt32()
+        {
+            Int32 value = 0;
+            var p = new CodePoint(this);
+            for (; p.IsValid; p.Next())
+            {
+                var b = p.Current[0];
+                switch (b)
+                {
+                    case 0x30: value = value * 10; break;
+                    case 0x31: value = value * 10 + 1; break;
+                    case 0x32: value = value * 10 + 2; break;
+                    case 0x33: value = value * 10 + 3; break;
+                    case 0x34: value = value * 10 + 4; break;
+                    case 0x35: value = value * 10 + 5; break;
+                    case 0x36: value = value * 10 + 6; break;
+                    case 0x37: value = value * 10 + 7; break;
+                    case 0x38: value = value * 10 + 8; break;
+                    case 0x39: value = value * 10 + 9; break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+            }
+            return value;
+        }
+        public Int64 ToInt64()
+        {
+            Int64 value = 0;
+            var p = new CodePoint(this);
+            for (; p.IsValid; p.Next())
+            {
+                var b = p.Current[0];
+                switch (b)
+                {
+                    case 0x30: value = (Int64)(value * 10); break;
+                    case 0x31: value = (Int64)(value * 10 + 1); break;
+                    case 0x32: value = (Int64)(value * 10 + 2); break;
+                    case 0x33: value = (Int64)(value * 10 + 3); break;
+                    case 0x34: value = (Int64)(value * 10 + 4); break;
+                    case 0x35: value = (Int64)(value * 10 + 5); break;
+                    case 0x36: value = (Int64)(value * 10 + 6); break;
+                    case 0x37: value = (Int64)(value * 10 + 7); break;
+                    case 0x38: value = (Int64)(value * 10 + 8); break;
+                    case 0x39: value = (Int64)(value * 10 + 9); break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+            }
+            return value;
+        }
+        public Byte ToByte()
+        {
+            Byte value = 0;
+            var p = new CodePoint(this);
+            for (; p.IsValid; p.Next())
+            {
+                var b = p.Current[0];
+                switch (b)
+                {
+                    case 0x30: value = (Byte)(value * 10); break;
+                    case 0x31: value = (Byte)(value * 10 + 1); break;
+                    case 0x32: value = (Byte)(value * 10 + 2); break;
+                    case 0x33: value = (Byte)(value * 10 + 3); break;
+                    case 0x34: value = (Byte)(value * 10 + 4); break;
+                    case 0x35: value = (Byte)(value * 10 + 5); break;
+                    case 0x36: value = (Byte)(value * 10 + 6); break;
+                    case 0x37: value = (Byte)(value * 10 + 7); break;
+                    case 0x38: value = (Byte)(value * 10 + 8); break;
+                    case 0x39: value = (Byte)(value * 10 + 9); break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+            }
+            return value;
+        }
+        public UInt16 ToUInt16()
+        {
+            UInt16 value = 0;
+            var p = new CodePoint(this);
+            for (; p.IsValid; p.Next())
+            {
+                var b = p.Current[0];
+                switch (b)
+                {
+                    case 0x30: value = (UInt16)(value * 10); break;
+                    case 0x31: value = (UInt16)(value * 10 + 1); break;
+                    case 0x32: value = (UInt16)(value * 10 + 2); break;
+                    case 0x33: value = (UInt16)(value * 10 + 3); break;
+                    case 0x34: value = (UInt16)(value * 10 + 4); break;
+                    case 0x35: value = (UInt16)(value * 10 + 5); break;
+                    case 0x36: value = (UInt16)(value * 10 + 6); break;
+                    case 0x37: value = (UInt16)(value * 10 + 7); break;
+                    case 0x38: value = (UInt16)(value * 10 + 8); break;
+                    case 0x39: value = (UInt16)(value * 10 + 9); break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+            }
+            return value;
+        }
+        public UInt32 ToUInt32()
+        {
+            UInt32 value = 0;
+            var p = new CodePoint(this);
+            for (; p.IsValid; p.Next())
+            {
+                var b = p.Current[0];
+                switch (b)
+                {
+                    case 0x30: value = (UInt32)(value * 10); break;
+                    case 0x31: value = (UInt32)(value * 10 + 1); break;
+                    case 0x32: value = (UInt32)(value * 10 + 2); break;
+                    case 0x33: value = (UInt32)(value * 10 + 3); break;
+                    case 0x34: value = (UInt32)(value * 10 + 4); break;
+                    case 0x35: value = (UInt32)(value * 10 + 5); break;
+                    case 0x36: value = (UInt32)(value * 10 + 6); break;
+                    case 0x37: value = (UInt32)(value * 10 + 7); break;
+                    case 0x38: value = (UInt32)(value * 10 + 8); break;
+                    case 0x39: value = (UInt32)(value * 10 + 9); break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+            }
+            return value;
+        }
+        public UInt64 ToUInt64()
+        {
+            UInt64 value = 0;
+            var p = new CodePoint(this);
+            for (; p.IsValid; p.Next())
+            {
+                var b = p.Current[0];
+                switch (b)
+                {
+                    case 0x30: value = (UInt64)(value * 10); break;
+                    case 0x31: value = (UInt64)(value * 10 + 1); break;
+                    case 0x32: value = (UInt64)(value * 10 + 2); break;
+                    case 0x33: value = (UInt64)(value * 10 + 3); break;
+                    case 0x34: value = (UInt64)(value * 10 + 4); break;
+                    case 0x35: value = (UInt64)(value * 10 + 5); break;
+                    case 0x36: value = (UInt64)(value * 10 + 6); break;
+                    case 0x37: value = (UInt64)(value * 10 + 7); break;
+                    case 0x38: value = (UInt64)(value * 10 + 8); break;
+                    case 0x39: value = (UInt64)(value * 10 + 9); break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+            }
+            return value;
+        }
+        #endregion
+
+        public float ToSingle()
+        {
+            return Single.Parse(ToAscii(), System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public double ToDouble()
+        {
+            return Double.Parse(ToAscii(), System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 

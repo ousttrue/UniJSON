@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 
 
 namespace UniJSON
@@ -62,72 +61,72 @@ namespace UniJSON
             }
         }
 
+        static Utf8String s_true = Utf8String.FromString("true");
+        static Utf8String s_false = Utf8String.FromString("false");
+
         public Boolean GetBoolean()
         {
-            var s = Segment.ToString();
-            if (s == "true")
+            if (Segment == s_true)
             {
                 return true;
             }
-            else if (s == "false")
+            else if (Segment == s_false)
             {
                 return false;
             }
             else
             {
-                throw new JsonValueException("invalid boolean: " + s);
+                throw new JsonValueException("invalid boolean: " + Segment.ToString());
             }
         }
 
         public SByte GetInt8()
         {
-            return SByte.Parse(Segment.ToString());
+            return Segment.ToSByte();
         }
         public Int16 GetInt16()
         {
-            return Int16.Parse(Segment.ToString());
+            return Segment.ToInt16();
         }
         public Int32 GetInt32()
         {
-            return Int32.Parse(Segment.ToString());
+            return Segment.ToInt32();
         }
         public Int64 GetInt64()
         {
-            return Int64.Parse(Segment.ToString());
+            return Segment.ToInt64();
         }
 
         public Byte GetUInt8()
         {
-            return Byte.Parse(Segment.ToString());
+            return Segment.ToByte();
         }
         public UInt16 GetUInt16()
         {
-            return UInt16.Parse(Segment.ToString());
+            return Segment.ToUInt16();
         }
         public UInt32 GetUInt32()
         {
-            return UInt32.Parse(Segment.ToString());
+            return Segment.ToUInt32();
         }
         public UInt64 GetUInt64()
         {
-            return UInt64.Parse(Segment.ToString());
+            return Segment.ToUInt64();
         }
 
         public Single GetSingle()
         {
-            return Single.Parse(Segment.ToString(), CultureInfo.InvariantCulture);
+            return Segment.ToSingle();
         }
         public Double GetDouble()
         {
-            return Double.Parse(Segment.ToString(), CultureInfo.InvariantCulture);
+            return Segment.ToDouble();
         }
 
         public String GetString()
         {
-            var quoted = Segment.ToString();
-            return JsonString.Unquote(quoted);
+            return JsonString.Unquote(Segment.ToString());
         }
-
         public Utf8String GetUtf8String()
         {
             return JsonString.Unquote(Segment);
