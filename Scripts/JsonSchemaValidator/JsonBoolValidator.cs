@@ -32,12 +32,12 @@ namespace UniJSON
             return null;
         }
 
-        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
         {
             f.Value((bool)o);
         }
 
-        public void ToJson(JsonFormatter f)
+        public void ToJson(IFormatter f)
         {
             f.Key("type"); f.Value("boolean");
         }

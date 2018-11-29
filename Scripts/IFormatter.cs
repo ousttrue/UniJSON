@@ -38,7 +38,5 @@ namespace UniJSON
 
         void Value(Single x);
         void Value(Double x);
-
-        void Serialize<T>(T value);
     }
 }

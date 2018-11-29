@@ -313,7 +313,7 @@ namespace UniJSON
 
         Dictionary<string, object> m_validValueMap = new Dictionary<string, object>();
 
-        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, Object o)
+        public void Serialize(IFormatter f, JsonSchemaValidationContext c, Object o)
         {
             // validate properties
             m_validValueMap.Clear();
@@ -330,7 +330,7 @@ namespace UniJSON
                 }
             }
 
-            using (f.BeginMapDisposable())
+            f.BeginMap(Properties.Count);
             {
                 foreach (var kv in Properties)
                 {
@@ -372,15 +372,16 @@ namespace UniJSON
                     }
                 }
             }
+            f.EndMap();
         }
 
-        public void ToJson(JsonFormatter f)
+        public void ToJson(IFormatter f)
         {
             f.Key("type"); f.Value("object");
             if (Properties.Count > 0)
             {
                 f.Key("properties");
-                f.BeginMap();
+                f.BeginMap(Properties.Count);
                 foreach (var kv in Properties)
                 {
                     f.Key(kv.Key);

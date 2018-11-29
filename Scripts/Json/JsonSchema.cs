@@ -376,7 +376,7 @@ namespace UniJSON
         }
         #endregion
 
-        public void Serialize(JsonFormatter f, Object o)
+        public void Serialize(IFormatter f, Object o)
         {
             var c = new JsonSchemaValidationContext(o);
 
@@ -396,9 +396,9 @@ namespace UniJSON
             return f.ToString();
         }
 
-        public void ToJson(JsonFormatter f)
+        public void ToJson(IFormatter f)
         {
-            f.BeginMap();
+            f.BeginMap(2);
             if (!string.IsNullOrEmpty(Title)) { f.Key("title"); f.Value(Title); }
             if (!string.IsNullOrEmpty(Description)) { f.Key("description"); f.Value(Description); }
             Validator.ToJson(f);

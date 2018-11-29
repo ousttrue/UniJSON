@@ -11,7 +11,9 @@ namespace UniJSON.MsgPack
         public void fix_raw()
         {
             var src = new Byte[] { 0, 1, 2 };
-            var bytes = new MsgPackFormatter().Value(src).GetStore().Bytes;
+            var f = new MsgPackFormatter();
+            f.Value(src);
+            var bytes = f.GetStore().Bytes;
 
             var v = MsgPackParser.Parse(bytes).GetBytes();
             Assert.True(src.SequenceEqual(v.ToEnumerable()));
@@ -21,7 +23,9 @@ namespace UniJSON.MsgPack
         public void raw16()
         {
             var src = Enumerable.Range(0, 50).Select(x => (Byte)x).ToArray();
-            var bytes = new MsgPackFormatter().Value(src).GetStore().Bytes;
+            var f = new MsgPackFormatter();
+            f.Value(src);
+            var bytes = f.GetStore().Bytes;
 
             var v = MsgPackParser.Parse(bytes).GetBytes();
             Assert.True(src.SequenceEqual(v.ToEnumerable()));

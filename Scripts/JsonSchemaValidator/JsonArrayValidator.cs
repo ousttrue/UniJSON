@@ -125,11 +125,11 @@ namespace UniJSON
             return null;
         }
 
-        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
         {
             var array = o as IEnumerable;
 
-            using (f.BeginListDisposable())
+            f.BeginList(array.GetCount());
             {
                 int i = 0;
                 foreach (var x in array)
@@ -140,9 +140,10 @@ namespace UniJSON
                     }
                 }
             }
+            f.EndList();
         }
 
-        public void ToJson(JsonFormatter f)
+        public void ToJson(IFormatter f)
         {
             f.Key("type"); f.Value("array");
 

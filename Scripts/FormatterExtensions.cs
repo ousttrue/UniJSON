@@ -2,144 +2,177 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Linq;
-using UnityEngine;
+using System.Reflection;
 
 namespace UniJSON
 {
     public static partial class FormatterExtensions
     {
-        public static IFormatter Value(this IFormatter f, object x)
+        public static void Value(this IFormatter f, Byte[] bytes)
         {
-            if (x == null)
+            f.Value(new ArraySegment<Byte>(bytes));
+        }
+
+        #region Serialize
+        struct GenericSerializer<T>
+        {
+            delegate void Serializer(IFormatter f, T t);
+
+            static Action<IFormatter, T> GetSerializer(Type t)
             {
-                f.Null();
-                return f;
+                {
+                    // primitive
+                    var mi = typeof(IFormatter).GetMethod("Value", new Type[] { t });
+                    if (mi != null)
+                    {
+                        // premitives
+                        var self = Expression.Parameter(typeof(IFormatter), "f");
+                        var arg = Expression.Parameter(t, "value");
+                        var call = Expression.Call(self, mi, arg);
+
+                        var lambda = Expression.Lambda(call, self, arg);
+                        return (Action<IFormatter, T>)lambda.Compile();
+                    }
+                }
+
+                {
+                    // dictionary
+                    var idictionary = t.GetInterfaces().FirstOrDefault(x =>
+                    x.IsGenericType
+                    && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+                    && x.GetGenericArguments()[0] == typeof(string)
+                    );
+                    if (idictionary != null)
+                    {
+                        //var mi = typeof(IFormatter).GetMethod("SerializeDictionary", new Type[] { t });
+                        var self = Expression.Parameter(typeof(IFormatter), "f");
+                        var arg = Expression.Parameter(t, "value");
+                        var call = Expression.Call(typeof(FormatterExtensions), "SerializeDictionary",
+                            new Type[] { },
+                            self, arg);
+                        var lambda = Expression.Lambda(call, self, arg);
+                        return (Action<IFormatter, T>)lambda.Compile();
+                    }
+                }
+
+                {
+                    // object[]
+                    if(t == typeof(object[]))
+                    {
+                        var self = Expression.Parameter(typeof(IFormatter), "f");
+                        var arg = Expression.Parameter(t, "value");
+                        var call = Expression.Call(typeof(FormatterExtensions), "SerializeObjectArray",
+                            new Type[] { },
+                            self, arg);
+                        var lambda = Expression.Lambda(call, self, arg);
+                        return (Action<IFormatter, T>)lambda.Compile();
+                    }
+                }
+
+                {
+                    // list
+                    var ienumerable = t.GetInterfaces().FirstOrDefault(x =>
+                    x.IsGenericType
+                    && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                    );
+                    if (ienumerable != null)
+                    {
+                        var self = Expression.Parameter(typeof(IFormatter), "f");
+                        var arg = Expression.Parameter(t, "value");
+                        var call = Expression.Call(typeof(FormatterExtensions), "SerializeArray", 
+                            ienumerable.GetGenericArguments(), 
+                            self, arg);
+                        var lambda = Expression.Lambda(call, self, arg);
+                        return (Action<IFormatter, T>)lambda.Compile();
+                    }
+                }
+
+                {
+                    // reflection
+                    var schema = JsonSchema.FromType<T>();
+                    return (IFormatter f, T value) => schema.Serialize(f, value);
+                }
+
+                //throw new NotImplementedException();
             }
 
-            var t = x.GetType();
-            if (t == typeof(Boolean))
+#if UNITY_EDITOR
+            static Serializer s_serializer;
+#else
+            static readonly Serializer tl_serializer = new Serializer(GetSerializer(typeof(T)));
+#endif
+
+            public void Serialize(IFormatter f, T t)
             {
-                f.Value((Boolean)x);
+#if UNITY_EDITOR
+                if (s_serializer == null)
+                {
+                    s_serializer = new Serializer(GetSerializer(typeof(T)));
+                }
+#endif
+                s_serializer(f, t);
             }
-            else if (t == typeof(SByte))
+        }
+
+        public static void SerializeDictionary(this IFormatter f, IDictionary<string, object> dictionary)
+        {
+            f.BeginMap(dictionary.Count);
+            foreach (var kv in dictionary)
             {
-                f.Value((SByte)x);
+                f.Key(kv.Key);
+                f.SerializeObject(kv.Value);
             }
-            else if (t == typeof(Int16))
+            f.EndMap();
+        }
+
+        public static void SerializeArray<T>(this IFormatter f, IEnumerable<T> values)
+        {
+            f.BeginList(values.Count());
+            foreach (var value in values)
             {
-                f.Value((Int16)x);
+                f.Serialize(value);
             }
-            else if (t == typeof(Int32))
+            f.EndList();
+        }
+
+        public static void SerializeObjectArray(this IFormatter f, object[] array)
+        {
+            f.BeginList(array.Length);
+            foreach (var x in array)
             {
-                f.Value((Int32)x);
+                f.SerializeObject(x);
             }
-            else if (t == typeof(Int64))
+            f.EndList();
+        }
+
+        public static void SerializeObject(this IFormatter f, object value)
+        {
+            if (value == null)
             {
-                f.Value((Int64)x);
-            }
-            else if (t == typeof(Byte))
-            {
-                f.Value((Byte)x);
-            }
-            else if (t == typeof(UInt16))
-            {
-                f.Value((UInt16)x);
-            }
-            else if (t == typeof(UInt32))
-            {
-                f.Value((UInt32)x);
-            }
-            else if (t == typeof(UInt64))
-            {
-                f.Value((UInt64)x);
-            }
-            else if (t == typeof(Single))
-            {
-                f.Value((Single)x);
-            }
-            else if (t == typeof(Double))
-            {
-                f.Value((Double)x);
-            }
-            else if (t == typeof(String))
-            {
-                f.Value((String)x);
+                f.Null();
             }
             else
             {
-                throw new NotImplementedException();
+                typeof(FormatterExtensions).GetMethod("Serialize").MakeGenericMethod(value.GetType()).Invoke(null, new object[] { f, value });
             }
-            return f;
         }
 
-        public static IFormatter Value(this IFormatter f, object[] a)
+        public static void Serialize<T>(this IFormatter f, T arg)
         {
-            f.BeginList(a.Length);
-            foreach (var x in a)
+            if (arg == null)
             {
-                f.Value(x);
+                f.Null();
+                return;
             }
-            f.EndList();
-            return f;
+
+            (default(GenericSerializer<T>)).Serialize(f, arg);
         }
+        #endregion
 
-        static Action<T> GetValueMethod<T>(this IFormatter f)
+        static MethodInfo GetMethod<T>(Expression<Func<T>> expression)
         {
-            var mi = typeof(IFormatter).GetMethods().First(x =>
-            {
-                if (x.Name != "Value")
-                {
-                    return false;
-                }
-                var args = x.GetParameters();
-                return args.Length == 1 && args[0].ParameterType == typeof(T);
-            });
-            return t =>
-            {
-
-                mi.Invoke(f, new object[] { t });
-
-            };
-        }
-
-        public static IFormatter Value<T>(this IFormatter f, T[] a)
-        {
-            f.BeginList(a.Length);
-            var method = f.GetValueMethod<T>();
-            foreach (var x in a)
-            {
-                method(x);
-            }
-            f.EndList();
-            return f;
-        }
-
-        public static IFormatter Value(this IFormatter f, List<object> a)
-        {
-            f.BeginList(a.Count);
-            foreach (var x in a)
-            {
-                f.Value(x);
-            }
-            f.EndList();
-            return f;
-        }
-
-        public static IFormatter Value(this IFormatter f, Byte[] value)
-        {
-            f.Value(new ArraySegment<Byte>(value));
-            return f;
-        }
-
-        public static IFormatter Value(this IFormatter f, Vector3 v)
-        {
-            //CommaCheck();
-            f.BeginMap(3);
-            f.Key("x"); f.Value(v.x);
-            f.Key("y"); f.Value(v.y);
-            f.Key("z"); f.Value(v.z);
-            f.EndMap();
-            return f;
+            var method = typeof(FormatterExtensions).GetMethod("Serialize");
+            return method.MakeGenericMethod(typeof(T));
         }
 
         public static void KeyValue<T>(this IFormatter f, Expression<Func<T>> expression)
@@ -154,21 +187,10 @@ namespace UniJSON
                     body = ((UnaryExpression)expression.Body).Operand as MemberExpression;
                 }
                 f.Key(body.Member.Name);
-
-                f.Value(value);
+                f.Serialize(expression.Compile()());
+                //var method = GetMethod(expression);
+                //method.Invoke(this, new object[] { value });
             }
-        }
-
-        public static ActionDisposer BeginListDisposable(this JsonFormatter f)
-        {
-            f.BeginList();
-            return new ActionDisposer(() => f.EndList());
-        }
-
-        public static ActionDisposer BeginMapDisposable(this JsonFormatter f)
-        {
-            f.BeginMap();
-            return new ActionDisposer(() => f.EndMap());
         }
     }
 }

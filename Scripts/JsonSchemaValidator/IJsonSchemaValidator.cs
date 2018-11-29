@@ -64,8 +64,8 @@ namespace UniJSON
         /// <returns>return null if validate value</returns>
         JsonSchemaValidationException Validate(JsonSchemaValidationContext context, Object o);
 
-        void Serialize(JsonFormatter f, JsonSchemaValidationContext context, Object o);
+        void Serialize(IFormatter f, JsonSchemaValidationContext context, Object o);
 
-        void ToJson(JsonFormatter f);
+        void ToJson(IFormatter f);
     }
 }

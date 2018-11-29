@@ -245,14 +245,14 @@ namespace UniJSON
 
         Dictionary<string, object> m_validValueMap = new Dictionary<string, object>();
 
-        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, Object o)
+        public void Serialize(IFormatter f, JsonSchemaValidationContext c, Object o)
         {
             // validate properties
             m_validValueMap.Clear();
 
-            using (f.BeginMapDisposable())
+            var dict = o as Dictionary<string, T>;
+            f.BeginMap(dict.Count);
             {
-                var dict = o as Dictionary<string, T>;
                 foreach (var kv in dict)
                 {
                     // key
@@ -265,9 +265,10 @@ namespace UniJSON
                     }
                 }
             }
+            f.EndMap();
         }
 
-        public void ToJson(JsonFormatter f)
+        public void ToJson(IFormatter f)
         {
             f.Key("type"); f.Value("object");
         }

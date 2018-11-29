@@ -439,10 +439,5 @@ namespace UniJSON.MsgPack
         {
             return m_store;
         }
-
-        public void Serialize<T>(T value)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

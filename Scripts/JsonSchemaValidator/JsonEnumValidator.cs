@@ -191,16 +191,16 @@ namespace UniJSON
             }
         }
 
-        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
         {
             f.Value((string)o);
         }
 
-        public void ToJson(JsonFormatter f)
+        public void ToJson(IFormatter f)
         {
             f.Key("type"); f.Value("string");
             f.Key("enum");
-            f.BeginList();
+            f.BeginList(Values.Length);
             foreach (var x in Values)
             {
                 f.Value(x);
@@ -270,12 +270,12 @@ namespace UniJSON
             }
         }
 
-        public void Serialize(JsonFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
         {
             f.Value((int)o);
         }
 
-        public void ToJson(JsonFormatter f)
+        public void ToJson(IFormatter f)
         {
             f.Key("type"); f.Value("integer");
         }
