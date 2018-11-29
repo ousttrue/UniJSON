@@ -524,6 +524,12 @@ namespace UniJSON
             return Value.GetString();
         }
 
+        public Utf8String GetUtf8String()
+        {
+            if (Value.ValueType != JsonValueType.String) throw new JsonValueException();
+            return Value.GetUtf8String();
+        }
+
         public SByte GetSByte()
         {
             if (Value.ValueType == JsonValueType.Integer)

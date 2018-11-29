@@ -30,6 +30,7 @@ namespace UniJSON
 
         Boolean GetBoolean();
         String GetString();
+        Utf8String GetUtf8String();
         SByte GetSByte();
         Int16 GetInt16();
         Int32 GetInt32();

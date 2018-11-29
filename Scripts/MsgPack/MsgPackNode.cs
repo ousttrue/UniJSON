@@ -667,6 +667,16 @@ namespace UniJSON.MsgPack
             return Encoding.UTF8.GetString(bytes.Array, bytes.Offset, bytes.Count);
         }
 
+        public Utf8String GetUtf8String()
+        {
+            if (!Value.Format.IsString())
+            {
+                throw new MsgPackTypeException("Not str");
+            }
+            var bytes = GetBody();
+            return new Utf8String(bytes);
+        }
+
         public SByte GetSByte()
         {
             throw new NotImplementedException();
