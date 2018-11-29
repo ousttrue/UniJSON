@@ -287,7 +287,7 @@ namespace UniJSON
                 return new JsonSchemaValidationException(c, "null");
             }
 
-            if (Properties.Count == 0)
+            if (Properties.Count < MinProperties)
             {
                 return new JsonSchemaValidationException(c, "no properties");
             }
