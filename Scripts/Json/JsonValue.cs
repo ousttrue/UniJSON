@@ -61,8 +61,8 @@ namespace UniJSON
             }
         }
 
-        static Utf8String s_true = Utf8String.FromString("true");
-        static Utf8String s_false = Utf8String.FromString("false");
+        static Utf8String s_true = Utf8String.From("true");
+        static Utf8String s_false = Utf8String.From("false");
 
         public Boolean GetBoolean()
         {

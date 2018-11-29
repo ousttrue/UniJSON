@@ -191,6 +191,8 @@ namespace UniJSON
 
         Stack<string> m_context = new Stack<string>();
 
+        static Utf8String s_ref = Utf8String.From("$ref");
+
         public void Parse(IFileSystemAccessor fs, JsonNode root, string Key)
         {
             m_context.Push(Key);
@@ -200,7 +202,7 @@ namespace UniJSON
             foreach (var kv in root.ObjectItemsRaw)
             {
                 //Console.WriteLine(kv.Key);
-                switch (kv.Key)
+                switch (kv.Key.ToString())
                 {
                     case "$schema":
                         Schema = kv.Value.GetString();
@@ -260,12 +262,12 @@ namespace UniJSON
                     case "anyOf": // composition
                     case "allOf": // composition
                         {
-                            compositionType = (CompositionType)Enum.Parse(typeof(CompositionType), kv.Key, true);
+                            compositionType = (CompositionType)Enum.Parse(typeof(CompositionType), kv.Key.ToString(), true);
                             foreach (var item in kv.Value.ArrayItemsRaw)
                             {
-                                if (item.ContainsKey("$ref"))
+                                if (item.ContainsKey(s_ref))
                                 {
-                                    var sub = JsonSchema.ParseFromPath(fs.Get(item["$ref"].GetString()));
+                                    var sub = JsonSchema.ParseFromPath(fs.Get(item[s_ref].GetString()));
                                     composition.Add(sub);
                                 }
                                 else
@@ -299,7 +301,7 @@ namespace UniJSON
                         {
                             if (Validator != null)
                             {
-                                if (Validator.Parse(fs, kv.Key, kv.Value))
+                                if (Validator.Parse(fs, kv.Key.ToString(), kv.Value))
                                 {
                                     continue;
                                 }

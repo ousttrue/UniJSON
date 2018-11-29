@@ -196,7 +196,7 @@ namespace UniJSON
                 var it = node.ObjectItemsRaw.GetEnumerator();
 
                 Assert.IsTrue(it.MoveNext());
-                Assert.AreEqual("key", it.Current.Key);
+                Assert.AreEqual("key", it.Current.Key.ToString());
                 Assert.AreEqual("value", it.Current.Value.GetString());
 
                 Assert.IsFalse(it.MoveNext());
@@ -212,7 +212,7 @@ namespace UniJSON
                 var it = node.ObjectItemsRaw.GetEnumerator();
 
                 Assert.IsTrue(it.MoveNext());
-                Assert.AreEqual("key", it.Current.Key);
+                Assert.AreEqual("key", it.Current.Key.ToString());
                 Assert.AreEqual("value", it.Current.Value.GetString());
 
                 Assert.IsFalse(it.MoveNext());
@@ -231,11 +231,11 @@ namespace UniJSON
                     var it = node.ObjectItemsRaw.GetEnumerator();
 
                     Assert.IsTrue(it.MoveNext());
-                    Assert.AreEqual("key", it.Current.Key);
+                    Assert.AreEqual("key", it.Current.Key.ToString());
                     Assert.True(it.Current.Value.IsMap);
 
                     Assert.IsTrue(it.MoveNext());
-                    Assert.AreEqual("key2", it.Current.Key);
+                    Assert.AreEqual("key2", it.Current.Key.ToString());
                     Assert.True(it.Current.Value.IsMap);
 
                     Assert.IsFalse(it.MoveNext());
@@ -247,7 +247,7 @@ namespace UniJSON
                     var it = nested.ObjectItemsRaw.GetEnumerator();
 
                     Assert.IsTrue(it.MoveNext());
-                    Assert.AreEqual("nestedKey2", it.Current.Key);
+                    Assert.AreEqual("nestedKey2", it.Current.Key.ToString());
                     Assert.AreEqual("nestedValue2", it.Current.Value.GetString());
 
                     Assert.IsFalse(it.MoveNext());

@@ -23,7 +23,7 @@ namespace UniJSON
         IEnumerable<IValueNode> ArrayItems { get; }
 
         bool IsMap { get; }
-        IEnumerable<KeyValuePair<string, IValueNode>> ObjectItems { get; }
+        IEnumerable<KeyValuePair<Utf8String, IValueNode>> ObjectItems { get; }
 
         int ValueCount { get; }
         int ValueIndex { get; }
@@ -41,6 +41,9 @@ namespace UniJSON
         UInt64 GetUInt64();
         Single GetSingle();
         Double GetDouble();
+
+        void SetValue<T>(Utf8String jsonPointer, T value);
+        void RemoveValue(Utf8String jsonPointer);
     }
 
     public static class IValueNodeExtensions
@@ -71,7 +74,18 @@ namespace UniJSON
             throw new KeyNotFoundException();
         }
 
-        public static string KeyOf<T>(this T self, T node) where T : IValueNode
+        public static bool ContainsKey<T>(this T self, Utf8String key) where T : IValueNode
+        {
+            return self.ObjectItems.Any(x => x.Key == key);
+        }
+
+        public static bool ContainsKey<T>(this T self, String key) where T : IValueNode
+        {
+            var ukey = Utf8String.From(key);
+            return self.ContainsKey(ukey);
+        }
+
+        public static Utf8String KeyOf<T>(this T self, T node) where T : IValueNode
         {
             foreach (var kv in self.ObjectItems)
             {
@@ -106,6 +120,16 @@ namespace UniJSON
                     }
                 }
             }
+        }
+
+        public static void SetValue<T>(this IValueNode self, String jsonPointer, T value)
+        {
+            self.SetValue<T>(Utf8String.From(jsonPointer), value);
+        }
+
+        public static void RemoveValue(this IValueNode self, String jsonPointer)
+        {
+            self.RemoveValue(Utf8String.From(jsonPointer));
         }
 
         #region Deserializer

@@ -247,7 +247,7 @@ namespace UniJSON
                     {
                         foreach (var prop in value.ObjectItemsRaw)
                         {
-                            AddProperty(fs, prop.Key, prop.Value);
+                            AddProperty(fs, prop.Key.ToString(), prop.Value);
                         }
                     }
                     return true;
@@ -268,7 +268,7 @@ namespace UniJSON
                     {
                         foreach (var kv in value.ObjectItemsRaw)
                         {
-                            Dependencies.Add(kv.Key, kv.Value.ArrayItemsRaw.Select(x => x.GetString()).ToArray());
+                            Dependencies.Add(kv.Key.ToString(), kv.Value.ArrayItemsRaw.Select(x => x.GetString()).ToArray());
                         }
                     }
                     return true;

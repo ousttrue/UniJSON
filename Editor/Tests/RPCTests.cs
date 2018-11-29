@@ -72,12 +72,13 @@ namespace UniJSON
         {
             var rpc = new JsonRpc();
             {
+                var l = JsonParser.Parse("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"num1\",\"params\":[1]}");
                 var request = rpc.Request("num1", 1);
+                var u = new Utf8String(request);
+                var r = JsonParser.Parse(u);
                 Assert.AreEqual(
-                    JsonParser.Parse("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"num1\",\"params\":[1]}"),
-                    JsonParser.Parse(new Utf8String(request)));
-
-
+                    l,
+                    r);
             }
             {
                 var request = rpc.Request("num2", 2, true);
@@ -107,7 +108,7 @@ namespace UniJSON
             var parsed = JsonParser.Parse(new Utf8String(request));
             dispatcher.Call(parsed["method"].GetString(), parsed["params"], f);
 
-            Assert.AreEqual(Utf8String.FromString("3"), new Utf8String(f.GetStore().Bytes));
+            Assert.AreEqual(Utf8String.From("3"), new Utf8String(f.GetStore().Bytes));
         }
     }
 }

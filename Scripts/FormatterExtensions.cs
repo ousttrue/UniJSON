@@ -8,9 +8,24 @@ namespace UniJSON
 {
     public static partial class FormatterExtensions
     {
+        public static void Key(this IFormatter f, string x)
+        {
+            f.Key(Utf8String.From(x));
+        }
+
         public static void Value(this IFormatter f, Byte[] bytes)
         {
             f.Value(new ArraySegment<Byte>(bytes));
+        }
+
+        public static void Value(this IFormatter f, UnityEngine.Vector3 v)
+        {
+            //CommaCheck();
+            f.BeginMap(3);
+            f.Key("x"); f.Value(v.x);
+            f.Key("y"); f.Value(v.y);
+            f.Key("z"); f.Value(v.z);
+            f.EndMap();
         }
 
         #region Serialize

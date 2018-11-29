@@ -106,7 +106,7 @@ namespace UniJSON
                     {
                         var l = ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
                         var r = rhs.ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
-                        l.Equals(r);
+                        //return l.Equals(r);
                         return ObjectItemsRaw.OrderBy(x => x.Key).SequenceEqual(rhs.ObjectItemsRaw.OrderBy(x => x.Key));
                     }
             }
@@ -267,7 +267,15 @@ namespace UniJSON
         }
 
         #region object interface
-        public JsonNode this[string key]
+        public JsonNode this[String key]
+        {
+            get
+            {
+                return this[Utf8String.From(key)];
+            }
+        }
+
+        public JsonNode this[Utf8String key]
         {
             get
             {
@@ -281,18 +289,15 @@ namespace UniJSON
                 throw new KeyNotFoundException();
             }
         }
-        public bool ContainsKey(string key)
-        {
-            return ObjectItemsRaw.Any(x => x.Key == key);
-        }
-        public IEnumerable<KeyValuePair<string, IValueNode>> ObjectItems
+
+        public IEnumerable<KeyValuePair<Utf8String, IValueNode>> ObjectItems
         {
             get
             {
-                return ObjectItemsRaw.Select(x => new KeyValuePair<string, IValueNode>(x.Key, x.Value as IValueNode));
+                return ObjectItemsRaw.Select(x => new KeyValuePair<Utf8String, IValueNode>(x.Key, x.Value as IValueNode));
             }
         }
-        public IEnumerable<KeyValuePair<string, JsonNode>> ObjectItemsRaw
+        public IEnumerable<KeyValuePair<Utf8String, JsonNode>> ObjectItemsRaw
         {
             get
             {
@@ -300,10 +305,10 @@ namespace UniJSON
                 var it = Children.GetEnumerator();
                 while (it.MoveNext())
                 {
-                    var key = it.Current.GetString();
+                    var key = it.Current.GetUtf8String();
 
                     it.MoveNext();
-                    yield return new KeyValuePair<string, JsonNode>(key, it.Current);
+                    yield return new KeyValuePair<Utf8String, JsonNode>(key, it.Current);
                 }
             }
         }
@@ -366,14 +371,14 @@ namespace UniJSON
             }
         }
 
-        public void AddNode(string key, JsonNode node)
+        public void AddNode(Utf8String key, JsonNode node)
         {
             if (Value.ValueType != JsonValueType.Object)
             {
                 throw new InvalidOperationException();
             }
 
-            Values.Add(new JsonValue(Utf8String.FromString("\"" + key + "\""), JsonValueType.String, m_index));
+            Values.Add(new JsonValue(Utf8String.From("\"" + key + "\""), JsonValueType.String, m_index));
             AddNode(node);
         }
 
@@ -410,7 +415,7 @@ namespace UniJSON
             if (Value.ValueType == JsonValueType.Array)
             {
                 // array
-                if (jsonPointer[0] == "*")
+                if (jsonPointer[0][0] == '*')
                 {
                     // wildcard
                     foreach (var child in ArrayItemsRaw)
@@ -423,11 +428,7 @@ namespace UniJSON
                 }
                 else
                 {
-                    int index;
-                    if (!int.TryParse(jsonPointer[0], out index))
-                    {
-                        throw new KeyNotFoundException();
-                    }
+                    int index = jsonPointer[0].ToInt32();
                     var child = this[index];
                     foreach (var childChild in child.GetNodes(jsonPointer.Unshift()))
                     {
@@ -438,7 +439,7 @@ namespace UniJSON
             else if (Value.ValueType == JsonValueType.Object)
             {
                 // object
-                if (jsonPointer[0] == "*")
+                if (jsonPointer[0][0] == '*')
                 {
                     // wildcard
                     foreach (var kv in ObjectItemsRaw)
@@ -459,7 +460,7 @@ namespace UniJSON
                     catch (KeyNotFoundException)
                     {
                         // key
-                        Values.Add(new JsonValue(Utf8String.FromString(JsonString.Quote(jsonPointer[0])), JsonValueType.String, m_index));
+                        Values.Add(new JsonValue(JsonString.Quote(jsonPointer[0]), JsonValueType.String, m_index));
                         // value
                         Values.Add(new JsonValue(default(Utf8String), JsonValueType.Object, m_index));
 
@@ -477,12 +478,12 @@ namespace UniJSON
             }
         }
 
-        public IEnumerable<JsonNode> GetNodes(string jsonPointer)
+        public IEnumerable<JsonNode> GetNodes(Utf8String jsonPointer)
         {
             return GetNodes(new JsonPointer(jsonPointer));
         }
 
-        public void SetValue<T>(string jsonPointer, T value)
+        public void SetValue<T>(Utf8String jsonPointer, T value)
         {
             var f = new JsonFormatter();
             f.Serialize(value);
@@ -498,7 +499,7 @@ namespace UniJSON
             }
         }
 
-        public void RemoveValue(string jsonPointer)
+        public void RemoveValue(Utf8String jsonPointer)
         {
             foreach (var node in GetNodes(new JsonPointer(jsonPointer)))
             {

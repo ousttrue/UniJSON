@@ -285,7 +285,7 @@ namespace UniJSON
 
         public static JsonNode Parse(String json)
         {
-            return Parse(Utf8String.FromString(json));
+            return Parse(Utf8String.From(json));
         }
 
         public static JsonNode Parse(Utf8String json)

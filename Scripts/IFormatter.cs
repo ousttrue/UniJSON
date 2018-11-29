@@ -8,18 +8,16 @@ namespace UniJSON
         IStore GetStore();
 
         void BeginList(int n);
-
         void EndList();
 
         void BeginMap(int n);
-
         void EndMap();
 
-        void Key(string x);
-
+        void Key(Utf8String x);
 
         void Null();
 
+        void Value(Utf8String x);
         void Value(String x);
 
         void Value(ArraySegment<Byte> bytes);

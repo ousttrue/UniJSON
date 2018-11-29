@@ -190,7 +190,7 @@ namespace UniJSON
                     {
                         foreach (var kv in value.ObjectItemsRaw)
                         {
-                            Dependencies.Add(kv.Key, kv.Value.ArrayItemsRaw.Select(x => x.GetString()).ToArray());
+                            Dependencies.Add(kv.Key.ToString(), kv.Value.ArrayItemsRaw.Select(x => x.GetString()).ToArray());
                         }
                     }
                     return true;

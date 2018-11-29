@@ -139,15 +139,20 @@ namespace UniJSON.MsgPack
             m_store.Write((Byte)MsgPackType.NIL);
         }
 
-        public void Key(string key)
+        public void Key(Utf8String key)
         {
             Value(key);
         }
 
-        public void Value(string s)
+        public void Value(String s)
         {
-            var bytes = Encoding.UTF8.GetBytes(s);
-            int size = bytes.Length;
+            Value(Utf8String.From(s));
+        }
+
+        public void Value(Utf8String s)
+        {
+            var bytes = s.Bytes;
+            int size = bytes.Count;
             if (size < 32)
             {
                 m_store.Write((Byte)((Byte)MsgPackType.FIX_STR | size));

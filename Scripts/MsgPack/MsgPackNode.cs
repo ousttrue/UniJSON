@@ -727,6 +727,16 @@ namespace UniJSON.MsgPack
             throw new NotImplementedException();
         }
 
+        public void SetValue<T>(Utf8String jsonPointer, T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveValue(Utf8String jsonPointer)
+        {
+            throw new NotImplementedException();
+        }
+
         #region  Collection
         public int ValueCount
         {
@@ -756,7 +766,7 @@ namespace UniJSON.MsgPack
             }
         }
 
-        public IEnumerable<KeyValuePair<string, IValueNode>> ObjectItems
+        public IEnumerable<KeyValuePair<Utf8String, IValueNode>> ObjectItems
         {
             get
             {
@@ -765,10 +775,10 @@ namespace UniJSON.MsgPack
                 var it = Children.GetEnumerator();
                 while (it.MoveNext())
                 {
-                    var key = it.Current.GetString();
+                    var key = it.Current.GetUtf8String();
 
                     it.MoveNext();
-                    yield return new KeyValuePair<string, IValueNode>(key, it.Current);
+                    yield return new KeyValuePair<Utf8String, IValueNode>(key, it.Current);
                 }
             }
         }

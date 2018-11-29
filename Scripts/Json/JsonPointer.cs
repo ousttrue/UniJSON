@@ -7,13 +7,13 @@ namespace UniJSON
 {
     public struct JsonPointer
     {
-        public ArraySegment<String> Path
+        public ArraySegment<Utf8String> Path
         {
             get;
             private set;
         }
 
-        public string this[int index]
+        public Utf8String this[int index]
         {
             get
             {
@@ -25,23 +25,29 @@ namespace UniJSON
         {
             return new JsonPointer
             {
-                Path = new ArraySegment<string>(Path.Array, Path.Offset + 1, Path.Count - 1)
+                Path = new ArraySegment<Utf8String>(Path.Array, Path.Offset + 1, Path.Count - 1)
             };
         }
 
         public JsonPointer(IValueNode node)
         {
-            Path = new ArraySegment<string>(node.Path().Skip(1).Select(x => GetKeyFromParent(x)).ToArray());
+            Path = new ArraySegment<Utf8String>(node.Path().Skip(1).Select(x => GetKeyFromParent(x)).ToArray());
         }
 
-        public JsonPointer(string pointer)
+        public JsonPointer(Utf8String pointer)
         {
-            if (!pointer.StartsWith("/"))
+            int pos;
+            if (!pointer.TrySearchAscii((Byte)'/', 0, out pos))
             {
                 throw new ArgumentException();
             }
-            var splited = pointer.Split('/');
-            Path = new ArraySegment<string>(splited, 1, splited.Length - 1);
+            if (pos != 0)
+            {
+                throw new ArgumentException();
+            }
+
+            var splited = pointer.Split((Byte)'/').ToArray();
+            Path = new ArraySegment<Utf8String>(splited, 1, splited.Length - 1);
         }
 
         public override string ToString()
@@ -61,12 +67,13 @@ namespace UniJSON
             return sb.ToString();
         }
 
-        static string GetKeyFromParent(IValueNode json)
+        static Utf8String GetKeyFromParent(IValueNode json)
         {
             var parent = json.Parent;
             if (parent.IsArray)
             {
-                return parent.IndexOf(json).ToString();
+                var index = parent.IndexOf(json);
+                return Utf8String.From(index);
             }
             else if (parent.IsMap)
             {

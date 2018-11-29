@@ -142,7 +142,7 @@ namespace UniJSON
             m_stack.Push(top);
         }
 
-        static Utf8String s_null = Utf8String.FromString("null");
+        static Utf8String s_null = Utf8String.From("null");
         public void Null()
         {
             CommaCheck();
@@ -184,29 +184,34 @@ namespace UniJSON
             m_w.Write('}');
         }
 
-        public void Key(String key)
+        public void Key(Utf8String key)
         {
             _Value(key, true);
             m_w.Write(m_colon);
         }
 
-        public void Value(String key)
+        public void Value(string x)
+        {
+            Value(Utf8String.From(x));
+        }
+
+        public void Value(Utf8String key)
         {
             _Value(key, false);
         }
 
-        void _Value(String key, bool isKey)
+        void _Value(Utf8String key, bool isKey)
         {
             CommaCheck(isKey);
             if (isKey)
             {
                 Indent();
             }
-            m_w.Write(JsonString.Quote(key));
+            JsonString.Quote(key, m_w);
         }
 
-        static Utf8String s_true = Utf8String.FromString("true");
-        static Utf8String s_false = Utf8String.FromString("false");
+        static Utf8String s_true = Utf8String.From("true");
+        static Utf8String s_false = Utf8String.From("false");
         public void Value(Boolean x)
         {
             CommaCheck();
@@ -272,16 +277,6 @@ namespace UniJSON
             m_w.Write('"');
             m_w.Write(Convert.ToBase64String(x.Array, x.Offset, x.Count));
             m_w.Write('"');
-        }
-
-        public void Value(Vector3 v)
-        {
-            //CommaCheck();
-            BeginMap();
-            Key("x"); Value(v.x);
-            Key("y"); Value(v.y);
-            Key("z"); Value(v.z);
-            EndMap();
         }
 
         public void Bytes(IEnumerable<byte> raw, int count)

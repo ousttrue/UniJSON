@@ -5,7 +5,7 @@ using System.IO;
 
 namespace UniJSON
 {
-    public struct Utf8String
+    public struct Utf8String: IComparable<Utf8String>
     {
         public static readonly System.Text.Encoding Encoding = new System.Text.UTF8Encoding(false);
 
@@ -75,6 +75,34 @@ namespace UniJSON
             get { return Bytes.Count; }
         }
 
+        public int CompareTo(Utf8String other)
+        {
+            int i = 0;
+            for(;  i<ByteLength && i<other.ByteLength; ++i)
+            {
+                if (this[i] < other[i])
+                {
+                    return 1;
+                }
+                else if(this[i] > other[i])
+                {
+                    return -1;
+                }
+            }
+            if (i < ByteLength)
+            {
+                return -1;
+            }
+            else if(i < other.ByteLength)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
         public Byte this[int i]
         {
             get { return Bytes.Array[Bytes.Offset + i]; }
@@ -93,9 +121,126 @@ namespace UniJSON
         {
         }
 
-        public static Utf8String FromString(string src)
+        public static Utf8String From(string src)
         {
             return new Utf8String(Encoding.GetBytes(src));
+        }
+
+        // -2147483648 ~ 2147483647
+        public static Utf8String From(int src)
+        {
+            if (src >= 0)
+            {
+                if (src < 10)
+                {
+                    return new Utf8String(new byte[] {
+                        (byte)(0x30 + src),
+                    });
+                }
+                else if (src < 100)
+                {
+                    return new Utf8String(new byte[] {
+                        (byte)(0x30 + src/10),
+                        (byte)(0x30 + src%10),
+                    });
+                }
+                else if (src < 1000)
+                {
+                    return new Utf8String(new byte[] {
+                        (byte)(0x30 + src/100),
+                        (byte)(0x30 + src/10),
+                        (byte)(0x30 + src%10),
+                    });
+                }
+                else if (src < 10000)
+                {
+                    return new Utf8String(new byte[] {
+                        (byte)(0x30 + src/1000),
+                        (byte)(0x30 + src/100),
+                        (byte)(0x30 + src/10),
+                        (byte)(0x30 + src%10),
+                    });
+                }
+                else if (src < 100000)
+                {
+                    return new Utf8String(new byte[] {
+                        (byte)(0x30 + src/10000),
+                        (byte)(0x30 + src/1000),
+                        (byte)(0x30 + src/100),
+                        (byte)(0x30 + src/10),
+                        (byte)(0x30 + src%10),
+                    });
+                }
+                else if (src < 1000000)
+                {
+                    return new Utf8String(new byte[] {
+                        (byte)(0x30 + src/100000),
+                        (byte)(0x30 + src/10000),
+                        (byte)(0x30 + src/1000),
+                        (byte)(0x30 + src/100),
+                        (byte)(0x30 + src/10),
+                        (byte)(0x30 + src%10),
+                    });
+                }
+                else if (src < 10000000)
+                {
+                    return new Utf8String(new byte[] {
+                        (byte)(0x30 + src/1000000),
+                        (byte)(0x30 + src/100000),
+                        (byte)(0x30 + src/10000),
+                        (byte)(0x30 + src/1000),
+                        (byte)(0x30 + src/100),
+                        (byte)(0x30 + src/10),
+                        (byte)(0x30 + src%10),
+                    });
+                }
+                else if (src < 100000000)
+                {
+                    return new Utf8String(new byte[] {
+                        (byte)(0x30 + src/10000000),
+                        (byte)(0x30 + src/1000000),
+                        (byte)(0x30 + src/100000),
+                        (byte)(0x30 + src/10000),
+                        (byte)(0x30 + src/1000),
+                        (byte)(0x30 + src/100),
+                        (byte)(0x30 + src/10),
+                        (byte)(0x30 + src%10),
+                    });
+                }
+                else if (src < 1000000000)
+                {
+                    return new Utf8String(new byte[] {
+                        (byte)(0x30 + src/100000000),
+                        (byte)(0x30 + src/10000000),
+                        (byte)(0x30 + src/1000000),
+                        (byte)(0x30 + src/100000),
+                        (byte)(0x30 + src/10000),
+                        (byte)(0x30 + src/1000),
+                        (byte)(0x30 + src/100),
+                        (byte)(0x30 + src/10),
+                        (byte)(0x30 + src%10),
+                    });
+                }
+                else
+                {
+                    return new Utf8String(new byte[] {
+                        (byte)(0x30 + src/1000000000),
+                        (byte)(0x30 + src/100000000),
+                        (byte)(0x30 + src/10000000),
+                        (byte)(0x30 + src/1000000),
+                        (byte)(0x30 + src/100000),
+                        (byte)(0x30 + src/10000),
+                        (byte)(0x30 + src/1000),
+                        (byte)(0x30 + src/100),
+                        (byte)(0x30 + src/10),
+                        (byte)(0x30 + src%10),
+                    });
+                }
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public Utf8String Concat(Utf8String rhs)
@@ -317,7 +462,7 @@ namespace UniJSON
 
         public bool TrySearchAscii(Byte target, int start, out int pos)
         {
-            for(var p = new CodePoint(this, start); p.IsValid; p.Next())
+            for (var p = new CodePoint(this, start); p.IsValid; p.Next())
             {
                 var b = p.Current[0];
                 if (b <= 0x7F)
@@ -385,11 +530,11 @@ namespace UniJSON
                     {
                         yield return Subbytes(start, p.Position - start);
                     }
-                    start = p.Position+1;
+                    start = p.Position + 1;
                 }
             }
 
-            if(start < p.Position)
+            if (start < p.Position)
             {
                 yield return Subbytes(start, p.Position - start);
             }
