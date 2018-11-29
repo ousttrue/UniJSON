@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.Linq;
 
 
 namespace UniJSON
@@ -49,6 +50,30 @@ namespace UniJSON
                 var quoted = Utf8String.FromString("\"fuga\\n  ho日本語ge\"");
                 Assert.AreEqual(quoted, JsonString.Quote(value));
                 Assert.AreEqual(value, JsonString.Unquote(quoted));
+            }
+        }
+
+        [Test]
+        public void SplitTest()
+        {
+            {
+                var value = Utf8String.FromString("a/b/c");
+                var splited = value.Split((byte)'/').ToArray();
+                Assert.AreEqual(3, splited.Length);
+                Assert.AreEqual(splited[0], Utf8String.FromString("a"));
+                Assert.AreEqual(splited[1], Utf8String.FromString("b"));
+                Assert.AreEqual(splited[2], Utf8String.FromString("c"));
+            }
+            {
+                var value = Utf8String.FromString("/a/b/c/");
+                var splited = value.Split((byte)'/').ToArray();
+                Assert.AreEqual(4, splited.Length);
+                /*
+                Assert.AreEqual(splited[0], Utf8String.FromString(""));
+                Assert.AreEqual(splited[1], Utf8String.FromString("a"));
+                Assert.AreEqual(splited[2], Utf8String.FromString("b"));
+                Assert.AreEqual(splited[3], Utf8String.FromString("c"));
+                */
             }
         }
     }

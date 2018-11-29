@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 
@@ -362,17 +363,31 @@ namespace UniJSON
             return false;
         }
 
-        /*
-        IEnumerable<Utf8String> Split(byte delemeter)
+        public IEnumerable<Utf8String> Split(byte delemeter)
         {
             var start = 0;
-            while (start < ByteLength)
+            var p = new CodePoint(this, start);
+            for (; p.IsValid; p.Next())
             {
-                if ()
+                if (p.Current[0] == delemeter)
+                {
+                    if (p.Position - start == 0)
+                    {
+                        yield return default(Utf8String);
+                    }
+                    else
+                    {
+                        yield return Subbytes(start, p.Position - start);
+                    }
+                    start = p.Position+1;
+                }
+            }
 
+            if(start < p.Position)
+            {
+                yield return Subbytes(start, p.Position - start);
             }
         }
-        */
     }
 
     public static class Utf8StringExtensions
