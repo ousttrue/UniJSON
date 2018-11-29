@@ -8,6 +8,8 @@ namespace UniJSON
 {
     public static class FormatterExtensionsSerializer
     {
+        static Type SelfType = typeof(FormatterExtensionsSerializer);
+
         struct GenericSerializer<T>
         {
             delegate void Serializer(IFormatter f, T t);
@@ -41,7 +43,7 @@ namespace UniJSON
                         //var mi = typeof(IFormatter).GetMethod("SerializeDictionary", new Type[] { t });
                         var self = Expression.Parameter(typeof(IFormatter), "f");
                         var arg = Expression.Parameter(t, "value");
-                        var call = Expression.Call(typeof(FormatterExtensions), "SerializeDictionary",
+                        var call = Expression.Call(SelfType, "SerializeDictionary",
                             new Type[] { },
                             self, arg);
                         var lambda = Expression.Lambda(call, self, arg);
@@ -55,7 +57,7 @@ namespace UniJSON
                     {
                         var self = Expression.Parameter(typeof(IFormatter), "f");
                         var arg = Expression.Parameter(t, "value");
-                        var call = Expression.Call(typeof(FormatterExtensions), "SerializeObjectArray",
+                        var call = Expression.Call(SelfType, "SerializeObjectArray",
                             new Type[] { },
                             self, arg);
                         var lambda = Expression.Lambda(call, self, arg);
@@ -73,7 +75,7 @@ namespace UniJSON
                     {
                         var self = Expression.Parameter(typeof(IFormatter), "f");
                         var arg = Expression.Parameter(t, "value");
-                        var call = Expression.Call(typeof(FormatterExtensions), "SerializeArray",
+                        var call = Expression.Call(SelfType, "SerializeArray",
                             ienumerable.GetGenericArguments(),
                             self, arg);
                         var lambda = Expression.Lambda(call, self, arg);
@@ -146,7 +148,7 @@ namespace UniJSON
             }
             else
             {
-                typeof(FormatterExtensions).GetMethod("Serialize").MakeGenericMethod(value.GetType()).Invoke(null, new object[] { f, value });
+                SelfType.GetMethod("Serialize").MakeGenericMethod(value.GetType()).Invoke(null, new object[] { f, value });
             }
         }
 
