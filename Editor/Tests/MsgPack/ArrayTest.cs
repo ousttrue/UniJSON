@@ -13,7 +13,8 @@ namespace UniJSON.MsgPack
             var f = new MsgPackFormatter();
             // Object[] not supported
             f.Serialize(new[] { 0, 1, false, (Object)null });
-            var bytes = f.GetStore().Bytes.ToArray();
+            var _bytes = f.GetStore().Bytes;
+            var bytes = _bytes.Array.Skip(_bytes.Offset).Take(_bytes.Count).ToArray();
 
             Assert.AreEqual(new Byte[]{
                 (Byte)MsgPackType.FIX_ARRAY_0x4,
