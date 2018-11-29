@@ -90,21 +90,19 @@ namespace UniJSON
                 //throw new NotImplementedException();
             }
 
-            static Serializer s_serializer
-#if UNITY_EDITOR
-#else
-             = new Serializer(GetSerializer(typeof(T)))
-#endif
-            ;
+            static Serializer s_serializer;
+
+            public void Set(Action<IFormatter, T> serializer)
+            {
+                s_serializer = new Serializer(serializer);
+            }
 
             public void Serialize(IFormatter f, T t)
             {
-#if UNITY_EDITOR
                 if (s_serializer == null)
                 {
                     s_serializer = new Serializer(GetSerializer(typeof(T)));
                 }
-#endif
                 s_serializer(f, t);
             }
         }
@@ -161,6 +159,11 @@ namespace UniJSON
             }
 
             (default(GenericSerializer<T>)).Serialize(f, arg);
+        }
+
+        public static void SetCustomSerializer<T>(this IFormatter f, Action<IFormatter, T> serializer)
+        {
+            (default(GenericSerializer<T>)).Set(serializer);
         }
     }
 }
