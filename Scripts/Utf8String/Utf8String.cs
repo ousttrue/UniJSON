@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 
 
@@ -174,7 +173,7 @@ namespace UniJSON
             return -1;
         }
 
-        public Utf8String SubString(int offset)
+        public Utf8String Subbytes(int offset)
         {
             return Subbytes(offset, ByteLength - offset);
         }
@@ -210,7 +209,7 @@ namespace UniJSON
                     break;
                 }
             }
-            return SubString(i);
+            return Subbytes(i);
         }
 
         public override bool Equals(Object obj)

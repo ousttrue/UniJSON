@@ -91,7 +91,7 @@ namespace UniJSON
         {
             var closeChar = ']';
             bool isFirst = true;
-            var current = segment.SubString(1);
+            var current = segment.Subbytes(1);
             while (true)
             {
                 {
@@ -101,7 +101,7 @@ namespace UniJSON
                     {
                         throw new JsonParseException("no white space expected");
                     }
-                    current = current.SubString(nextToken);
+                    current = current.Subbytes(nextToken);
                 }
 
                 {
@@ -124,7 +124,7 @@ namespace UniJSON
                     {
                         throw new JsonParseException("',' expected");
                     }
-                    current = current.SubString(keyPos + 1);
+                    current = current.Subbytes(keyPos + 1);
                 }
 
                 {
@@ -134,12 +134,12 @@ namespace UniJSON
                     {
                         throw new JsonParseException("not whitespace expected");
                     }
-                    current = current.SubString(nextToken);
+                    current = current.Subbytes(nextToken);
                 }
 
                 // value
                 var value = Parse(current, values, parentIndex);
-                current = current.SubString(value.Segment.ByteLength);
+                current = current.Subbytes(value.Segment.ByteLength);
             }
 
             return current;
@@ -149,7 +149,7 @@ namespace UniJSON
         {
             var closeChar = '}';
             bool isFirst = true;
-            var current = segment.SubString(1);
+            var current = segment.Subbytes(1);
             while (true)
             {
                 {
@@ -159,7 +159,7 @@ namespace UniJSON
                     {
                         throw new JsonParseException("no white space expected");
                     }
-                    current = current.SubString(nextToken);
+                    current = current.Subbytes(nextToken);
                 }
 
                 {
@@ -181,7 +181,7 @@ namespace UniJSON
                     {
                         throw new JsonParseException("',' expected");
                     }
-                    current = current.SubString(keyPos + 1);
+                    current = current.Subbytes(keyPos + 1);
                 }
 
                 {
@@ -191,7 +191,7 @@ namespace UniJSON
                     {
                         throw new JsonParseException("not whitespace expected");
                     }
-                    current = current.SubString(nextToken);
+                    current = current.Subbytes(nextToken);
                 }
 
                 // key
@@ -200,7 +200,7 @@ namespace UniJSON
                 {
                     throw new JsonParseException("object key must string: " + key.Segment);
                 }
-                current = current.SubString(key.Segment.ByteLength);
+                current = current.Subbytes(key.Segment.ByteLength);
 
                 // search ':'
                 int valuePos;
@@ -208,7 +208,7 @@ namespace UniJSON
                 {
                     throw new JsonParseException(": is not found");
                 }
-                current = current.SubString(valuePos + 1);
+                current = current.Subbytes(valuePos + 1);
 
                 {
                     // skip white space
@@ -217,12 +217,12 @@ namespace UniJSON
                     {
                         throw new JsonParseException("not whitespace expected");
                     }
-                    current = current.SubString(nextToken);
+                    current = current.Subbytes(nextToken);
                 }
 
                 // value
                 var value = Parse(current, values, parentIndex);
-                current = current.SubString(value.Segment.ByteLength);
+                current = current.Subbytes(value.Segment.ByteLength);
             }
 
             return current;
@@ -236,7 +236,7 @@ namespace UniJSON
             {
                 throw new JsonParseException("only whitespace");
             }
-            segment = segment.SubString(pos);
+            segment = segment.Subbytes(pos);
 
             var valueType = GetValueType(segment);
             switch (valueType)
