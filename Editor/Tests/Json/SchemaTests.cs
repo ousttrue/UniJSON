@@ -31,12 +31,15 @@ namespace UniJSON
 
             var v = s.Validator as JsonObjectValidator;
             Assert.AreEqual("Age in years", v.Properties["age"].Description);
-            //Assert.AreEqual(0, s.Properties["age"].Minimum);
             Assert.AreEqual(new[] { "firstName", "lastName" }, v.Required);
 
             var f = new JsonFormatter(2);
             s.ToJson(f);
-            Debug.Log(f.ToString());
+            var json = f.ToString();
+            Debug.Log(json);
+
+            var parsed = JsonParser.Parse(json);
+            Assert.AreEqual(0, parsed["properties"]["age"]["minimum"].GetInt32());
         }
 
         public enum ProjectionType

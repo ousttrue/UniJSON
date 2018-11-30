@@ -191,7 +191,7 @@ namespace UniJSON
                     }
                 }
 
-                if(MultipleOf.HasValue && value % MultipleOf.Value != 0)
+                if (MultipleOf.HasValue && value % MultipleOf.Value != 0)
                 {
                     return new JsonSchemaValidationException(c, string.Format("multipleOf: {0}%{1}", value, MultipleOf.Value));
                 }
@@ -212,6 +212,14 @@ namespace UniJSON
         public void ToJson(IFormatter f)
         {
             f.Key("type"); f.Value("integer");
+            if (Minimum.HasValue)
+            {
+                f.Key("minimum"); f.Value(Minimum.Value);
+            }
+            if (Maximum.HasValue)
+            {
+                f.Key("maximum"); f.Value(Maximum.Value);
+            }
         }
     }
 
@@ -397,6 +405,14 @@ namespace UniJSON
         public void ToJson(IFormatter f)
         {
             f.Key("type"); f.Value("number");
+            if (Minimum.HasValue)
+            {
+                f.Key("minimum"); f.Value(Minimum.Value);
+            }
+            if (Maximum.HasValue)
+            {
+                f.Key("maximum"); f.Value(Maximum.Value);
+            }
         }
     }
 }
