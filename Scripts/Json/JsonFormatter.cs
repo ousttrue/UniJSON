@@ -1,26 +1,13 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq.Expressions;
 using System.Globalization;
-using System.Reflection;
-using System.Collections;
-#if UNIJSON_PROFILING
-public struct Vector3
-{
-    public float x;
-    public float y;
-    public float z;
-}
-#else
-using UnityEngine;
-#endif
+using System.Linq;
+using System.Text;
 
 
 namespace UniJSON
 {
-    public class JsonFormatter : IFormatter
+    public class JsonFormatter : IFormatter, IRpc
     {
         IStore m_w;
         protected IStore Store
@@ -289,5 +276,270 @@ namespace UniJSON
             CommaCheck();
             m_w.Write(formated);
         }
+
+        #region IRpc
+        int m_nextRequestId = 1;
+
+        static Utf8String s_jsonrpc = Utf8String.From("jsonrpc");
+        static Utf8String s_20 = Utf8String.From("2.0");
+        static Utf8String s_method = Utf8String.From("method");
+        static Utf8String s_params = Utf8String.From("params");
+
+        public void Notify(string method)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Notify<A0>(string method, A0 a0)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Notify<A0, A1>(string method, A0 a0, A1 a1)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Notify<A0, A1, A2>(string method, A0 a0, A1 a1, A2 a2)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+                this.Serialize(a2);
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Notify<A0, A1, A2, A3>(string method, A0 a0, A1 a1, A2 a2, A3 a3)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+                this.Serialize(a2);
+                this.Serialize(a3);
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Notify<A0, A1, A2, A3, A4>(string method, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+                this.Serialize(a2);
+                this.Serialize(a3);
+                this.Serialize(a4);
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Notify<A0, A1, A2, A3, A4, A5>(string method, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+                this.Serialize(a2);
+                this.Serialize(a3);
+                this.Serialize(a4);
+                this.Serialize(a5);
+            }
+            EndList();
+            EndMap();
+        }
+
+        static Utf8String s_id = Utf8String.From("id");
+
+        public void Request(string method)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_id); Value(m_nextRequestId++);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Request<A0>(string method,
+            A0 a0)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_id); Value(m_nextRequestId++);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Request<A0, A1>(string method,
+            A0 a0, A1 a1)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_id); Value(m_nextRequestId++);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Request<A0, A1, A2>(string method,
+            A0 a0, A1 a1, A2 a2)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_id); Value(m_nextRequestId++);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+                this.Serialize(a2);
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Request<A0, A1, A2, A3>(string method,
+            A0 a0, A1 a1, A2 a2, A3 a3)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_id); Value(m_nextRequestId++);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+                this.Serialize(a2);
+                this.Serialize(a3);
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Request<A0, A1, A2, A3, A4>(string method,
+            A0 a0, A1 a1, A2 a2, A3 a3, A4 a4)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_id); Value(m_nextRequestId++);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+                this.Serialize(a2);
+                this.Serialize(a3);
+                this.Serialize(a4);
+            }
+            EndList();
+            EndMap();
+        }
+
+        public void Request<A0, A1, A2, A3, A4, A5>(string method,
+            A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_id); Value(m_nextRequestId++);
+            Key(s_method); Value(method);
+            Key(s_params); BeginList();
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+                this.Serialize(a2);
+                this.Serialize(a3);
+                this.Serialize(a4);
+                this.Serialize(a5);
+            }
+            EndList();
+            EndMap();
+        }
+
+        static Utf8String s_error = Utf8String.From("error");
+
+        public void ResponseError(int id, Exception error)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_id); Value(id);
+            Key(s_error); this.Serialize(error);
+            EndMap();
+        }
+
+        static Utf8String s_result = Utf8String.From("result");
+
+        public void ResponseSuccess(int id)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_id); Value(id);
+            Key(s_result); Null();
+            EndMap();
+        }
+
+        public void ResponseSuccess<T>(int id, T result)
+        {
+            BeginMap();
+            Key(s_jsonrpc); Value(s_20);
+            Key(s_id); Value(id);
+            Key(s_result); this.Serialize(result);
+            EndMap();
+        }
+        #endregion
     }
 }
