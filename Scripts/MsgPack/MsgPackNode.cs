@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 
@@ -392,199 +394,275 @@ namespace UniJSON.MsgPack
             }
         }
 
+        static Func<S, T> CreateCast<S, T>()
+        {
+            if (typeof(S) == typeof(T))
+            {
+                // through
+                var src = Expression.Parameter(typeof(S), "src");
+                var lambda = Expression.Lambda(src, src);
+                return (Func<S, T>)lambda.Compile();
+            }
+            else
+            {
+                // cast
+                var src = Expression.Parameter(typeof(S), "src");
+                var cast = Expression.Convert(src, typeof(T));
+                var lambda = Expression.Lambda(cast, src);
+                return (Func<S, T>)lambda.Compile();
+            }
+        }
+
+        static Func<S, Func<T>> CreateConst<S, T>()
+        {
+            var src = Expression.Parameter(typeof(S), "src");
+            var convert = Expression.Convert(src, typeof(T));
+            var lambda = (Func<S, T>)Expression.Lambda(convert, src).Compile();
+            return s =>
+            {
+                var t = lambda(s);
+                return () => t;
+            };
+        }
+
+        struct GenericCast<S, T>
+        {
+            public static T Null()
+            {
+                if (typeof(T).IsClass)
+                {
+                    return default(T);
+                }
+                else
+                {
+                    throw new MsgPackTypeException("can not null");
+                }
+            }
+
+            delegate T CastFunc(S value);
+            static CastFunc s_cast;
+
+            delegate Func<T> ConstFuncCreator(S value);
+            static ConstFuncCreator s_const;
+
+            public static Func<T> Const(S value)
+            {
+                if (s_const == null)
+                {
+                    s_const = new ConstFuncCreator(CreateConst<S, T>());
+                }
+                return s_const(value);
+            }
+
+            public static T Cast(S value)
+            {
+                if (s_cast == null)
+                {
+                    s_cast = new CastFunc(CreateCast<S, T>());
+                }
+                return s_cast(value);
+            }
+        }
+
+        public object GetValue()
+        {
+            return GetValue<object>();
+        }
+
         /// <summary>
         /// ArrayとMap以外のタイプの値を得る
         /// </summary>
         /// <returns></returns>
-        public object GetValue()
+        public T GetValue<T>()
         {
+            var t = typeof(T);
             var formatType = Value.Format;
             switch (formatType)
             {
-                case MsgPackType.NIL: return null;
-                case MsgPackType.TRUE: return true;
-                case MsgPackType.FALSE: return false;
-                case MsgPackType.POSITIVE_FIXNUM: return 0;
-                case MsgPackType.POSITIVE_FIXNUM_0x01: return 1;
-                case MsgPackType.POSITIVE_FIXNUM_0x02: return 2;
-                case MsgPackType.POSITIVE_FIXNUM_0x03: return 3;
-                case MsgPackType.POSITIVE_FIXNUM_0x04: return 4;
-                case MsgPackType.POSITIVE_FIXNUM_0x05: return 5;
-                case MsgPackType.POSITIVE_FIXNUM_0x06: return 6;
-                case MsgPackType.POSITIVE_FIXNUM_0x07: return 7;
-                case MsgPackType.POSITIVE_FIXNUM_0x08: return 8;
-                case MsgPackType.POSITIVE_FIXNUM_0x09: return 9;
-                case MsgPackType.POSITIVE_FIXNUM_0x0A: return 10;
-                case MsgPackType.POSITIVE_FIXNUM_0x0B: return 11;
-                case MsgPackType.POSITIVE_FIXNUM_0x0C: return 12;
-                case MsgPackType.POSITIVE_FIXNUM_0x0D: return 13;
-                case MsgPackType.POSITIVE_FIXNUM_0x0E: return 14;
-                case MsgPackType.POSITIVE_FIXNUM_0x0F: return 15;
+                case MsgPackType.NIL: return GenericCast<object, T>.Null();
+                case MsgPackType.TRUE: return GenericCast<bool, T>.Const(true)();
+                case MsgPackType.FALSE: return GenericCast<bool, T>.Const(false)();
+                case MsgPackType.POSITIVE_FIXNUM: return GenericCast<int, T>.Const(0)();
+                case MsgPackType.POSITIVE_FIXNUM_0x01: return GenericCast<int, T>.Const(1)();
+                case MsgPackType.POSITIVE_FIXNUM_0x02: return GenericCast<int, T>.Const(2)();
+                case MsgPackType.POSITIVE_FIXNUM_0x03: return GenericCast<int, T>.Const(3)();
+                case MsgPackType.POSITIVE_FIXNUM_0x04: return GenericCast<int, T>.Const(4)();
+                case MsgPackType.POSITIVE_FIXNUM_0x05: return GenericCast<int, T>.Const(5)();
+                case MsgPackType.POSITIVE_FIXNUM_0x06: return GenericCast<int, T>.Const(6)();
+                case MsgPackType.POSITIVE_FIXNUM_0x07: return GenericCast<int, T>.Const(7)();
+                case MsgPackType.POSITIVE_FIXNUM_0x08: return GenericCast<int, T>.Const(8)();
+                case MsgPackType.POSITIVE_FIXNUM_0x09: return GenericCast<int, T>.Const(9)();
+                case MsgPackType.POSITIVE_FIXNUM_0x0A: return GenericCast<int, T>.Const(10)();
+                case MsgPackType.POSITIVE_FIXNUM_0x0B: return GenericCast<int, T>.Const(11)();
+                case MsgPackType.POSITIVE_FIXNUM_0x0C: return GenericCast<int, T>.Const(12)();
+                case MsgPackType.POSITIVE_FIXNUM_0x0D: return GenericCast<int, T>.Const(13)();
+                case MsgPackType.POSITIVE_FIXNUM_0x0E: return GenericCast<int, T>.Const(14)();
+                case MsgPackType.POSITIVE_FIXNUM_0x0F: return GenericCast<int, T>.Const(15)();
 
-                case MsgPackType.POSITIVE_FIXNUM_0x10: return 16;
-                case MsgPackType.POSITIVE_FIXNUM_0x11: return 17;
-                case MsgPackType.POSITIVE_FIXNUM_0x12: return 18;
-                case MsgPackType.POSITIVE_FIXNUM_0x13: return 19;
-                case MsgPackType.POSITIVE_FIXNUM_0x14: return 20;
-                case MsgPackType.POSITIVE_FIXNUM_0x15: return 21;
-                case MsgPackType.POSITIVE_FIXNUM_0x16: return 22;
-                case MsgPackType.POSITIVE_FIXNUM_0x17: return 23;
-                case MsgPackType.POSITIVE_FIXNUM_0x18: return 24;
-                case MsgPackType.POSITIVE_FIXNUM_0x19: return 25;
-                case MsgPackType.POSITIVE_FIXNUM_0x1A: return 26;
-                case MsgPackType.POSITIVE_FIXNUM_0x1B: return 27;
-                case MsgPackType.POSITIVE_FIXNUM_0x1C: return 28;
-                case MsgPackType.POSITIVE_FIXNUM_0x1D: return 29;
-                case MsgPackType.POSITIVE_FIXNUM_0x1E: return 30;
-                case MsgPackType.POSITIVE_FIXNUM_0x1F: return 31;
+                case MsgPackType.POSITIVE_FIXNUM_0x10: return GenericCast<int, T>.Const(16)();
+                case MsgPackType.POSITIVE_FIXNUM_0x11: return GenericCast<int, T>.Const(17)();
+                case MsgPackType.POSITIVE_FIXNUM_0x12: return GenericCast<int, T>.Const(18)();
+                case MsgPackType.POSITIVE_FIXNUM_0x13: return GenericCast<int, T>.Const(19)();
+                case MsgPackType.POSITIVE_FIXNUM_0x14: return GenericCast<int, T>.Const(20)();
+                case MsgPackType.POSITIVE_FIXNUM_0x15: return GenericCast<int, T>.Const(21)();
+                case MsgPackType.POSITIVE_FIXNUM_0x16: return GenericCast<int, T>.Const(22)();
+                case MsgPackType.POSITIVE_FIXNUM_0x17: return GenericCast<int, T>.Const(23)();
+                case MsgPackType.POSITIVE_FIXNUM_0x18: return GenericCast<int, T>.Const(24)();
+                case MsgPackType.POSITIVE_FIXNUM_0x19: return GenericCast<int, T>.Const(25)();
+                case MsgPackType.POSITIVE_FIXNUM_0x1A: return GenericCast<int, T>.Const(26)();
+                case MsgPackType.POSITIVE_FIXNUM_0x1B: return GenericCast<int, T>.Const(27)();
+                case MsgPackType.POSITIVE_FIXNUM_0x1C: return GenericCast<int, T>.Const(28)();
+                case MsgPackType.POSITIVE_FIXNUM_0x1D: return GenericCast<int, T>.Const(29)();
+                case MsgPackType.POSITIVE_FIXNUM_0x1E: return GenericCast<int, T>.Const(30)();
+                case MsgPackType.POSITIVE_FIXNUM_0x1F: return GenericCast<int, T>.Const(31)();
 
-                case MsgPackType.POSITIVE_FIXNUM_0x20: return 32;
-                case MsgPackType.POSITIVE_FIXNUM_0x21: return 33;
-                case MsgPackType.POSITIVE_FIXNUM_0x22: return 34;
-                case MsgPackType.POSITIVE_FIXNUM_0x23: return 35;
-                case MsgPackType.POSITIVE_FIXNUM_0x24: return 36;
-                case MsgPackType.POSITIVE_FIXNUM_0x25: return 37;
-                case MsgPackType.POSITIVE_FIXNUM_0x26: return 38;
-                case MsgPackType.POSITIVE_FIXNUM_0x27: return 39;
-                case MsgPackType.POSITIVE_FIXNUM_0x28: return 40;
-                case MsgPackType.POSITIVE_FIXNUM_0x29: return 41;
-                case MsgPackType.POSITIVE_FIXNUM_0x2A: return 42;
-                case MsgPackType.POSITIVE_FIXNUM_0x2B: return 43;
-                case MsgPackType.POSITIVE_FIXNUM_0x2C: return 44;
-                case MsgPackType.POSITIVE_FIXNUM_0x2D: return 45;
-                case MsgPackType.POSITIVE_FIXNUM_0x2E: return 46;
-                case MsgPackType.POSITIVE_FIXNUM_0x2F: return 47;
+                case MsgPackType.POSITIVE_FIXNUM_0x20: return GenericCast<int, T>.Const(32)();
+                case MsgPackType.POSITIVE_FIXNUM_0x21: return GenericCast<int, T>.Const(33)();
+                case MsgPackType.POSITIVE_FIXNUM_0x22: return GenericCast<int, T>.Const(34)();
+                case MsgPackType.POSITIVE_FIXNUM_0x23: return GenericCast<int, T>.Const(35)();
+                case MsgPackType.POSITIVE_FIXNUM_0x24: return GenericCast<int, T>.Const(36)();
+                case MsgPackType.POSITIVE_FIXNUM_0x25: return GenericCast<int, T>.Const(37)();
+                case MsgPackType.POSITIVE_FIXNUM_0x26: return GenericCast<int, T>.Const(38)();
+                case MsgPackType.POSITIVE_FIXNUM_0x27: return GenericCast<int, T>.Const(39)();
+                case MsgPackType.POSITIVE_FIXNUM_0x28: return GenericCast<int, T>.Const(40)();
+                case MsgPackType.POSITIVE_FIXNUM_0x29: return GenericCast<int, T>.Const(41)();
+                case MsgPackType.POSITIVE_FIXNUM_0x2A: return GenericCast<int, T>.Const(42)();
+                case MsgPackType.POSITIVE_FIXNUM_0x2B: return GenericCast<int, T>.Const(43)();
+                case MsgPackType.POSITIVE_FIXNUM_0x2C: return GenericCast<int, T>.Const(44)();
+                case MsgPackType.POSITIVE_FIXNUM_0x2D: return GenericCast<int, T>.Const(45)();
+                case MsgPackType.POSITIVE_FIXNUM_0x2E: return GenericCast<int, T>.Const(46)();
+                case MsgPackType.POSITIVE_FIXNUM_0x2F: return GenericCast<int, T>.Const(47)();
 
-                case MsgPackType.POSITIVE_FIXNUM_0x30: return 48;
-                case MsgPackType.POSITIVE_FIXNUM_0x31: return 49;
-                case MsgPackType.POSITIVE_FIXNUM_0x32: return 50;
-                case MsgPackType.POSITIVE_FIXNUM_0x33: return 51;
-                case MsgPackType.POSITIVE_FIXNUM_0x34: return 52;
-                case MsgPackType.POSITIVE_FIXNUM_0x35: return 53;
-                case MsgPackType.POSITIVE_FIXNUM_0x36: return 54;
-                case MsgPackType.POSITIVE_FIXNUM_0x37: return 55;
-                case MsgPackType.POSITIVE_FIXNUM_0x38: return 56;
-                case MsgPackType.POSITIVE_FIXNUM_0x39: return 57;
-                case MsgPackType.POSITIVE_FIXNUM_0x3A: return 58;
-                case MsgPackType.POSITIVE_FIXNUM_0x3B: return 59;
-                case MsgPackType.POSITIVE_FIXNUM_0x3C: return 60;
-                case MsgPackType.POSITIVE_FIXNUM_0x3D: return 61;
-                case MsgPackType.POSITIVE_FIXNUM_0x3E: return 62;
-                case MsgPackType.POSITIVE_FIXNUM_0x3F: return 63;
+                case MsgPackType.POSITIVE_FIXNUM_0x30: return GenericCast<int, T>.Const(48)();
+                case MsgPackType.POSITIVE_FIXNUM_0x31: return GenericCast<int, T>.Const(49)();
+                case MsgPackType.POSITIVE_FIXNUM_0x32: return GenericCast<int, T>.Const(50)();
+                case MsgPackType.POSITIVE_FIXNUM_0x33: return GenericCast<int, T>.Const(51)();
+                case MsgPackType.POSITIVE_FIXNUM_0x34: return GenericCast<int, T>.Const(52)();
+                case MsgPackType.POSITIVE_FIXNUM_0x35: return GenericCast<int, T>.Const(53)();
+                case MsgPackType.POSITIVE_FIXNUM_0x36: return GenericCast<int, T>.Const(54)();
+                case MsgPackType.POSITIVE_FIXNUM_0x37: return GenericCast<int, T>.Const(55)();
+                case MsgPackType.POSITIVE_FIXNUM_0x38: return GenericCast<int, T>.Const(56)();
+                case MsgPackType.POSITIVE_FIXNUM_0x39: return GenericCast<int, T>.Const(57)();
+                case MsgPackType.POSITIVE_FIXNUM_0x3A: return GenericCast<int, T>.Const(58)();
+                case MsgPackType.POSITIVE_FIXNUM_0x3B: return GenericCast<int, T>.Const(59)();
+                case MsgPackType.POSITIVE_FIXNUM_0x3C: return GenericCast<int, T>.Const(60)();
+                case MsgPackType.POSITIVE_FIXNUM_0x3D: return GenericCast<int, T>.Const(61)();
+                case MsgPackType.POSITIVE_FIXNUM_0x3E: return GenericCast<int, T>.Const(62)();
+                case MsgPackType.POSITIVE_FIXNUM_0x3F: return GenericCast<int, T>.Const(63)();
 
-                case MsgPackType.POSITIVE_FIXNUM_0x40: return 64;
-                case MsgPackType.POSITIVE_FIXNUM_0x41: return 65;
-                case MsgPackType.POSITIVE_FIXNUM_0x42: return 66;
-                case MsgPackType.POSITIVE_FIXNUM_0x43: return 67;
-                case MsgPackType.POSITIVE_FIXNUM_0x44: return 68;
-                case MsgPackType.POSITIVE_FIXNUM_0x45: return 69;
-                case MsgPackType.POSITIVE_FIXNUM_0x46: return 70;
-                case MsgPackType.POSITIVE_FIXNUM_0x47: return 71;
-                case MsgPackType.POSITIVE_FIXNUM_0x48: return 72;
-                case MsgPackType.POSITIVE_FIXNUM_0x49: return 73;
-                case MsgPackType.POSITIVE_FIXNUM_0x4A: return 74;
-                case MsgPackType.POSITIVE_FIXNUM_0x4B: return 75;
-                case MsgPackType.POSITIVE_FIXNUM_0x4C: return 76;
-                case MsgPackType.POSITIVE_FIXNUM_0x4D: return 77;
-                case MsgPackType.POSITIVE_FIXNUM_0x4E: return 78;
-                case MsgPackType.POSITIVE_FIXNUM_0x4F: return 79;
+                case MsgPackType.POSITIVE_FIXNUM_0x40: return GenericCast<int, T>.Const(64)();
+                case MsgPackType.POSITIVE_FIXNUM_0x41: return GenericCast<int, T>.Const(65)();
+                case MsgPackType.POSITIVE_FIXNUM_0x42: return GenericCast<int, T>.Const(66)();
+                case MsgPackType.POSITIVE_FIXNUM_0x43: return GenericCast<int, T>.Const(67)();
+                case MsgPackType.POSITIVE_FIXNUM_0x44: return GenericCast<int, T>.Const(68)();
+                case MsgPackType.POSITIVE_FIXNUM_0x45: return GenericCast<int, T>.Const(69)();
+                case MsgPackType.POSITIVE_FIXNUM_0x46: return GenericCast<int, T>.Const(70)();
+                case MsgPackType.POSITIVE_FIXNUM_0x47: return GenericCast<int, T>.Const(71)();
+                case MsgPackType.POSITIVE_FIXNUM_0x48: return GenericCast<int, T>.Const(72)();
+                case MsgPackType.POSITIVE_FIXNUM_0x49: return GenericCast<int, T>.Const(73)();
+                case MsgPackType.POSITIVE_FIXNUM_0x4A: return GenericCast<int, T>.Const(74)();
+                case MsgPackType.POSITIVE_FIXNUM_0x4B: return GenericCast<int, T>.Const(75)();
+                case MsgPackType.POSITIVE_FIXNUM_0x4C: return GenericCast<int, T>.Const(76)();
+                case MsgPackType.POSITIVE_FIXNUM_0x4D: return GenericCast<int, T>.Const(77)();
+                case MsgPackType.POSITIVE_FIXNUM_0x4E: return GenericCast<int, T>.Const(78)();
+                case MsgPackType.POSITIVE_FIXNUM_0x4F: return GenericCast<int, T>.Const(79)();
 
-                case MsgPackType.POSITIVE_FIXNUM_0x50: return 80;
-                case MsgPackType.POSITIVE_FIXNUM_0x51: return 81;
-                case MsgPackType.POSITIVE_FIXNUM_0x52: return 82;
-                case MsgPackType.POSITIVE_FIXNUM_0x53: return 83;
-                case MsgPackType.POSITIVE_FIXNUM_0x54: return 84;
-                case MsgPackType.POSITIVE_FIXNUM_0x55: return 85;
-                case MsgPackType.POSITIVE_FIXNUM_0x56: return 86;
-                case MsgPackType.POSITIVE_FIXNUM_0x57: return 87;
-                case MsgPackType.POSITIVE_FIXNUM_0x58: return 88;
-                case MsgPackType.POSITIVE_FIXNUM_0x59: return 89;
-                case MsgPackType.POSITIVE_FIXNUM_0x5A: return 90;
-                case MsgPackType.POSITIVE_FIXNUM_0x5B: return 91;
-                case MsgPackType.POSITIVE_FIXNUM_0x5C: return 92;
-                case MsgPackType.POSITIVE_FIXNUM_0x5D: return 93;
-                case MsgPackType.POSITIVE_FIXNUM_0x5E: return 94;
-                case MsgPackType.POSITIVE_FIXNUM_0x5F: return 95;
+                case MsgPackType.POSITIVE_FIXNUM_0x50: return GenericCast<int, T>.Const(80)();
+                case MsgPackType.POSITIVE_FIXNUM_0x51: return GenericCast<int, T>.Const(81)();
+                case MsgPackType.POSITIVE_FIXNUM_0x52: return GenericCast<int, T>.Const(82)();
+                case MsgPackType.POSITIVE_FIXNUM_0x53: return GenericCast<int, T>.Const(83)();
+                case MsgPackType.POSITIVE_FIXNUM_0x54: return GenericCast<int, T>.Const(84)();
+                case MsgPackType.POSITIVE_FIXNUM_0x55: return GenericCast<int, T>.Const(85)();
+                case MsgPackType.POSITIVE_FIXNUM_0x56: return GenericCast<int, T>.Const(86)();
+                case MsgPackType.POSITIVE_FIXNUM_0x57: return GenericCast<int, T>.Const(87)();
+                case MsgPackType.POSITIVE_FIXNUM_0x58: return GenericCast<int, T>.Const(88)();
+                case MsgPackType.POSITIVE_FIXNUM_0x59: return GenericCast<int, T>.Const(89)();
+                case MsgPackType.POSITIVE_FIXNUM_0x5A: return GenericCast<int, T>.Const(90)();
+                case MsgPackType.POSITIVE_FIXNUM_0x5B: return GenericCast<int, T>.Const(91)();
+                case MsgPackType.POSITIVE_FIXNUM_0x5C: return GenericCast<int, T>.Const(92)();
+                case MsgPackType.POSITIVE_FIXNUM_0x5D: return GenericCast<int, T>.Const(93)();
+                case MsgPackType.POSITIVE_FIXNUM_0x5E: return GenericCast<int, T>.Const(94)();
+                case MsgPackType.POSITIVE_FIXNUM_0x5F: return GenericCast<int, T>.Const(95)();
 
-                case MsgPackType.POSITIVE_FIXNUM_0x60: return 96;
-                case MsgPackType.POSITIVE_FIXNUM_0x61: return 97;
-                case MsgPackType.POSITIVE_FIXNUM_0x62: return 98;
-                case MsgPackType.POSITIVE_FIXNUM_0x63: return 99;
-                case MsgPackType.POSITIVE_FIXNUM_0x64: return 100;
-                case MsgPackType.POSITIVE_FIXNUM_0x65: return 101;
-                case MsgPackType.POSITIVE_FIXNUM_0x66: return 102;
-                case MsgPackType.POSITIVE_FIXNUM_0x67: return 103;
-                case MsgPackType.POSITIVE_FIXNUM_0x68: return 104;
-                case MsgPackType.POSITIVE_FIXNUM_0x69: return 105;
-                case MsgPackType.POSITIVE_FIXNUM_0x6A: return 106;
-                case MsgPackType.POSITIVE_FIXNUM_0x6B: return 107;
-                case MsgPackType.POSITIVE_FIXNUM_0x6C: return 108;
-                case MsgPackType.POSITIVE_FIXNUM_0x6D: return 109;
-                case MsgPackType.POSITIVE_FIXNUM_0x6E: return 110;
-                case MsgPackType.POSITIVE_FIXNUM_0x6F: return 111;
+                case MsgPackType.POSITIVE_FIXNUM_0x60: return GenericCast<int, T>.Const(96)();
+                case MsgPackType.POSITIVE_FIXNUM_0x61: return GenericCast<int, T>.Const(97)();
+                case MsgPackType.POSITIVE_FIXNUM_0x62: return GenericCast<int, T>.Const(98)();
+                case MsgPackType.POSITIVE_FIXNUM_0x63: return GenericCast<int, T>.Const(99)();
+                case MsgPackType.POSITIVE_FIXNUM_0x64: return GenericCast<int, T>.Const(100)();
+                case MsgPackType.POSITIVE_FIXNUM_0x65: return GenericCast<int, T>.Const(101)();
+                case MsgPackType.POSITIVE_FIXNUM_0x66: return GenericCast<int, T>.Const(102)();
+                case MsgPackType.POSITIVE_FIXNUM_0x67: return GenericCast<int, T>.Const(103)();
+                case MsgPackType.POSITIVE_FIXNUM_0x68: return GenericCast<int, T>.Const(104)();
+                case MsgPackType.POSITIVE_FIXNUM_0x69: return GenericCast<int, T>.Const(105)();
+                case MsgPackType.POSITIVE_FIXNUM_0x6A: return GenericCast<int, T>.Const(106)();
+                case MsgPackType.POSITIVE_FIXNUM_0x6B: return GenericCast<int, T>.Const(107)();
+                case MsgPackType.POSITIVE_FIXNUM_0x6C: return GenericCast<int, T>.Const(108)();
+                case MsgPackType.POSITIVE_FIXNUM_0x6D: return GenericCast<int, T>.Const(109)();
+                case MsgPackType.POSITIVE_FIXNUM_0x6E: return GenericCast<int, T>.Const(110)();
+                case MsgPackType.POSITIVE_FIXNUM_0x6F: return GenericCast<int, T>.Const(111)();
 
-                case MsgPackType.POSITIVE_FIXNUM_0x70: return 112;
-                case MsgPackType.POSITIVE_FIXNUM_0x71: return 113;
-                case MsgPackType.POSITIVE_FIXNUM_0x72: return 114;
-                case MsgPackType.POSITIVE_FIXNUM_0x73: return 115;
-                case MsgPackType.POSITIVE_FIXNUM_0x74: return 116;
-                case MsgPackType.POSITIVE_FIXNUM_0x75: return 117;
-                case MsgPackType.POSITIVE_FIXNUM_0x76: return 118;
-                case MsgPackType.POSITIVE_FIXNUM_0x77: return 119;
-                case MsgPackType.POSITIVE_FIXNUM_0x78: return 120;
-                case MsgPackType.POSITIVE_FIXNUM_0x79: return 121;
-                case MsgPackType.POSITIVE_FIXNUM_0x7A: return 122;
-                case MsgPackType.POSITIVE_FIXNUM_0x7B: return 123;
-                case MsgPackType.POSITIVE_FIXNUM_0x7C: return 124;
-                case MsgPackType.POSITIVE_FIXNUM_0x7D: return 125;
-                case MsgPackType.POSITIVE_FIXNUM_0x7E: return 126;
-                case MsgPackType.POSITIVE_FIXNUM_0x7F: return 127;
+                case MsgPackType.POSITIVE_FIXNUM_0x70: return GenericCast<int, T>.Const(112)();
+                case MsgPackType.POSITIVE_FIXNUM_0x71: return GenericCast<int, T>.Const(113)();
+                case MsgPackType.POSITIVE_FIXNUM_0x72: return GenericCast<int, T>.Const(114)();
+                case MsgPackType.POSITIVE_FIXNUM_0x73: return GenericCast<int, T>.Const(115)();
+                case MsgPackType.POSITIVE_FIXNUM_0x74: return GenericCast<int, T>.Const(116)();
+                case MsgPackType.POSITIVE_FIXNUM_0x75: return GenericCast<int, T>.Const(117)();
+                case MsgPackType.POSITIVE_FIXNUM_0x76: return GenericCast<int, T>.Const(118)();
+                case MsgPackType.POSITIVE_FIXNUM_0x77: return GenericCast<int, T>.Const(119)();
+                case MsgPackType.POSITIVE_FIXNUM_0x78: return GenericCast<int, T>.Const(120)();
+                case MsgPackType.POSITIVE_FIXNUM_0x79: return GenericCast<int, T>.Const(121)();
+                case MsgPackType.POSITIVE_FIXNUM_0x7A: return GenericCast<int, T>.Const(122)();
+                case MsgPackType.POSITIVE_FIXNUM_0x7B: return GenericCast<int, T>.Const(123)();
+                case MsgPackType.POSITIVE_FIXNUM_0x7C: return GenericCast<int, T>.Const(124)();
+                case MsgPackType.POSITIVE_FIXNUM_0x7D: return GenericCast<int, T>.Const(125)();
+                case MsgPackType.POSITIVE_FIXNUM_0x7E: return GenericCast<int, T>.Const(126)();
+                case MsgPackType.POSITIVE_FIXNUM_0x7F: return GenericCast<int, T>.Const(127)();
 
-                case MsgPackType.NEGATIVE_FIXNUM: return -32;
-                case MsgPackType.NEGATIVE_FIXNUM_0x01: return -1;
-                case MsgPackType.NEGATIVE_FIXNUM_0x02: return -2;
-                case MsgPackType.NEGATIVE_FIXNUM_0x03: return -3;
-                case MsgPackType.NEGATIVE_FIXNUM_0x04: return -4;
-                case MsgPackType.NEGATIVE_FIXNUM_0x05: return -5;
-                case MsgPackType.NEGATIVE_FIXNUM_0x06: return -6;
-                case MsgPackType.NEGATIVE_FIXNUM_0x07: return -7;
-                case MsgPackType.NEGATIVE_FIXNUM_0x08: return -8;
-                case MsgPackType.NEGATIVE_FIXNUM_0x09: return -9;
-                case MsgPackType.NEGATIVE_FIXNUM_0x0A: return -10;
-                case MsgPackType.NEGATIVE_FIXNUM_0x0B: return -11;
-                case MsgPackType.NEGATIVE_FIXNUM_0x0C: return -12;
-                case MsgPackType.NEGATIVE_FIXNUM_0x0D: return -13;
-                case MsgPackType.NEGATIVE_FIXNUM_0x0E: return -14;
-                case MsgPackType.NEGATIVE_FIXNUM_0x0F: return -15;
-                case MsgPackType.NEGATIVE_FIXNUM_0x10: return -16;
-                case MsgPackType.NEGATIVE_FIXNUM_0x11: return -17;
-                case MsgPackType.NEGATIVE_FIXNUM_0x12: return -18;
-                case MsgPackType.NEGATIVE_FIXNUM_0x13: return -19;
-                case MsgPackType.NEGATIVE_FIXNUM_0x14: return -20;
-                case MsgPackType.NEGATIVE_FIXNUM_0x15: return -21;
-                case MsgPackType.NEGATIVE_FIXNUM_0x16: return -22;
-                case MsgPackType.NEGATIVE_FIXNUM_0x17: return -23;
-                case MsgPackType.NEGATIVE_FIXNUM_0x18: return -24;
-                case MsgPackType.NEGATIVE_FIXNUM_0x19: return -25;
-                case MsgPackType.NEGATIVE_FIXNUM_0x1A: return -26;
-                case MsgPackType.NEGATIVE_FIXNUM_0x1B: return -27;
-                case MsgPackType.NEGATIVE_FIXNUM_0x1C: return -28;
-                case MsgPackType.NEGATIVE_FIXNUM_0x1D: return -29;
-                case MsgPackType.NEGATIVE_FIXNUM_0x1E: return -30;
-                case MsgPackType.NEGATIVE_FIXNUM_0x1F: return -31;
+                case MsgPackType.NEGATIVE_FIXNUM: return GenericCast<int, T>.Const(-32)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x01: return GenericCast<int, T>.Const(-1)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x02: return GenericCast<int, T>.Const(-2)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x03: return GenericCast<int, T>.Const(-3)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x04: return GenericCast<int, T>.Const(-4)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x05: return GenericCast<int, T>.Const(-5)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x06: return GenericCast<int, T>.Const(-6)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x07: return GenericCast<int, T>.Const(-7)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x08: return GenericCast<int, T>.Const(-8)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x09: return GenericCast<int, T>.Const(-9)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x0A: return GenericCast<int, T>.Const(-10)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x0B: return GenericCast<int, T>.Const(-11)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x0C: return GenericCast<int, T>.Const(-12)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x0D: return GenericCast<int, T>.Const(-13)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x0E: return GenericCast<int, T>.Const(-14)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x0F: return GenericCast<int, T>.Const(-15)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x10: return GenericCast<int, T>.Const(-16)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x11: return GenericCast<int, T>.Const(-17)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x12: return GenericCast<int, T>.Const(-18)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x13: return GenericCast<int, T>.Const(-19)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x14: return GenericCast<int, T>.Const(-20)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x15: return GenericCast<int, T>.Const(-21)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x16: return GenericCast<int, T>.Const(-22)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x17: return GenericCast<int, T>.Const(-23)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x18: return GenericCast<int, T>.Const(-24)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x19: return GenericCast<int, T>.Const(-25)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x1A: return GenericCast<int, T>.Const(-26)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x1B: return GenericCast<int, T>.Const(-27)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x1C: return GenericCast<int, T>.Const(-28)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x1D: return GenericCast<int, T>.Const(-29)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x1E: return GenericCast<int, T>.Const(-30)();
+                case MsgPackType.NEGATIVE_FIXNUM_0x1F: return GenericCast<int, T>.Const(-31)();
 
-                case MsgPackType.INT8: return (SByte)GetBody().Get(0);
-                case MsgPackType.INT16: return EndianConverter.NetworkByteWordToSignedNativeByteOrder(GetBody());
-                case MsgPackType.INT32: return EndianConverter.NetworkByteDWordToSignedNativeByteOrder(GetBody());
-                case MsgPackType.INT64: return EndianConverter.NetworkByteQWordToSignedNativeByteOrder(GetBody());
-                case MsgPackType.UINT8: return GetBody().Get(0);
-                case MsgPackType.UINT16: return EndianConverter.NetworkByteWordToUnsignedNativeByteOrder(GetBody());
-                case MsgPackType.UINT32: return EndianConverter.NetworkByteDWordToUnsignedNativeByteOrder(GetBody());
-                case MsgPackType.UINT64: return EndianConverter.NetworkByteQWordToUnsignedNativeByteOrder(GetBody());
-                case MsgPackType.FLOAT: return EndianConverter.NetworkByteDWordToFloatNativeByteOrder(GetBody());
-                case MsgPackType.DOUBLE: return EndianConverter.NetworkByteQWordToFloatNativeByteOrder(GetBody());
+                case MsgPackType.INT8: return GenericCast<SByte, T>.Cast((SByte)GetBody().Get(0));
+                case MsgPackType.INT16: return GenericCast<short, T>.Cast(EndianConverter.NetworkByteWordToSignedNativeByteOrder(GetBody()));
+                case MsgPackType.INT32: return GenericCast<int, T>.Cast(EndianConverter.NetworkByteDWordToSignedNativeByteOrder(GetBody()));
+                case MsgPackType.INT64: return GenericCast<long, T>.Cast(EndianConverter.NetworkByteQWordToSignedNativeByteOrder(GetBody()));
+                case MsgPackType.UINT8: return GenericCast<Byte, T>.Cast(GetBody().Get(0));
+                case MsgPackType.UINT16: return GenericCast<ushort, T>.Cast(EndianConverter.NetworkByteWordToUnsignedNativeByteOrder(GetBody()));
+                case MsgPackType.UINT32: return GenericCast<uint, T>.Cast(EndianConverter.NetworkByteDWordToUnsignedNativeByteOrder(GetBody()));
+                case MsgPackType.UINT64: return GenericCast<ulong, T>.Cast(EndianConverter.NetworkByteQWordToUnsignedNativeByteOrder(GetBody()));
+                case MsgPackType.FLOAT: return GenericCast<float, T>.Cast(EndianConverter.NetworkByteDWordToFloatNativeByteOrder(GetBody()));
+                case MsgPackType.DOUBLE: return GenericCast<double, T>.Cast(EndianConverter.NetworkByteQWordToFloatNativeByteOrder(GetBody()));
 
-                case MsgPackType.FIX_STR: return "";
+                case MsgPackType.FIX_STR: return GenericCast<string, T>.Const("")();
                 case MsgPackType.FIX_STR_0x01:
                 case MsgPackType.FIX_STR_0x02:
                 case MsgPackType.FIX_STR_0x03:
@@ -622,7 +700,7 @@ namespace UniJSON.MsgPack
                     {
                         var body = GetBody();
                         var str = Encoding.UTF8.GetString(body.Array, body.Offset, body.Count);
-                        return str;
+                        return GenericCast<string, T>.Cast(str);
                     }
 
                 case MsgPackType.BIN8:
@@ -630,7 +708,7 @@ namespace UniJSON.MsgPack
                 case MsgPackType.BIN32:
                     {
                         var body = GetBody();
-                        return body;
+                        return GenericCast<ArraySegment<Byte>, T>.Cast(body);
                     }
 
                 default:
@@ -679,52 +757,52 @@ namespace UniJSON.MsgPack
 
         public SByte GetSByte()
         {
-            throw new NotImplementedException();
+            return GetValue<SByte>();
         }
 
         public Int16 GetInt16()
         {
-            throw new NotImplementedException();
+            return GetValue<Int16>();
         }
 
         public Int32 GetInt32()
         {
-            throw new NotImplementedException();
+            return GetValue<Int32>();
         }
 
         public Int64 GetInt64()
         {
-            throw new NotImplementedException();
+            return GetValue<Int64>();
         }
 
         public Byte GetByte()
         {
-            throw new NotImplementedException();
+            return GetValue<Byte>();
         }
 
         public UInt16 GetUInt16()
         {
-            throw new NotImplementedException();
+            return GetValue<UInt16>();
         }
 
         public UInt32 GetUInt32()
         {
-            throw new NotImplementedException();
+            return GetValue<UInt32>();
         }
 
         public UInt64 GetUInt64()
         {
-            throw new NotImplementedException();
+            return GetValue<UInt64>();
         }
 
         public float GetSingle()
         {
-            throw new NotImplementedException();
+            return GetValue<Single>();
         }
 
         public double GetDouble()
         {
-            throw new NotImplementedException();
+            return GetValue<Double>();
         }
 
         public void SetValue<T>(Utf8String jsonPointer, T value)

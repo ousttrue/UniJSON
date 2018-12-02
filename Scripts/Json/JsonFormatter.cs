@@ -285,7 +285,7 @@ namespace UniJSON
         static Utf8String s_method = Utf8String.From("method");
         static Utf8String s_params = Utf8String.From("params");
 
-        public void Notify(string method)
+        public void Notify(Utf8String method)
         {
             BeginMap();
             Key(s_jsonrpc); Value(s_20);
@@ -297,7 +297,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Notify<A0>(string method, A0 a0)
+        public void Notify<A0>(Utf8String method, A0 a0)
         {
             BeginMap();
             Key(s_jsonrpc); Value(s_20);
@@ -310,7 +310,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Notify<A0, A1>(string method, A0 a0, A1 a1)
+        public void Notify<A0, A1>(Utf8String method, A0 a0, A1 a1)
         {
             BeginMap();
             Key(s_jsonrpc); Value(s_20);
@@ -324,7 +324,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Notify<A0, A1, A2>(string method, A0 a0, A1 a1, A2 a2)
+        public void Notify<A0, A1, A2>(Utf8String method, A0 a0, A1 a1, A2 a2)
         {
             BeginMap();
             Key(s_jsonrpc); Value(s_20);
@@ -339,7 +339,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Notify<A0, A1, A2, A3>(string method, A0 a0, A1 a1, A2 a2, A3 a3)
+        public void Notify<A0, A1, A2, A3>(Utf8String method, A0 a0, A1 a1, A2 a2, A3 a3)
         {
             BeginMap();
             Key(s_jsonrpc); Value(s_20);
@@ -355,7 +355,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Notify<A0, A1, A2, A3, A4>(string method, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4)
+        public void Notify<A0, A1, A2, A3, A4>(Utf8String method, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4)
         {
             BeginMap();
             Key(s_jsonrpc); Value(s_20);
@@ -372,7 +372,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Notify<A0, A1, A2, A3, A4, A5>(string method, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5)
+        public void Notify<A0, A1, A2, A3, A4, A5>(Utf8String method, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5)
         {
             BeginMap();
             Key(s_jsonrpc); Value(s_20);
@@ -392,7 +392,7 @@ namespace UniJSON
 
         static Utf8String s_id = Utf8String.From("id");
 
-        public void Request(string method)
+        public void Request(Utf8String method)
         {
             BeginMap();
             Key(s_jsonrpc); Value(s_20);
@@ -405,7 +405,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Request<A0>(string method,
+        public void Request<A0>(Utf8String method,
             A0 a0)
         {
             BeginMap();
@@ -420,7 +420,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Request<A0, A1>(string method,
+        public void Request<A0, A1>(Utf8String method,
             A0 a0, A1 a1)
         {
             BeginMap();
@@ -436,7 +436,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Request<A0, A1, A2>(string method,
+        public void Request<A0, A1, A2>(Utf8String method,
             A0 a0, A1 a1, A2 a2)
         {
             BeginMap();
@@ -453,7 +453,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Request<A0, A1, A2, A3>(string method,
+        public void Request<A0, A1, A2, A3>(Utf8String method,
             A0 a0, A1 a1, A2 a2, A3 a3)
         {
             BeginMap();
@@ -471,7 +471,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Request<A0, A1, A2, A3, A4>(string method,
+        public void Request<A0, A1, A2, A3, A4>(Utf8String method,
             A0 a0, A1 a1, A2 a2, A3 a3, A4 a4)
         {
             BeginMap();
@@ -490,7 +490,7 @@ namespace UniJSON
             EndMap();
         }
 
-        public void Request<A0, A1, A2, A3, A4, A5>(string method,
+        public void Request<A0, A1, A2, A3, A4, A5>(Utf8String method,
             A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5)
         {
             BeginMap();

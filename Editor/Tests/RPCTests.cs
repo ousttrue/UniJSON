@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-
+using UniJSON.MsgPack;
 
 namespace UniJSON
 {
@@ -67,6 +67,31 @@ namespace UniJSON
                 dispatcher.Call(f, parsed["id"].GetInt32(), parsed["method"].GetString(), parsed["params"]);
 
                 Assert.AreEqual("hoge", msg);
+            }
+        }
+
+        [Test]
+        public void MsgPackRpcDispatcherTest()
+        {
+            var dispatcher = new RpcDispatcher();
+            var f = new MsgPackFormatter();
+
+            {
+                f.Clear();
+                dispatcher.Register("add", (int a, int b) => a + b);
+                f.Request("add", 1, 2);
+
+                var request = MsgPackParser.Parse(f.GetStore().Bytes);
+                Assert.AreEqual(4, request.ValueCount);
+                Assert.AreEqual(MsgPackFormatter.REQUEST_TYPE, request[0].GetInt32());
+
+                f.Clear();
+                dispatcher.Call(f, request[1].GetInt32(), request[2].GetString(), request[3]);
+                var response = MsgPackParser.Parse(f.GetStore().Bytes);
+                Assert.AreEqual(4, response.ValueCount);
+                Assert.AreEqual(MsgPackFormatter.RESPONSE_TYPE, response[0].GetInt32());
+                Assert.True(response[2].IsNull);
+                Assert.AreEqual(3, response[3].GetInt32());
             }
         }
     }

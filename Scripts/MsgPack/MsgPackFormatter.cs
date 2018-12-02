@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UniJSON.MsgPack
 {
-    public class MsgPackFormatter : IFormatter
+    public class MsgPackFormatter : IFormatter, IRpc
     {
         IStore m_store;
         public MsgPackFormatter(IStore store)
@@ -444,5 +444,131 @@ namespace UniJSON.MsgPack
         {
             return m_store;
         }
+
+        #region IRpc
+        public const int REQUEST_TYPE = 0;
+        public const int RESPONSE_TYPE = 1;
+        public const int NOTIFY_TYPE = 2;
+
+        int m_msgId = 1;
+
+        public void Request(Utf8String method)
+        {
+            BeginList(4);
+            Value(REQUEST_TYPE);
+            Value(m_msgId++);
+            Value(method);
+            BeginList(0); // params
+            {
+            }
+            EndList();
+            EndList();
+        }
+
+        public void Request<A0>(Utf8String method, A0 a0)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Request<A0, A1>(Utf8String method, A0 a0, A1 a1)
+        {
+            BeginList(4);
+            Value(REQUEST_TYPE);
+            Value(m_msgId++);
+            Value(method);
+            BeginList(2); // params
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+            }
+            EndList();
+            EndList();
+        }
+
+        public void Request<A0, A1, A2>(Utf8String method, A0 a0, A1 a1, A2 a2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Request<A0, A1, A2, A3>(Utf8String method, A0 a0, A1 a1, A2 a2, A3 a3)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Request<A0, A1, A2, A3, A4>(Utf8String method, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Request<A0, A1, A2, A3, A4, A5>(Utf8String method, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ResponseSuccess(int id)
+        {
+            BeginList(4);
+            Value(RESPONSE_TYPE);
+            Value(id);
+            Null();
+            Null();
+            EndList();
+        }
+
+        public void ResponseSuccess<T>(int id, T result)
+        {
+            BeginList(4);
+            Value(RESPONSE_TYPE);
+            Value(id);
+            Null();
+            this.Serialize(result);
+            EndList();
+        }
+
+        public void ResponseError(int id, Exception error)
+        {
+            BeginList(4);
+            Value(RESPONSE_TYPE);
+            Value(id);
+            this.Serialize(error);
+            Null();
+            EndList();
+        }
+
+        public void Notify(Utf8String method)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Notify<A0>(Utf8String method, A0 a0)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Notify<A0, A1>(Utf8String method, A0 a0, A1 a1)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Notify<A0, A1, A2>(Utf8String method, A0 a0, A1 a1, A2 a2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Notify<A0, A1, A2, A3>(Utf8String method, A0 a0, A1 a1, A2 a2, A3 a3)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Notify<A0, A1, A2, A3, A4>(Utf8String method, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Notify<A0, A1, A2, A3, A4, A5>(Utf8String method, A0 a0, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
     }
 }
