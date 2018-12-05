@@ -546,17 +546,41 @@ namespace UniJSON.MsgPack
 
         public void Notify(Utf8String method)
         {
-            throw new NotImplementedException();
+            BeginList(3);
+            Value(NOTIFY_TYPE);
+            Value(method);
+            BeginList(0); // params
+            {
+            }
+            EndList();
+            EndList();
         }
 
         public void Notify<A0>(Utf8String method, A0 a0)
         {
-            throw new NotImplementedException();
+            BeginList(3);
+            Value(NOTIFY_TYPE);
+            Value(method);
+            BeginList(1); // params
+            {
+                this.Serialize(a0);
+            }
+            EndList();
+            EndList();
         }
 
         public void Notify<A0, A1>(Utf8String method, A0 a0, A1 a1)
         {
-            throw new NotImplementedException();
+            BeginList(3);
+            Value(NOTIFY_TYPE);
+            Value(method);
+            BeginList(2); // params
+            {
+                this.Serialize(a0);
+                this.Serialize(a1);
+            }
+            EndList();
+            EndList();
         }
 
         public void Notify<A0, A1, A2>(Utf8String method, A0 a0, A1 a1, A2 a2)
