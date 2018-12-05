@@ -90,7 +90,7 @@ namespace UniJSON
                 var response = MsgPackParser.Parse(f.GetStore().Bytes);
                 Assert.AreEqual(4, response.ValueCount);
                 Assert.AreEqual(MsgPackFormatter.RESPONSE_TYPE, response[0].GetInt32());
-                Assert.True(response[2].IsNull);
+                Assert.True(response[2].IsNull());
                 Assert.AreEqual(3, response[3].GetInt32());
             }
         }

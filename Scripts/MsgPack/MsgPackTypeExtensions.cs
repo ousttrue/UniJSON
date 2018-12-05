@@ -248,6 +248,19 @@
             }
         }
 
+        public static bool IsFloat(this MsgPackType formatType)
+        {
+            switch (formatType)
+            {
+                case MsgPackType.FLOAT:
+                case MsgPackType.DOUBLE:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
         public static bool IsString(this MsgPackType formatType)
         {
             switch (formatType)

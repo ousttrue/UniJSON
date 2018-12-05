@@ -11,7 +11,7 @@ namespace UniJSON.MsgPack
     {
         public override string ToString()
         {
-            if (IsArray)
+            if (this.IsArray())
             {
                 var sb = new StringBuilder();
                 bool isFirst = true;
@@ -31,7 +31,7 @@ namespace UniJSON.MsgPack
                 sb.Append("]");
                 return sb.ToString();
             }
-            else if (IsMap)
+            else if (this.IsMap())
             {
                 var sb = new StringBuilder();
                 bool isFirst = true;
@@ -54,6 +54,51 @@ namespace UniJSON.MsgPack
             else
             {
                 return GetValue().ToString();
+            }
+        }
+
+        public ValueNodeType ValueType
+        {
+            get{
+                switch (Value.Format)
+                {
+                    case MsgPackType.NIL:
+                        return ValueNodeType.Null;
+
+                    case MsgPackType.TRUE:
+                    case MsgPackType.FALSE:
+                        return ValueNodeType.Boolean;
+
+                    default:
+                        if (Value.Format.IsArray())
+                        {
+                            return ValueNodeType.Array;
+                        }
+                        else if (Value.Format.IsMap())
+                        {
+                            return ValueNodeType.Map;
+                        }
+                        else if (Value.Format.IsInteger())
+                        {
+                            return ValueNodeType.Integer;
+                        }
+                        else if (Value.Format.IsFloat())
+                        {
+                            return ValueNodeType.Float;
+                        }
+                        else if (Value.Format.IsString())
+                        {
+                            return ValueNodeType.String;
+                        }
+                        else if (Value.Format.IsBinary())
+                        {
+                            return ValueNodeType.Binary;
+                        }
+                        else
+                        {
+                            throw new NotImplementedException();
+                        }
+                }
             }
         }
 
@@ -112,41 +157,6 @@ namespace UniJSON.MsgPack
                 }
                 return new MsgPackNode(Values, Value.ParentIndex);
             }
-        }
-
-        public bool IsNull
-        {
-            get { return Value.Format == MsgPackType.NIL; }
-        }
-
-        public bool IsBoolean
-        {
-            get { return Value.Format == MsgPackType.TRUE || Value.Format == MsgPackType.FALSE; }
-        }
-
-        public bool IsString
-        {
-            get { return Value.Format.IsString(); }
-        }
-
-        public bool IsInteger
-        {
-            get { return Value.Format.IsInteger(); }
-        }
-
-        public bool IsFloat
-        {
-            get { return Value.Format == MsgPackType.FLOAT || Value.Format == MsgPackType.DOUBLE; }
-        }
-
-        public bool IsArray
-        {
-            get { return Value.Format.IsArray(); }
-        }
-
-        public bool IsMap
-        {
-            get { return Value.Format.IsMap(); }
         }
 
         public MsgPackNode(List<MsgPackValue> values, int index = 0)
@@ -886,7 +896,7 @@ namespace UniJSON.MsgPack
         {
             get
             {
-                if (!IsArray) throw new MsgPackTypeException("is not array");
+                if (!this.IsArray()) throw new MsgPackTypeException("is not array");
                 return Children.Select(x => x as IValueNode);
             }
         }
@@ -895,8 +905,7 @@ namespace UniJSON.MsgPack
         {
             get
             {
-                if (!IsMap) throw new MsgPackTypeException("is not map");
-                if (!this.IsMap) throw new JsonValueException("is not object");
+                if (!this.IsMap()) throw new MsgPackTypeException("is not map");
                 var it = Children.GetEnumerator();
                 while (it.MoveNext())
                 {
@@ -912,7 +921,7 @@ namespace UniJSON.MsgPack
         {
             get
             {
-                if (!IsArray)
+                if (!this.IsArray())
                 {
                     throw new MsgPackTypeException("Not array");
                 }
@@ -924,7 +933,7 @@ namespace UniJSON.MsgPack
         {
             get
             {
-                if (!IsMap)
+                if (!this.IsMap())
                 {
                     throw new MsgPackTypeException("Not map");
                 }

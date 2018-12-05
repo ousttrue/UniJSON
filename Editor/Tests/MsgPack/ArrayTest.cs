@@ -42,7 +42,7 @@ namespace UniJSON.MsgPack
             var bytes = f.GetStore().Bytes;
 
             var value = MsgPackParser.Parse(bytes);
-            Assert.IsTrue(value.IsArray);
+            Assert.IsTrue(value.IsArray());
             Assert.AreEqual(20, value.ValueCount);
             for (int i = 0; i < 20; ++i)
             {
@@ -86,7 +86,7 @@ namespace UniJSON.MsgPack
             var data = new int[] { -108, 0, 1, -90, 108, 111, 103, 103, 101, 114, -110, -91, 69, 114, 114, 111, 114, -94, 101, 50 }
             .Select(x => (Byte)x).ToArray();
             var parsed = MsgPackParser.Parse(data);
-            Assert.True(parsed.IsArray);
+            Assert.True(parsed.IsArray());
         }
     }
 }

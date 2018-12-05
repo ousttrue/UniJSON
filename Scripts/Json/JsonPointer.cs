@@ -70,12 +70,12 @@ namespace UniJSON
         static Utf8String GetKeyFromParent(IValueNode json)
         {
             var parent = json.Parent;
-            if (parent.IsArray)
+            if (parent.IsArray())
             {
                 var index = parent.IndexOf(json);
                 return Utf8String.From(index);
             }
-            else if (parent.IsMap)
+            else if (parent.IsMap())
             {
                 return parent.KeyOf(json);
             }

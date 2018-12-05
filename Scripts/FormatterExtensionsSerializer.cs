@@ -175,7 +175,7 @@ namespace UniJSON
             (default(GenericSerializer<T>)).Serialize(f, arg);
         }
 
-        public static void SetCustomSerializer<T>(this IFormatter f, Action<IFormatter, T> serializer)
+        public static void SetCustomSerializer<T>(Action<IFormatter, T> serializer)
         {
             (default(GenericSerializer<T>)).Set(serializer);
         }

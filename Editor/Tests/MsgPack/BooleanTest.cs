@@ -17,7 +17,7 @@ namespace UniJSON.MsgPack
                 Assert.AreEqual(new Byte[] { 0xC0 }, bytes.ToEnumerable());
 
                 var parsed = MsgPackParser.Parse(bytes);
-                Assert.True(parsed.IsNull);
+                Assert.True(parsed.IsNull());
             }
         }
 

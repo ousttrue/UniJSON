@@ -66,7 +66,7 @@ namespace UniJSON
             switch (key)
             {
                 case "items":
-                    if (value.IsArray)
+                    if (value.IsArray())
                     {
                         throw new NotImplementedException();
                     }

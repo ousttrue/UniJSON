@@ -6,23 +6,27 @@ using System.Linq.Expressions;
 
 namespace UniJSON
 {
+    public enum ValueNodeType
+    {
+        Null,
+        Boolean,
+        String,
+        Binary,
+        Integer,
+        Float,
+        Array,
+        Map,
+    }
+
     public interface IValueNode
     {
         ArraySegment<Byte> Bytes { get; }
 
-        bool IsNull { get; }
-        bool IsBoolean { get; }
-        bool IsString { get; }
-        bool IsInteger { get; }
-        bool IsFloat { get; }
+        ValueNodeType ValueType { get; }
 
         bool HasParent { get; }
         IValueNode Parent { get; }
-
-        bool IsArray { get; }
         IEnumerable<IValueNode> ArrayItems { get; }
-
-        bool IsMap { get; }
         IEnumerable<KeyValuePair<Utf8String, IValueNode>> ObjectItems { get; }
 
         int ValueCount { get; }
@@ -48,6 +52,41 @@ namespace UniJSON
 
     public static class IValueNodeExtensions
     {
+        public static bool IsNull<T>(this T self) where T : IValueNode
+        {
+            return self.ValueType == ValueNodeType.Null;
+        }
+
+        public static bool IsBoolean<T>(this T self) where T : IValueNode
+        {
+            return self.ValueType == ValueNodeType.Boolean;
+        }
+
+        public static bool IsString<T>(this T self) where T : IValueNode
+        {
+            return self.ValueType == ValueNodeType.String;
+        }
+
+        public static bool IsInteger<T>(this T self) where T : IValueNode
+        {
+            return self.ValueType == ValueNodeType.Integer;
+        }
+
+        public static bool IsFloat<T>(this T self) where T : IValueNode
+        {
+            return self.ValueType == ValueNodeType.Float;
+        }
+
+        public static bool IsArray<T>(this T self) where T : IValueNode
+        {
+            return self.ValueType == ValueNodeType.Array;
+        }
+
+        public static bool IsMap<T>(this T self) where T : IValueNode
+        {
+            return self.ValueType == ValueNodeType.Map;
+        }
+
         public static IEnumerable<IValueNode> Path<T>(this T self) where T : IValueNode
         {
             if (self.HasParent)
@@ -100,7 +139,7 @@ namespace UniJSON
         public static IEnumerable<IValueNode> Traverse<T>(this T self) where T : IValueNode
         {
             yield return self;
-            if (self.IsArray)
+            if (self.IsArray())
             {
                 foreach (var x in self.ArrayItems)
                 {
@@ -110,7 +149,7 @@ namespace UniJSON
                     }
                 }
             }
-            else if (self.IsMap)
+            else if (self.IsMap())
             {
                 foreach (var kv in self.ObjectItems)
                 {

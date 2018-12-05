@@ -7,39 +7,22 @@ namespace UniJSON
 {
     public struct JsonNode : IValueNode
     {
-        public bool IsNull
+        public ValueNodeType ValueType
         {
-            get { return Value.ValueType == JsonValueType.Null; }
-        }
-
-        public bool IsBoolean
-        {
-            get { return Value.ValueType == JsonValueType.Boolean; }
-        }
-
-        public bool IsString
-        {
-            get { return Value.ValueType == JsonValueType.String; }
-        }
-
-        public bool IsInteger
-        {
-            get { return Value.ValueType == JsonValueType.Integer; }
-        }
-
-        public bool IsFloat
-        {
-            get { return Value.ValueType == JsonValueType.Number; }
-        }
-
-        public bool IsArray
-        {
-            get { return Value.ValueType == JsonValueType.Array; }
-        }
-
-        public bool IsMap
-        {
-            get { return Value.ValueType == JsonValueType.Object; }
+            get
+            {
+                switch (Value.ValueType)
+                {
+                    case JsonValueType.Array: return ValueNodeType.Array;
+                    case JsonValueType.Object: return ValueNodeType.Map;
+                    case JsonValueType.Null: return ValueNodeType.Null;
+                    case JsonValueType.Boolean: return ValueNodeType.Boolean;
+                    case JsonValueType.Integer: return ValueNodeType.Integer;
+                    case JsonValueType.Number: return ValueNodeType.Float;
+                    case JsonValueType.String: return ValueNodeType.String;
+                    default: throw new NotImplementedException();
+                }
+            }
         }
 
         public int ValueCount
@@ -503,7 +486,7 @@ namespace UniJSON
         {
             foreach (var node in GetNodes(new JsonPointer(jsonPointer)))
             {
-                if (node.Parent.IsMap)
+                if (node.Parent.IsMap())
                 {
                     Values[node.m_index - 1] = JsonValue.Empty; // remove key
                 }

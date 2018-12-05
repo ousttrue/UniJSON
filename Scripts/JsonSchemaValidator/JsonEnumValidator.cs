@@ -11,18 +11,18 @@ namespace UniJSON
         {
             foreach (var x in value.ArrayItemsRaw)
             {
-                if (x.IsInteger || x.IsFloat)
+                if (x.IsInteger() || x.IsFloat())
                 {
                     return JsonIntEnumValidator.Create(value.ArrayItemsRaw
-                        .Where(y => y.IsInteger || y.IsFloat)
+                        .Where(y => y.IsInteger() || y.IsFloat())
                         .Select(y => y.GetInt32())
                         );
                 }
-                else if (x.IsString)
+                else if (x.IsString())
                 {
 
                     return JsonStringEnumValidator.Create(value.ArrayItemsRaw
-                        .Where(y => y.IsString)
+                        .Where(y => y.IsString())
                         .Select(y => y.GetString())
                         );
                 }
