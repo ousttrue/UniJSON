@@ -467,7 +467,16 @@ namespace UniJSON.MsgPack
 
         public void Request<A0>(Utf8String method, A0 a0)
         {
-            throw new NotImplementedException();
+            BeginList(4);
+            Value(REQUEST_TYPE);
+            Value(m_msgId++);
+            Value(method);
+            BeginList(1); // params
+            {
+                this.Serialize(a0);
+            }
+            EndList();
+            EndList();
         }
 
         public void Request<A0, A1>(Utf8String method, A0 a0, A1 a1)

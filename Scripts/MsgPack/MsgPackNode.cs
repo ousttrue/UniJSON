@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Text;
 
 
@@ -10,6 +9,54 @@ namespace UniJSON.MsgPack
 {
     public struct MsgPackNode : IValueNode
     {
+        public override string ToString()
+        {
+            if (IsArray)
+            {
+                var sb = new StringBuilder();
+                bool isFirst = true;
+                sb.Append("[");
+                foreach (var x in ArrayItems)
+                {
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        sb.Append(",");
+                    }
+                    sb.Append(x.ToString());
+                }
+                sb.Append("]");
+                return sb.ToString();
+            }
+            else if (IsMap)
+            {
+                var sb = new StringBuilder();
+                bool isFirst = true;
+                sb.Append("{");
+                foreach (var x in ObjectItems)
+                {
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        sb.Append(",");
+                    }
+                    sb.Append(x.ToString());
+                }
+                sb.Append("}");
+                return sb.ToString();
+            }
+            else
+            {
+                return GetValue().ToString();
+            }
+        }
+
         public readonly List<MsgPackValue> Values;
         int m_index;
         public int ValueIndex

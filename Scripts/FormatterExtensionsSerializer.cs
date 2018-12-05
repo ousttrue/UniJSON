@@ -16,6 +16,18 @@ namespace UniJSON
 
             static Action<IFormatter, T> GetSerializer(Type t)
             {
+                // object
+                if(typeof(T)==typeof(object) && t.GetType() != typeof(object))
+                {
+                    var self = Expression.Parameter(typeof(IFormatter), "f");
+                    var arg = Expression.Parameter(t, "value");
+                    var call = Expression.Call(SelfType, "SerializeObject",
+                        new Type[] { },
+                        self, arg);
+                    var lambda = Expression.Lambda(call, self, arg);
+                    return (Action<IFormatter, T>)lambda.Compile();
+                }
+
                 {
                     // primitive
                     var mi = typeof(IFormatter).GetMethod("Value", new Type[] { t });

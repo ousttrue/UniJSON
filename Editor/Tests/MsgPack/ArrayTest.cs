@@ -79,5 +79,14 @@ namespace UniJSON.MsgPack
                 }
             }
         }
+
+        [Test]
+        public void ReadTest()
+        {
+            var data = new int[] { -108, 0, 1, -90, 108, 111, 103, 103, 101, 114, -110, -91, 69, 114, 114, 111, 114, -94, 101, 50 }
+            .Select(x => (Byte)x).ToArray();
+            var parsed = MsgPackParser.Parse(data);
+            Assert.True(parsed.IsArray);
+        }
     }
 }
