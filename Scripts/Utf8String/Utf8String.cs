@@ -1,13 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 
 
 namespace UniJSON
 {
-    public struct Utf8String: IComparable<Utf8String>
+    public struct Utf8String : IComparable<Utf8String>
     {
         public static readonly System.Text.Encoding Encoding = new System.Text.UTF8Encoding(false);
+
+        const uint Mask1 = 0x01;
+        const uint Mask2 = 0x03;
+        const uint Mask3 = 0x07;
+        const uint Mask4 = 0x0F;
+        const uint Mask5 = 0x1F;
+        const uint Mask6 = 0x3F;
+        const uint Mask7 = 0x7F;
+        const uint Mask11 = 0x07FF;
+
+        const uint Head1 = 0x80;
+        const uint Head2 = 0xC0;
+        const uint Head3 = 0xE0;
+        const uint Head4 = 0xF0;
+
+        public static int ByteLengthFromChar(char c)
+        {
+            if (c <= Mask7)
+            {
+                return 1;
+            }
+            else if (c <= Mask11)
+            {
+                return 2;
+            }
+            else
+            {
+                return 3;
+            }
+        }
+
+        public static int ByteLengthFromFirstByte(byte firstByte)
+        {
+            if (firstByte <= 0x7F)
+            {
+                return 1;
+            }
+            else if (firstByte <= 0xDF)
+            {
+                return 2;
+            }
+            else if (firstByte <= 0xEF)
+            {
+                return 3;
+            }
+            else if (firstByte <= 0xF7)
+            {
+                return 4;
+            }
+            else
+            {
+                throw new Exception("invalid utf8");
+            }
+        }
 
         public struct CodePoint
         {
@@ -19,34 +74,18 @@ namespace UniJSON
                 private set;
             }
 
-            int GetLength()
+            public int ByteLength
             {
-                var b = m_all[Position];
-                if (b <= 0x7F)
+                get
                 {
-                    return 1;
-                }
-                else if (b <= 0xDF)
-                {
-                    return 2;
-                }
-                else if (b <= 0xEF)
-                {
-                    return 3;
-                }
-                else if (b <= 0xF7)
-                {
-                    return 4;
-                }
-                else
-                {
-                    throw new Exception("invalid utf8");
+                    var b = m_all[Position];
+                    return ByteLengthFromFirstByte(b);
                 }
             }
 
             public Utf8String Current
             {
-                get { return new Utf8String(m_all.Bytes.Array, m_all.Bytes.Offset + Position, GetLength()); }
+                get { return new Utf8String(m_all.Bytes.Array, m_all.Bytes.Offset + Position, ByteLength); }
             }
 
             public CodePoint(Utf8String all, int pos = 0)
@@ -57,7 +96,7 @@ namespace UniJSON
 
             public void Next()
             {
-                Position += GetLength();
+                Position += ByteLength;
             }
 
             public bool IsValid
@@ -66,6 +105,57 @@ namespace UniJSON
                 {
                     return Position < m_all.ByteLength;
                 }
+            }
+
+            public uint ToUnicode()
+            {
+                var b = m_all[Position];
+                if (b <= 0x7F)
+                {
+                    // 7bit
+                    return b;
+                }
+                else if (b <= 0xDF)
+                {
+                    // 11bit
+                    return (Mask5 & b) << 6 | (Mask6 & m_all[Position + 1]);
+                }
+                else if (b <= 0xEF)
+                {
+                    // 16bit
+                    return (Mask4 & b)<<12 | (Mask6 & m_all[Position + 1]) << 6 | (Mask6 & m_all[Position + 2]);
+                }
+                else if (b <= 0xF7)
+                {
+                    // 21bit
+                    return (Mask3 & b) << 18 | (Mask6 & m_all[Position + 1]) << 12 | (Mask6 & m_all[Position + 2]) << 6 | (Mask6 & m_all[Position + 3]);
+                }
+                else
+                {
+                    throw new Exception("invalid utf8");
+                }
+            }
+
+            public char ToChar()
+            {
+                var u = ToUnicode();
+                if(u<=char.MaxValue)
+                {
+                    return (char)u;
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+        }
+
+        public IEnumerable<CodePoint> EachCodePoint()
+        {
+            var p = new CodePoint(this);
+            for (; p.IsValid; p.Next())
+            {
+                yield return p;
             }
         }
 
@@ -124,6 +214,38 @@ namespace UniJSON
         public static Utf8String From(string src)
         {
             return new Utf8String(Encoding.GetBytes(src));
+        }
+
+        public static Utf8String From(string src, Byte[] bytes)
+        {
+            var required = src.Sum(c => ByteLengthFromChar(c));
+            if (required > bytes.Length)
+            {
+                throw new OverflowException();
+            }
+            int pos = 0;
+            foreach (var c in src)
+            {
+                if (c <= Mask7)
+                {
+                    // 1bit
+                    bytes[pos++] = (byte)c;
+                }
+                else if (c <= Mask11)
+                {
+                    // 2bit
+                    bytes[pos++] = (byte)(Head2 | Mask5 & (c >> 6));
+                    bytes[pos++] = (byte)(Head1 | Mask6 & (c));
+                }
+                else
+                {
+                    // 3bit
+                    bytes[pos++] = (byte)(Head3 | Mask4 & (c >> 12));
+                    bytes[pos++] = (byte)(Head1 | Mask6 & (c >> 6));
+                    bytes[pos++] = (byte)(Head1 | Mask6 & (c));
+                }
+            }
+            return new Utf8String(new ArraySegment<byte>(bytes, 0, pos));
         }
 
         // -2147483648 ~ 2147483647
