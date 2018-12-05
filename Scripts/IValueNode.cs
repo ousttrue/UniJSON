@@ -174,8 +174,6 @@ namespace UniJSON
         #region Deserializer
         static Delegate GetDeserializer<S, T>() where S : IValueNode
         {
-            var m = typeof(S).GetMethods();
-
             // primitive
             var mi = typeof(S).GetMethods().FirstOrDefault(x =>
             {
@@ -183,7 +181,7 @@ namespace UniJSON
                 {
                     return false;
                 }
-                var t = typeof(T);
+
                 if (!x.Name.EndsWith(typeof(T).Name))
                 {
                     return false;

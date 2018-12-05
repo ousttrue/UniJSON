@@ -87,8 +87,8 @@ namespace UniJSON
 
                 case JsonValueType.Object:
                     {
-                        var l = ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
-                        var r = rhs.ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
+                        //var l = ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
+                        //var r = rhs.ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
                         //return l.Equals(r);
                         return ObjectItemsRaw.OrderBy(x => x.Key).SequenceEqual(rhs.ObjectItemsRaw.OrderBy(x => x.Key));
                     }

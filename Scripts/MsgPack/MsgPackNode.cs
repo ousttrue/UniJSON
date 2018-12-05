@@ -532,7 +532,6 @@ namespace UniJSON.MsgPack
         /// <returns></returns>
         public T GetValue<T>()
         {
-            var t = typeof(T);
             var formatType = Value.Format;
             switch (formatType)
             {
