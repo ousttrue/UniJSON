@@ -75,7 +75,7 @@ namespace UniJSON
             get { return m_bytes[m_position + 2]; }
         }
 
-        public byte Forth
+        public byte Fourth
         {
             get { return m_bytes[m_position + 3]; }
         }
@@ -133,7 +133,7 @@ namespace UniJSON
                 else if (b <= 0xF7)
                 {
                     // 21bit
-                    return (Mask3 & b) << 18 | (Mask6 & Second) << 12 | (Mask6 & Third) << 6 | (Mask6 & Forth);
+                    return (Mask3 & b) << 18 | (Mask6 & Second) << 12 | (Mask6 & Third) << 6 | (Mask6 & Fourth);
                 }
                 else
                 {

@@ -63,10 +63,10 @@ namespace UniJSON
                 return;
             }
 
-            int i = 0;
-            while (i < s.ByteLength)
+            var it = s.GetIterator();
+            while(it.MoveNext())
             {
-                var b = s.Bytes.Get(i);
+                var b = it.Current;
                 if (b <= 0x7F)
                 {
                     switch (b)
@@ -105,28 +105,24 @@ namespace UniJSON
                             break;
                     }
                     // ascii
-                    ++i;
                 }
                 else if (b <= 0xDF)
                 {
                     w.Write(b);
-                    w.Write(s.Bytes.Get(i + 1));
-                    i += 2;
+                    w.Write(it.Second);
                 }
                 else if (b <= 0xEF)
                 {
                     w.Write(b);
-                    w.Write(s.Bytes.Get(i + 1));
-                    w.Write(s.Bytes.Get(i + 2));
-                    i += 3;
+                    w.Write(it.Second);
+                    w.Write(it.Third);
                 }
                 else if (b <= 0xF7)
                 {
                     w.Write(b);
-                    w.Write(s.Bytes.Get(i + 1));
-                    w.Write(s.Bytes.Get(i + 2));
-                    w.Write(s.Bytes.Get(i + 3));
-                    i += 4;
+                    w.Write(it.Second);
+                    w.Write(it.Third);
+                    w.Write(it.Fourth);
                 }
                 else
                 {
