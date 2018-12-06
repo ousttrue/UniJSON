@@ -66,9 +66,10 @@ namespace UniJSON
             var it = s.GetIterator();
             while(it.MoveNext())
             {
-                var b = it.Current;
-                if (b <= 0x7F)
+                var l = it.CurrentByteLength;
+                if (l == 1)
                 {
+                    var b = it.Current;
                     switch (b)
                     {
                         case (Byte)'"':
@@ -106,20 +107,20 @@ namespace UniJSON
                     }
                     // ascii
                 }
-                else if (b <= 0xDF)
+                else if (l == 2)
                 {
-                    w.Write(b);
+                    w.Write(it.Current);
                     w.Write(it.Second);
                 }
-                else if (b <= 0xEF)
+                else if (l == 3)
                 {
-                    w.Write(b);
+                    w.Write(it.Current);
                     w.Write(it.Second);
                     w.Write(it.Third);
                 }
-                else if (b <= 0xF7)
+                else if (l == 4)
                 {
-                    w.Write(b);
+                    w.Write(it.Current);
                     w.Write(it.Second);
                     w.Write(it.Third);
                     w.Write(it.Fourth);
@@ -251,10 +252,10 @@ namespace UniJSON
             var it = s.GetIterator();
             while(it.MoveNext())
             {
-                var b = it.Current;
-                if (b <= 0x7F)
+                var l = it.CurrentByteLength;
+                if (l == 1)
                 {
-                    if (b == (Byte)'\\')
+                    if (it.Current == (Byte)'\\')
                     {
                         var c = it.Second;
                         switch (c)
@@ -290,22 +291,22 @@ namespace UniJSON
                         }
                     }
 
-                    Write(b);
+                    Write(it.Current);
                 }
-                else if (b <= 0xDF)
+                else if (l == 2)
                 {
-                    Write(b);
+                    Write(it.Current);
                     Write(it.Second);
                 }
-                else if (b <= 0xEF)
+                else if (l == 3)
                 {
-                    Write(b);
+                    Write(it.Current);
                     Write(it.Second);
                     Write(it.Third);
                 }
-                else if (b <= 0xF7)
+                else if (l == 4)
                 {
-                    Write(b);
+                    Write(it.Current);
                     Write(it.Second);
                     Write(it.Third);
                     Write(it.Fourth);

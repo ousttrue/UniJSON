@@ -38,7 +38,7 @@ namespace UniJSON
             Assert.AreEqual("a", a0);
             var a1 = Utf8String4.Create(new byte[] { (byte)'a', 0x00 });
             Assert.AreEqual(a0, a1);
-            var a2 = Utf8String4.Create("漢");
+            var a2 = Utf8String4.Create("５");
             Assert.AreEqual(3, a2.ByteLength);
         }
 
@@ -46,15 +46,15 @@ namespace UniJSON
         public void QuoteTest()
         {
             {
-                var value = Utf8String.From("ho日本語ge");
-                var quoted = Utf8String.From("\"ho日本語ge\"");
+                var value = Utf8String.From("ho５日本語ge");
+                var quoted = Utf8String.From("\"ho５日本語ge\"");
                 Assert.AreEqual(quoted, JsonString.Quote(value));
                 Assert.AreEqual(value, JsonString.Unquote(quoted));
             }
 
             {
-                var value = Utf8String.From("fuga\n  ho日本語ge");
-                var quoted = Utf8String.From("\"fuga\\n  ho日本語ge\"");
+                var value = Utf8String.From("fuga\n  ho５日本語ge");
+                var quoted = Utf8String.From("\"fuga\\n  ho５日本語ge\"");
                 Assert.AreEqual(quoted, JsonString.Quote(value));
                 Assert.AreEqual(value, JsonString.Unquote(quoted));
             }
@@ -64,20 +64,20 @@ namespace UniJSON
         public void SplitTest()
         {
             {
-                var value = Utf8String.From("a/b/c");
+                var value = Utf8String.From("a/５/c");
                 var splited = value.Split((byte)'/').ToArray();
                 Assert.AreEqual(3, splited.Length);
                 Assert.AreEqual(splited[0], Utf8String.From("a"));
-                Assert.AreEqual(splited[1], Utf8String.From("b"));
+                Assert.AreEqual(splited[1], Utf8String.From("５"));
                 Assert.AreEqual(splited[2], Utf8String.From("c"));
             }
             {
-                var value = Utf8String.From("/a/b/c/");
+                var value = Utf8String.From("/a/５/c/");
                 var splited = value.Split((byte)'/').ToArray();
                 Assert.AreEqual(4, splited.Length);
                 Assert.AreEqual(splited[0], Utf8String.From(""));
                 Assert.AreEqual(splited[1], Utf8String.From("a"));
-                Assert.AreEqual(splited[2], Utf8String.From("b"));
+                Assert.AreEqual(splited[2], Utf8String.From("５"));
                 Assert.AreEqual(splited[3], Utf8String.From("c"));
             }
         }
@@ -107,7 +107,7 @@ namespace UniJSON
             }
             {
                 // 3byte
-                var c = 'あ';
+                var c = '５';
                 Assert.AreEqual(3, Utf8String.From(c.ToString()).GetFirst().CurrentByteLength);
                 Assert.AreEqual(c, Utf8String.From(c.ToString()).GetFirst().Unicode);
                 Assert.AreEqual(c, Utf8String.From(c.ToString()).GetFirst().Char);
@@ -148,7 +148,7 @@ namespace UniJSON
                 Assert.AreEqual(src, utf8.ToString());
             }
             {
-                var src = "漢";
+                var src = "５";
                 var utf8 = Utf8String.From(src, buffer);
                 Assert.AreEqual(3, utf8.ByteLength);
                 Assert.AreEqual(src, utf8.ToString());

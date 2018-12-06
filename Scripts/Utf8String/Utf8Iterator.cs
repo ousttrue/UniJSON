@@ -114,26 +114,26 @@ namespace UniJSON
         {
             get
             {
-                var b = Current;
-                if (b <= 0x7F)
+                var l = CurrentByteLength;
+                if (l == 1)
                 {
                     // 7bit
-                    return b;
+                    return Current;
                 }
-                else if (b <= 0xDF)
+                else if (l == 2)
                 {
                     // 11bit
-                    return (Mask5 & b) << 6 | (Mask6 & Second);
+                    return (Mask5 & Current) << 6 | (Mask6 & Second);
                 }
-                else if (b <= 0xEF)
+                else if (l == 3)
                 {
                     // 16bit
-                    return (Mask4 & b) << 12 | (Mask6 & Second) << 6 | (Mask6 & Third);
+                    return (Mask4 & Current) << 12 | (Mask6 & Second) << 6 | (Mask6 & Third);
                 }
-                else if (b <= 0xF7)
+                else if (l == 4)
                 {
                     // 21bit
-                    return (Mask3 & b) << 18 | (Mask6 & Second) << 12 | (Mask6 & Third) << 6 | (Mask6 & Fourth);
+                    return (Mask3 & Current) << 18 | (Mask6 & Second) << 12 | (Mask6 & Third) << 6 | (Mask6 & Fourth);
                 }
                 else
                 {
@@ -146,23 +146,23 @@ namespace UniJSON
         {
             get
             {
-                var b = Current;
-                if (b <= 0x7F)
+                var l = CurrentByteLength;
+                if (l == 1)
                 {
                     // 7bit
-                    return (char)b;
+                    return (char)Current;
                 }
-                else if (b <= 0xDF)
+                else if (l == 2)
                 {
                     // 11bit
-                    return (char)((Mask5 & b) << 6 | (Mask6 & Second));
+                    return (char)((Mask5 & Current) << 6 | (Mask6 & Second));
                 }
-                else if (b <= 0xEF)
+                else if (l == 3)
                 {
                     // 16bit
-                    return (char)((Mask4 & b) << 12 | (Mask6 & Second) << 6 | (Mask6 & Third));
+                    return (char)((Mask4 & Current) << 12 | (Mask6 & Second) << 6 | (Mask6 & Third));
                 }
-                else if (b <= 0xF7)
+                else if (l == 4)
                 {
                     // 21bit
                     throw new NotImplementedException();
