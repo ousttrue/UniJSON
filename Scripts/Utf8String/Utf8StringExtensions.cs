@@ -19,6 +19,19 @@ namespace UniJSON
             return it;
         }
 
+        public static bool TrySearchByte(this Utf8String src, Func<byte, bool> pred, out int pos)
+        {
+            pos = 0;
+            for (; pos < src.ByteLength; ++pos)
+            {
+                if (pred(src[pos]))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static bool TrySearchAscii(this Utf8String src, Byte target, int start, out int pos)
         {
             var p = new Utf8Iterator(src.Bytes, start);

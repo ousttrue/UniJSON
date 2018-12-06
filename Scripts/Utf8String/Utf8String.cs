@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 
 
 namespace UniJSON
@@ -423,19 +421,6 @@ namespace UniJSON
                 }
                 return true;
             }
-        }
-
-        public bool TrySearchByte(Func<byte, bool> pred, out int pos)
-        {
-            pos = 0;
-            for (; pos < ByteLength; ++pos)
-            {
-                if (pred(this[pos]))
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
     }
