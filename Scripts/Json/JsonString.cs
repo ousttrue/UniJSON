@@ -248,16 +248,15 @@ namespace UniJSON
                 ++writeCount;
             };
 
-            int i = 0;
-            int length = s.ByteLength - 1;
-            while (i < length)
+            var it = s.GetIterator();
+            while(it.MoveNext())
             {
-                var b = s[i];
+                var b = it.Current;
                 if (b <= 0x7F)
                 {
                     if (b == (Byte)'\\')
                     {
-                        var c = s[i + 1];
+                        var c = it.Second;
                         switch (c)
                         {
                             case (Byte)'\\':
@@ -265,64 +264,56 @@ namespace UniJSON
                             case (Byte)'"':
                                 // remove prefix
                                 Write(c);
-                                i += 2;
+                                it.MoveNext();
                                 continue;
 
                             case (Byte)'b':
                                 Write((Byte)'\b');
-                                i += 2;
+                                it.MoveNext();
                                 continue;
                             case (Byte)'f':
                                 Write((Byte)'\f');
-                                i += 2;
+                                it.MoveNext();
                                 continue;
                             case (Byte)'n':
                                 Write((Byte)'\n');
-                                i += 2;
+                                it.MoveNext();
                                 continue;
                             case (Byte)'r':
                                 Write((Byte)'\r');
-                                i += 2;
+                                it.MoveNext();
                                 continue;
                             case (Byte)'t':
                                 Write((Byte)'\t');
-                                i += 2;
+                                it.MoveNext();
                                 continue;
                         }
                     }
 
                     Write(b);
-                    i += 1;
                 }
                 else if (b <= 0xDF)
                 {
                     Write(b);
-                    Write(s.Bytes.Get(i + 1));
-                    i += 2;
+                    Write(it.Second);
                 }
                 else if (b <= 0xEF)
                 {
                     Write(b);
-                    Write(s.Bytes.Get(i + 1));
-                    Write(s.Bytes.Get(i + 2));
-                    i += 3;
+                    Write(it.Second);
+                    Write(it.Third);
                 }
                 else if (b <= 0xF7)
                 {
                     Write(b);
-                    Write(s.Bytes.Get(i + 1));
-                    Write(s.Bytes.Get(i + 2));
-                    Write(s.Bytes.Get(i + 3));
-                    i += 4;
+                    Write(it.Second);
+                    Write(it.Third);
+                    Write(it.Fourth);
                 }
                 else
                 {
                     throw new JsonParseException("invalid utf8");
                 }
-            }
-            while (i <= length)
-            {
-                Write(s[i++]);
             }
 
             return writeCount;
