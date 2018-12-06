@@ -10,35 +10,6 @@ namespace UniJSON
     {
         public static readonly System.Text.Encoding Encoding = new System.Text.UTF8Encoding(false);
 
-        const uint Mask1 = 0x01;
-        const uint Mask2 = 0x03;
-        const uint Mask3 = 0x07;
-        const uint Mask4 = 0x0F;
-        const uint Mask5 = 0x1F;
-        const uint Mask6 = 0x3F;
-        const uint Mask7 = 0x7F;
-        const uint Mask11 = 0x07FF;
-
-        const uint Head1 = 0x80;
-        const uint Head2 = 0xC0;
-        const uint Head3 = 0xE0;
-        const uint Head4 = 0xF0;
-
-        public static int ByteLengthFromChar(char c)
-        {
-            if (c <= Mask7)
-            {
-                return 1;
-            }
-            else if (c <= Mask11)
-            {
-                return 2;
-            }
-            else
-            {
-                return 3;
-            }
-        }
 
         public static int ByteLengthFromFirstByte(byte firstByte)
         {
@@ -64,6 +35,7 @@ namespace UniJSON
             }
         }
 
+#if false
         public struct CodePoint
         {
             readonly Utf8String m_all;
@@ -149,20 +121,17 @@ namespace UniJSON
                 }
             }
         }
-
-        public IEnumerable<CodePoint> EachCodePoint()
-        {
-            var p = new CodePoint(this);
-            for (; p.IsValid; p.Next())
-            {
-                yield return p;
-            }
-        }
+#endif
 
         public readonly ArraySegment<Byte> Bytes;
         public int ByteLength
         {
             get { return Bytes.Count; }
+        }
+
+        public Utf8Iterator GetIterator()
+        {
+            return new Utf8Iterator(Bytes);
         }
 
         public int CompareTo(Utf8String other)
@@ -218,7 +187,7 @@ namespace UniJSON
 
         public static Utf8String From(string src, Byte[] bytes)
         {
-            var required = src.Sum(c => ByteLengthFromChar(c));
+            var required = src.Sum(c => Utf8Iterator.ByteLengthFromChar(c));
             if (required > bytes.Length)
             {
                 throw new OverflowException();
@@ -226,23 +195,23 @@ namespace UniJSON
             int pos = 0;
             foreach (var c in src)
             {
-                if (c <= Mask7)
+                if (c <= Utf8Iterator.Mask7)
                 {
                     // 1bit
                     bytes[pos++] = (byte)c;
                 }
-                else if (c <= Mask11)
+                else if (c <= Utf8Iterator.Mask11)
                 {
                     // 2bit
-                    bytes[pos++] = (byte)(Head2 | Mask5 & (c >> 6));
-                    bytes[pos++] = (byte)(Head1 | Mask6 & (c));
+                    bytes[pos++] = (byte)(Utf8Iterator.Head2 | Utf8Iterator.Mask5 & (c >> 6));
+                    bytes[pos++] = (byte)(Utf8Iterator.Head1 | Utf8Iterator.Mask6 & (c));
                 }
                 else
                 {
                     // 3bit
-                    bytes[pos++] = (byte)(Head3 | Mask4 & (c >> 12));
-                    bytes[pos++] = (byte)(Head1 | Mask6 & (c >> 6));
-                    bytes[pos++] = (byte)(Head1 | Mask6 & (c));
+                    bytes[pos++] = (byte)(Utf8Iterator.Head3 | Utf8Iterator.Mask4 & (c >> 12));
+                    bytes[pos++] = (byte)(Utf8Iterator.Head1 | Utf8Iterator.Mask6 & (c >> 6));
+                    bytes[pos++] = (byte)(Utf8Iterator.Head1 | Utf8Iterator.Mask6 & (c));
                 }
             }
             return new Utf8String(new ArraySegment<byte>(bytes, 0, pos));
@@ -584,25 +553,23 @@ namespace UniJSON
 
         public bool TrySearchAscii(Byte target, int start, out int pos)
         {
-            for (var p = new CodePoint(this, start); p.IsValid; p.Next())
+            var p = new Utf8Iterator(Bytes, start);
+            while (p.MoveNext())
             {
-                var b = p.Current[0];
+                var b = p.Current;
                 if (b <= 0x7F)
                 {
                     // ascii
                     if (b == target/*'\"'*/)
                     {
                         // closed
-                        pos = p.Position;
+                        pos = p.BytePosition;
                         return true;
                     }
                     else if (b == '\\')
                     {
                         // escaped
-                        var next = p;
-                        next.Next();
-
-                        switch ((char)next.Current[0])
+                        switch ((char)p.Second)
                         {
                             case '"': // fall through
                             case '\\': // fall through
@@ -613,20 +580,20 @@ namespace UniJSON
                             case 'r': // fall through
                             case 't': // fall through
                                       // skip next
-                                p.Next();
+                                p.MoveNext();
                                 break;
 
                             case 'u': // unicode
                                       // skip next 4
-                                p.Next();
-                                p.Next();
-                                p.Next();
-                                p.Next();
+                                p.MoveNext();
+                                p.MoveNext();
+                                p.MoveNext();
+                                p.MoveNext();
                                 break;
 
                             default:
                                 // unkonw escape
-                                throw new JsonParseException("unknown escape: " + next);
+                                throw new JsonParseException("unknown escape: " + p.Second);
                         }
                     }
                 }
@@ -639,37 +606,37 @@ namespace UniJSON
         public IEnumerable<Utf8String> Split(byte delemeter)
         {
             var start = 0;
-            var p = new CodePoint(this, start);
-            for (; p.IsValid; p.Next())
+            var p = new Utf8Iterator(Bytes);
+            while(p.MoveNext())
             {
-                if (p.Current[0] == delemeter)
+                if (p.Current == delemeter)
                 {
-                    if (p.Position - start == 0)
+                    if (p.BytePosition - start == 0)
                     {
                         yield return default(Utf8String);
                     }
                     else
                     {
-                        yield return Subbytes(start, p.Position - start);
+                        yield return Subbytes(start, p.BytePosition - start);
                     }
-                    start = p.Position + 1;
+                    start = p.BytePosition + 1;
                 }
             }
 
-            if (start < p.Position)
+            if (start < p.BytePosition)
             {
-                yield return Subbytes(start, p.Position - start);
+                yield return Subbytes(start, p.BytePosition - start);
             }
         }
 
-        #region atoi
+#region atoi
         public SByte ToSByte()
         {
             SByte value = 0;
-            var p = new CodePoint(this);
-            for (; p.IsValid; p.Next())
+            var p = new Utf8Iterator(Bytes);
+            while(p.MoveNext())
             {
-                var b = p.Current[0];
+                var b = p.Current;
                 switch (b)
                 {
                     case 0x30: value = (SByte)(value * 10); break;
@@ -690,10 +657,10 @@ namespace UniJSON
         public Int16 ToInt16()
         {
             Int16 value = 0;
-            var p = new CodePoint(this);
-            for (; p.IsValid; p.Next())
+            var p = new Utf8Iterator(Bytes);
+            while (p.MoveNext())
             {
-                var b = p.Current[0];
+                var b = p.Current;
                 switch (b)
                 {
                     case 0x30: value = (Int16)(value * 10); break;
@@ -714,10 +681,10 @@ namespace UniJSON
         public Int32 ToInt32()
         {
             Int32 value = 0;
-            var p = new CodePoint(this);
-            for (; p.IsValid; p.Next())
+            var p = new Utf8Iterator(Bytes);
+            while (p.MoveNext())
             {
-                var b = p.Current[0];
+                var b = p.Current;
                 switch (b)
                 {
                     case 0x30: value = value * 10; break;
@@ -738,10 +705,10 @@ namespace UniJSON
         public Int64 ToInt64()
         {
             Int64 value = 0;
-            var p = new CodePoint(this);
-            for (; p.IsValid; p.Next())
+            var p = new Utf8Iterator(Bytes);
+            while (p.MoveNext())
             {
-                var b = p.Current[0];
+                var b = p.Current;
                 switch (b)
                 {
                     case 0x30: value = (Int64)(value * 10); break;
@@ -762,10 +729,10 @@ namespace UniJSON
         public Byte ToByte()
         {
             Byte value = 0;
-            var p = new CodePoint(this);
-            for (; p.IsValid; p.Next())
+            var p = new Utf8Iterator(Bytes);
+            while (p.MoveNext())
             {
-                var b = p.Current[0];
+                var b = p.Current;
                 switch (b)
                 {
                     case 0x30: value = (Byte)(value * 10); break;
@@ -786,10 +753,10 @@ namespace UniJSON
         public UInt16 ToUInt16()
         {
             UInt16 value = 0;
-            var p = new CodePoint(this);
-            for (; p.IsValid; p.Next())
+            var p = new Utf8Iterator(Bytes);
+            while (p.MoveNext())
             {
-                var b = p.Current[0];
+                var b = p.Current;
                 switch (b)
                 {
                     case 0x30: value = (UInt16)(value * 10); break;
@@ -810,10 +777,10 @@ namespace UniJSON
         public UInt32 ToUInt32()
         {
             UInt32 value = 0;
-            var p = new CodePoint(this);
-            for (; p.IsValid; p.Next())
+            var p = new Utf8Iterator(Bytes);
+            while (p.MoveNext())
             {
-                var b = p.Current[0];
+                var b = p.Current;
                 switch (b)
                 {
                     case 0x30: value = (UInt32)(value * 10); break;
@@ -834,10 +801,10 @@ namespace UniJSON
         public UInt64 ToUInt64()
         {
             UInt64 value = 0;
-            var p = new CodePoint(this);
-            for (; p.IsValid; p.Next())
+            var p = new Utf8Iterator(Bytes);
+            while (p.MoveNext())
             {
-                var b = p.Current[0];
+                var b = p.Current;
                 switch (b)
                 {
                     case 0x30: value = (UInt64)(value * 10); break;
@@ -855,7 +822,7 @@ namespace UniJSON
             }
             return value;
         }
-        #endregion
+#endregion
 
         public float ToSingle()
         {
@@ -872,6 +839,13 @@ namespace UniJSON
         public static void WriteTo(this Utf8String src, Stream dst)
         {
             dst.Write(src.Bytes.Array, src.Bytes.Offset, src.Bytes.Count);
+        }
+
+        public static Utf8Iterator GetFirst(this Utf8String src)
+        {
+            var it = src.GetIterator();
+            it.MoveNext();
+            return it;
         }
     }
 }

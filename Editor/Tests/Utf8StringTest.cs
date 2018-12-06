@@ -22,6 +22,13 @@ namespace UniJSON
             Assert.AreEqual(Utf8String.From("abbc"), ab.Concat(bc));
 
             Assert.AreEqual(2, abc.IndexOf((byte)'c'));
+
+            int pos;
+            abc.TrySearchAscii((byte)'c', 0, out pos);
+            Assert.AreEqual(2, pos);
+
+            abc.TrySearchAscii((byte)'c', 1, out pos);
+            Assert.AreEqual(2, pos);
         }
 
         [Test]
@@ -87,37 +94,39 @@ namespace UniJSON
             {
                 // 1byte
                 var c = 'A';
-                Assert.AreEqual(1, Utf8String.From(c.ToString()).EachCodePoint().First().ByteLength);
-                Assert.AreEqual(c, Utf8String.From(c.ToString()).EachCodePoint().First().ToUnicode());
-                Assert.AreEqual(c, Utf8String.From(c.ToString()).EachCodePoint().First().ToChar());
+                Assert.AreEqual(1, Utf8String.From(c.ToString()).GetFirst().CurrentByteLength);
+                Assert.AreEqual(c, Utf8String.From(c.ToString()).GetFirst().Unicode);
+                Assert.AreEqual(c, Utf8String.From(c.ToString()).GetFirst().Char);
             }
             {
                 // 2byte
                 var c = '¢';
-                Assert.AreEqual(2, Utf8String.From(c.ToString()).EachCodePoint().First().ByteLength);
-                Assert.AreEqual(c, Utf8String.From(c.ToString()).EachCodePoint().First().ToUnicode());
-                Assert.AreEqual(c, Utf8String.From(c.ToString()).EachCodePoint().First().ToChar());
+                Assert.AreEqual(2, Utf8String.From(c.ToString()).GetFirst().CurrentByteLength);
+                Assert.AreEqual(c, Utf8String.From(c.ToString()).GetFirst().Unicode);
+                Assert.AreEqual(c, Utf8String.From(c.ToString()).GetFirst().Char);
             }
             {
                 // 3byte
                 var c = 'あ';
-                Assert.AreEqual(3, Utf8String.From(c.ToString()).EachCodePoint().First().ByteLength);
-                Assert.AreEqual(c, Utf8String.From(c.ToString()).EachCodePoint().First().ToUnicode());
-                Assert.AreEqual(c, Utf8String.From(c.ToString()).EachCodePoint().First().ToChar());
+                Assert.AreEqual(3, Utf8String.From(c.ToString()).GetFirst().CurrentByteLength);
+                Assert.AreEqual(c, Utf8String.From(c.ToString()).GetFirst().Unicode);
+                Assert.AreEqual(c, Utf8String.From(c.ToString()).GetFirst().Char);
             }
             {
-                // 4byte
                 var c = '仡';
-                Assert.AreEqual(3, Utf8String.From(c.ToString()).EachCodePoint().First().ByteLength);
-                Assert.AreEqual(c, Utf8String.From(c.ToString()).EachCodePoint().First().ToUnicode());
-                Assert.AreEqual(c, Utf8String.From(c.ToString()).EachCodePoint().First().ToChar());
+                Assert.AreEqual(3, Utf8String.From(c.ToString()).GetFirst().CurrentByteLength);
+                Assert.AreEqual(c, Utf8String.From(c.ToString()).GetFirst().Unicode);
+                Assert.AreEqual(c, Utf8String.From(c.ToString()).GetFirst().Char);
             }
             {
                 // emoji
                 var s = "😃";
-                Assert.AreEqual(4, Utf8String.From(s).EachCodePoint().First().ByteLength);
-                Assert.AreEqual(0x1F603, Utf8String.From(s).EachCodePoint().First().ToUnicode());
-                Assert.Catch(() => Utf8String.From(s).EachCodePoint().First().ToChar());
+                Assert.AreEqual(4, Utf8String.From(s).GetFirst().CurrentByteLength);
+                Assert.AreEqual(0x1F603, Utf8String.From(s).GetFirst().Unicode);
+                Assert.Catch(() =>
+                {
+                    var a = Utf8String.From(s).GetFirst().Char;
+                });
             }
         }
 
