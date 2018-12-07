@@ -9,27 +9,42 @@ namespace UniJSON.MsgPack
         [Test]
         public void TimeTest()
         {
-            var time = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
-
             var f = new MsgPackFormatter();
-            f.Value(time);
 
-            var bytes = f.GetStoreBytes().ArrayOrCopy();
-            unchecked
             {
-                Assert.AreEqual(new byte[]
+                f.GetStore().Clear();
+                var time = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
+                f.Value(time);
+
+                var bytes = f.GetStoreBytes().ArrayOrCopy();
+                unchecked
                 {
-                0xd6, (byte)-1, 0, 0, 0, 0
-                }, bytes);
+                    Assert.AreEqual(new byte[]
+                    {
+                (byte)MsgPackType.FIX_EXT_4, (byte)-1, 0, 0, 0, 0
+                    }, bytes);
+                }
+                var parsed = MsgPackParser.Parse(bytes).GetValue();
+                Assert.AreEqual(time, parsed);
             }
 
-            Assert.AreEqual(1544235135, new DateTimeOffset(2018, 12, 8, 2, 12, 15, TimeSpan.Zero).ToUnixTimeSeconds());
-
-            f.GetStore().Clear();
-            Assert.Catch(() =>
             {
-                f.Value(new DateTimeOffset());
-            });
+                var time = new DateTimeOffset(2018, 12, 8, 2, 12, 15, TimeSpan.Zero);
+                Assert.AreEqual(1544235135, time.ToUnixTimeSeconds());
+                f.GetStore().Clear();
+                f.Value(time);
+                var bytes = f.GetStoreBytes().ArrayOrCopy();
+                var parsed = MsgPackParser.Parse(bytes).GetValue();
+                Assert.AreEqual(time, parsed);
+            }
+
+            {
+                f.GetStore().Clear();
+                Assert.Catch(() =>
+                {
+                    f.Value(new DateTimeOffset());
+                });
+            }
         }
     }
 }

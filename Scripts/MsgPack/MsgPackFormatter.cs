@@ -418,7 +418,7 @@ namespace UniJSON
 
         public void TimeStamp32(DateTimeOffset time)
         {
-            m_store.Write((Byte)0xd6);
+            m_store.Write((Byte)MsgPackType.FIX_EXT_4);
             m_store.Write((SByte)(-1));
             m_store.WriteBigEndian((uint)time.ToUnixTimeSeconds());
         }

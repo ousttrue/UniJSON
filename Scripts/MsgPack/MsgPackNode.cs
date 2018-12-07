@@ -451,6 +451,18 @@ namespace UniJSON
             }
         }
 
+        public SByte GetExtType()
+        {
+            var formatType = Value.Format;
+            switch (formatType)
+            {
+                case MsgPackType.FIX_EXT_4:
+                    return (SByte)Value.Segment.Get(1);
+            }
+
+            throw new NotImplementedException();
+        }
+
         static Func<S, T> CreateCast<S, T>()
         {
             if (typeof(S) == typeof(T))
@@ -767,9 +779,19 @@ namespace UniJSON
                         return GenericCast<ArraySegment<Byte>, T>.Cast(body);
                     }
 
-                default:
-                    throw new ArgumentException("GetValue to array or map: " + formatType);
+                case MsgPackType.FIX_EXT_4:
+                    {
+                        if (GetExtType() == -1)
+                        {
+                            var unixtime = EndianConverter.NetworkByteDWordToUnsignedNativeByteOrder(GetBody());
+                            var dt = new DateTimeOffset(unixtime * DateTimeOffsetExtensions.TicksPerSecond + DateTimeOffsetExtensions.EpocTime.Ticks, TimeSpan.Zero);
+                            return GenericCast<DateTimeOffset, T>.Cast(dt);
+                        }
+                        break;
+                    }
             }
+
+            throw new ArgumentException("GetValue to array or map: " + formatType);
         }
 
         public bool GetBoolean()
