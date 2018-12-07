@@ -266,15 +266,16 @@ namespace UniJSON
             m_w.Write('"');
         }
 
-        public void Bytes(IEnumerable<byte> raw, int count)
+        // ISO-8601: YYYY-MM-DD“T”hh:mm:ss“Z”
+        public void Value(DateTimeOffset x)
         {
-            Value(new ArraySegment<byte>(raw.Take(count).ToArray()));
+            Value(x.ToString("yyyy-MM-ddTHH:mm:ssZ"));
         }
 
-        public void Dump(ArraySegment<Byte> formated)
+        public void Value(JsonNode node)
         {
             CommaCheck();
-            m_w.Write(formated);
+            m_w.Write(node.Bytes);
         }
 
         #region IRpc

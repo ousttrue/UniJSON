@@ -321,5 +321,14 @@ namespace UniJSON
         {
             JsonParser.Parse("\"５\"");
         }
+
+        [Test]
+        public void TimeTest()
+        {
+            var f = new JsonFormatter();
+            f.Value(new DateTimeOffset());
+
+            Assert.AreEqual("\"0001-01-01T00:00:00Z\"", new Utf8String(f.GetStoreBytes()).ToString());
+        }
     }
 }

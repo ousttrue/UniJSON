@@ -77,7 +77,7 @@ namespace UniJSON
             var f = new MsgPackFormatter();
 
             {
-                f.Clear();
+                f.GetStore().Clear();
                 dispatcher.Register("add", (int a, int b) => a + b);
                 f.Request("add", 1, 2);
 
@@ -85,7 +85,7 @@ namespace UniJSON
                 Assert.AreEqual(4, request.ValueCount);
                 Assert.AreEqual(MsgPackFormatter.REQUEST_TYPE, request[0].GetInt32());
 
-                f.Clear();
+                f.GetStore().Clear();
                 dispatcher.Call(f, request[1].GetInt32(), request[2].GetString(), request[3]);
                 var response = MsgPackParser.Parse(f.GetStoreBytes());
                 Assert.AreEqual(4, response.ValueCount);

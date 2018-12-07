@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Linq;
 using System.Reflection;
 
 
@@ -15,6 +17,11 @@ namespace UniJSON
         public static void Key(this IFormatter f, string x)
         {
             f.Key(Utf8String.From(x));
+        }
+
+        public static void Value(this IFormatter f, IEnumerable<byte> raw, int count)
+        {
+            f.Value(new ArraySegment<byte>(raw.Take(count).ToArray()));
         }
 
         public static void Value(this IFormatter f, Byte[] bytes)

@@ -16,13 +16,6 @@ namespace UniJSON
         {
         }
 
-        /*
-        public MessagePackFormatter (MemoryStream s)
-        {
-            m_store = new StreamStore(s);
-        }
-        */
-
 #if false
         public bool MsgPack_Ext(IList list)
         {
@@ -423,21 +416,21 @@ namespace UniJSON
             }
         }
 
-        public void Time32(DateTimeOffset time)
+        public void TimeStamp32(DateTimeOffset time)
         {
             m_store.Write((Byte)0xd6);
             m_store.Write((SByte)(-1));
             m_store.WriteBigEndian((uint)time.ToUnixTimeSeconds());
         }
 
-        public void Dump(ArraySegment<byte> formatted)
+        public void Value(DateTimeOffset time)
         {
-            m_store.Write(formatted);
+            TimeStamp32(time);
         }
 
-        public void Clear()
+        public void Value(MsgPackNode node)
         {
-            m_store.Clear();
+            m_store.Write(node.Bytes);
         }
 
         public IStore GetStore()
