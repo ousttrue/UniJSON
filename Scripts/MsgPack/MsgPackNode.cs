@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 
 
-namespace UniJSON.MsgPack
+namespace UniJSON
 {
     public struct MsgPackNode : IValueNode
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace UniJSON.MsgPack
+namespace UniJSON
 {
     public static class MsgPackParser
     {

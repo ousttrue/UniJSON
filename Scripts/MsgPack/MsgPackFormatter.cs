@@ -2,7 +2,7 @@
 using System.Text;
 
 
-namespace UniJSON.MsgPack
+namespace UniJSON
 {
     public class MsgPackFormatter : IFormatter, IRpc
     {

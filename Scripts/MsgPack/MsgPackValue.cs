@@ -1,6 +1,6 @@
 using System;
 
-namespace UniJSON.MsgPack
+namespace UniJSON
 {
     public struct MsgPackValue
     {
