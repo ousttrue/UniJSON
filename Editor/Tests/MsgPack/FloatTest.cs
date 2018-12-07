@@ -19,7 +19,7 @@ namespace UniJSON.MsgPack
 
             var f = new MsgPackFormatter();
             f.Value(i);
-            var bytes = f.GetStore().Bytes;
+            var bytes = f.GetStoreBytes();
 
             var value = MsgPackParser.Parse(bytes);
             var body = value.GetBody();
@@ -38,7 +38,7 @@ namespace UniJSON.MsgPack
 
             var f = new MsgPackFormatter();
             f.Value(i);
-            var bytes = f.GetStore().Bytes;
+            var bytes = f.GetStoreBytes();
 
             var value = MsgPackParser.Parse(bytes);
             var body = value.GetBody();

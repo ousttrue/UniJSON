@@ -65,7 +65,7 @@ namespace UniJSON
             f.KeyValue(() => p.Vector);
             f.EndMap();
 
-            var json = JsonParser.Parse(new Utf8String(f.GetStore().Bytes));
+            var json = JsonParser.Parse(new Utf8String(f.GetStoreBytes()));
 
             Assert.AreEqual(1, json.ValueCount);
             Assert.AreEqual(1, json["Vector"][0].GetInt32());

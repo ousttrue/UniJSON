@@ -66,7 +66,7 @@ namespace UniJSON
 
         public override string ToString()
         {
-            var bytes = GetStore().Bytes;
+            var bytes = this.GetStoreBytes();
             return Encoding.UTF8.GetString(bytes.Array, bytes.Offset, bytes.Count);
         }
 

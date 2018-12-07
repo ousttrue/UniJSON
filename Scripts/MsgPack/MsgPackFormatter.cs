@@ -423,12 +423,12 @@ namespace UniJSON
             }
         }
 
-        /*
-                public void Bytes(IEnumerable<byte> raw, int count)
-                {
-                    Value(new ArraySegment<byte>(raw.Take(count).ToArray()));
-                }
-                */
+        public void Time32(DateTimeOffset time)
+        {
+            m_store.Write((Byte)0xd6);
+            m_store.Write((SByte)(-1));
+            m_store.WriteBigEndian((uint)time.ToUnixTimeSeconds());
+        }
 
         public void Dump(ArraySegment<byte> formatted)
         {

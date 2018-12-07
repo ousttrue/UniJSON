@@ -476,7 +476,7 @@ namespace UniJSON
                 Values[node.m_index] = new JsonValue
                 {
                     ParentIndex = node.Value.ParentIndex,
-                    Segment = new Utf8String(f.GetStore().Bytes),
+                    Segment = new Utf8String(f.GetStoreBytes()),
                     ValueType = JsonValueType.Boolean
                 };
             }

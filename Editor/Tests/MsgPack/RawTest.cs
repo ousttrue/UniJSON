@@ -13,7 +13,7 @@ namespace UniJSON.MsgPack
             var src = new Byte[] { 0, 1, 2 };
             var f = new MsgPackFormatter();
             f.Value(src);
-            var bytes = f.GetStore().Bytes;
+            var bytes = f.GetStoreBytes();
 
             var v = MsgPackParser.Parse(bytes).GetBytes();
             Assert.True(src.SequenceEqual(v.ToEnumerable()));
@@ -25,7 +25,7 @@ namespace UniJSON.MsgPack
             var src = Enumerable.Range(0, 50).Select(x => (Byte)x).ToArray();
             var f = new MsgPackFormatter();
             f.Value(src);
-            var bytes = f.GetStore().Bytes;
+            var bytes = f.GetStoreBytes();
 
             var v = MsgPackParser.Parse(bytes).GetBytes();
             Assert.True(src.SequenceEqual(v.ToEnumerable()));

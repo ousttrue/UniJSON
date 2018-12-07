@@ -7,6 +7,24 @@ namespace UniJSON
 {
     public static class ArraySegmentExtensions
     {
+        public static T[] ArrayOrCopy<T>(this ArraySegment<T> self)
+        {
+            if (self.Array == null || self.Count==0)
+            {
+                return new T[] { };
+            }
+            else if(self.Offset==0 && self.Count==self.Array.Length)
+            {
+                return self.Array;
+            }
+            else
+            {
+                var array = new T[self.Count];
+                Array.Copy(self.Array, self.Offset, array, 0, self.Count);
+                return array;
+            }
+        }
+
         public static IEnumerable<T> ToEnumerable<T>(this ArraySegment<T> self)
         {
             return self.Array.Skip(self.Offset).Take(self.Count);

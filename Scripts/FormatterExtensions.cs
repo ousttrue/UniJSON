@@ -1,13 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Linq;
 using System.Reflection;
+
 
 namespace UniJSON
 {
     public static partial class FormatterExtensions
     {
+        public static ArraySegment<Byte> GetStoreBytes(this IFormatter f)
+        {
+            return f.GetStore().Bytes;
+        }
+
         public static void Key(this IFormatter f, string x)
         {
             f.Key(Utf8String.From(x));

@@ -25,7 +25,7 @@ namespace UniJSON
             var bytes = Encoding.UTF8.GetBytes("null");
             var json = new JsonFormatter();
             json.Null();
-            Assert.True(json.GetStore().Bytes.ToEnumerable().SequenceEqual(bytes));
+            Assert.True(json.GetStoreBytes().ToEnumerable().SequenceEqual(bytes));
         }
 
         [Test]
@@ -35,13 +35,13 @@ namespace UniJSON
                 var bytes = Encoding.UTF8.GetBytes("true");
                 var json = new JsonFormatter();
                 json.Value(true);
-                Assert.True(json.GetStore().Bytes.ToEnumerable().SequenceEqual(bytes));
+                Assert.True(json.GetStoreBytes().ToEnumerable().SequenceEqual(bytes));
             }
             {
                 var bytes = Encoding.UTF8.GetBytes("false");
                 var json = new JsonFormatter();
                 json.Value(false);
-                Assert.True(json.GetStore().Bytes.ToEnumerable().SequenceEqual(bytes));
+                Assert.True(json.GetStoreBytes().ToEnumerable().SequenceEqual(bytes));
             }
         }
     }

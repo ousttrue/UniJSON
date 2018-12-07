@@ -17,7 +17,7 @@ namespace UniJSON.MsgPack
             f.Key("2"); f.Value(3);
             f.EndMap();
             var bytes =
-            f.GetStore().Bytes;
+            f.GetStoreBytes();
             ;
 
             Assert.AreEqual(new Byte[]{
@@ -48,7 +48,7 @@ namespace UniJSON.MsgPack
                 w.Value(i.ToString());
                 w.Value(i + 5);
             }
-            var bytes = w.GetStore().Bytes.ToEnumerable().ToArray();
+            var bytes = w.GetStoreBytes().ToEnumerable().ToArray();
 
 
             var expected = new Byte[]{

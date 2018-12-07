@@ -13,7 +13,7 @@ namespace UniJSON.MsgPack
             var f = new MsgPackFormatter();
             // Object[] not supported
             f.Serialize(new[] { 0, 1, false, (Object)null });
-            var _bytes = f.GetStore().Bytes;
+            var _bytes = f.GetStoreBytes();
             var bytes = _bytes.Array.Skip(_bytes.Offset).Take(_bytes.Count).ToArray();
 
             Assert.AreEqual(new Byte[]{
@@ -39,7 +39,7 @@ namespace UniJSON.MsgPack
             var f = new MsgPackFormatter();
             var data = Enumerable.Range(0, 20).Select(x => (Object)x).ToArray();
             f.Serialize(data);
-            var bytes = f.GetStore().Bytes;
+            var bytes = f.GetStoreBytes();
 
             var value = MsgPackParser.Parse(bytes);
             Assert.IsTrue(value.IsArray());
@@ -57,7 +57,7 @@ namespace UniJSON.MsgPack
                 var i128 = Enumerable.Range(0, 128).ToArray();
                 var f = new MsgPackFormatter();
                 f.Serialize(i128);
-                var bytes128 = f.GetStore().Bytes;
+                var bytes128 = f.GetStoreBytes();
                 var deserialized = MsgPackParser.Parse(bytes128);
                 Assert.AreEqual(128, deserialized.ValueCount);
                 for (int i = 0; i < i128.Length; ++i)
@@ -70,7 +70,7 @@ namespace UniJSON.MsgPack
                 var i129 = Enumerable.Range(0, 129).ToArray();
                 var f = new MsgPackFormatter();
                 f.Serialize(i129);
-                var bytes129 = f.GetStore().Bytes;
+                var bytes129 = f.GetStoreBytes();
                 var deserialized = MsgPackParser.Parse(bytes129);
                 Assert.AreEqual(129, deserialized.ValueCount);
                 for (int i = 0; i < i129.Length; ++i)
