@@ -266,8 +266,16 @@ namespace UniJSON
 
         static Dictionary<Type, JsonValueType> s_typeMap = new Dictionary<Type, JsonValueType>
         {
+            {typeof(byte), JsonValueType.Integer },
+            {typeof(short), JsonValueType.Integer },
             {typeof(int), JsonValueType.Integer },
+            {typeof(long), JsonValueType.Integer },
+            {typeof(sbyte), JsonValueType.Integer },
+            {typeof(ushort), JsonValueType.Integer },
+            {typeof(uint), JsonValueType.Integer },
+            {typeof(ulong), JsonValueType.Integer },
             {typeof(float), JsonValueType.Number },
+            {typeof(double), JsonValueType.Number },
             {typeof(string), JsonValueType.String },
             {typeof(bool), JsonValueType.Boolean },
 
