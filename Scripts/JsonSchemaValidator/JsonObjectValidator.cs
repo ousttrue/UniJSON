@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-
+using System.Collections;
 
 namespace UniJSON
 {
@@ -311,12 +311,42 @@ namespace UniJSON
             return null;
         }
 
-        Dictionary<string, object> m_validValueMap = new Dictionary<string, object>();
+        class LockQueue<T> where T: class
+        {
+            Queue<T> m_queue = new Queue<T>();
+
+            public void Enqueue(T t)
+            {
+                lock (((ICollection)m_queue).SyncRoot)
+                {
+                    m_queue.Enqueue(t);
+                }
+            }
+            public T Dequeue()
+            {
+                T t = null;
+                lock (((ICollection)m_queue).SyncRoot)
+                {
+                    if(m_queue.Count>0)
+                    {
+                        t = m_queue.Dequeue();
+                    }
+                }
+                return t;
+            }
+        }
+        static LockQueue<Dictionary<string, object>> s_validValueMap = new LockQueue<Dictionary<string, object>>();
 
         public void Serialize(IFormatter f, JsonSchemaValidationContext c, Object o)
         {
+            var map = s_validValueMap.Dequeue();
+            if (map == null)
+            {
+                map = new Dictionary<string, object>();
+            }
+            
             // validate properties
-            m_validValueMap.Clear();
+            map.Clear();
             foreach (var kv in Properties)
             {
                 var value = o.GetValueByKey(kv.Key);
@@ -325,7 +355,7 @@ namespace UniJSON
                 {
                     if (v != null && v.Validate(c, value) == null)
                     {
-                        m_validValueMap.Add(kv.Key, value);
+                        map.Add(kv.Key, value);
                     }
                 }
             }
@@ -335,7 +365,7 @@ namespace UniJSON
                 foreach (var kv in Properties)
                 {
                     object value;
-                    if (!m_validValueMap.TryGetValue(kv.Key, out value))
+                    if (!map.TryGetValue(kv.Key, out value))
                     {
                         continue;
                     }
@@ -347,7 +377,7 @@ namespace UniJSON
                         bool hasDependencies = true;
                         foreach (var x in dependencies)
                         {
-                            if (!m_validValueMap.ContainsKey(x))
+                            if (!map.ContainsKey(x))
                             {
                                 hasDependencies = false;
                                 break;
@@ -373,6 +403,8 @@ namespace UniJSON
                 }
             }
             f.EndMap();
+
+            s_validValueMap.Enqueue(map);
         }
 
         public void ToJson(IFormatter f)
