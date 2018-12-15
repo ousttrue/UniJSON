@@ -232,49 +232,78 @@ namespace UniJSON
                 return u;
             }
 
+            static List<U> GenericListDeserializer<U>(S s)
+            {
+                if (!s.IsArray())
+                {
+                    throw new ArgumentException("not array: " + s.ValueType);
+                }
+                var u = new List<U>(s.ValueCount);
+                foreach (var x in s.ArrayItems)
+                {
+                    var e = default(U);
+                    x.Deserialize(ref e);
+                    u.Add(e);
+                }
+                return u;
+            }
+
             static Delegate GetDeserializer()
             {
                 // primitive
-                var mi = typeof(S).GetMethods().FirstOrDefault(x =>
                 {
-                    if (!x.Name.StartsWith("Get"))
+                    var mi = typeof(S).GetMethods().FirstOrDefault(x =>
                     {
-                        return false;
-                    }
+                        if (!x.Name.StartsWith("Get"))
+                        {
+                            return false;
+                        }
 
-                    if (!x.Name.EndsWith(typeof(T).Name))
+                        if (!x.Name.EndsWith(typeof(T).Name))
+                        {
+                            return false;
+                        }
+
+                        var parameters = x.GetParameters();
+                        if (parameters.Length != 0)
+                        {
+                            return false;
+                        }
+
+                        if (x.ReturnType != typeof(T))
+                        {
+                            return false;
+                        }
+
+                        return true;
+                    });
+
+                    if (mi != null)
                     {
-                        return false;
+                        var self = Expression.Parameter(typeof(S), "self");
+                        var call = Expression.Call(self, mi);
+                        var func = Expression.Lambda(call, self);
+                        return func.Compile();
                     }
-
-                    var parameters = x.GetParameters();
-                    if (parameters.Length != 0)
-                    {
-                        return false;
-                    }
-
-                    if (x.ReturnType != typeof(T))
-                    {
-                        return false;
-                    }
-
-                    return true;
-                });
-
-                if (mi != null)
-                {
-                    var self = Expression.Parameter(typeof(S), "self");
-                    var call = Expression.Call(self, mi);
-                    var func = Expression.Lambda(call, self);
-                    return func.Compile();
                 }
 
                 var target = typeof(T);
                 if(target.IsArray)
                 {
-                    var indexer = typeof(GenericDeserializer<S, T>).GetMethod("GenericArrayDeserializer",
+                    var mi = typeof(GenericDeserializer<S, T>).GetMethod("GenericArrayDeserializer",
                         BindingFlags.Static | BindingFlags.NonPublic);
-                    var g = indexer.MakeGenericMethod(target.GetElementType());
+                    var g = mi.MakeGenericMethod(target.GetElementType());
+                    var self = Expression.Parameter(typeof(S), "self");
+                    var call = Expression.Call(g, self);
+                    var func = Expression.Lambda(call, self);
+                    return func.Compile();
+                }
+
+                if(target.IsGenericType && (target.GetGenericTypeDefinition() == typeof(List<>)))
+                {
+                    var mi = typeof(GenericDeserializer<S, T>).GetMethod("GenericListDeserializer",
+                        BindingFlags.Static | BindingFlags.NonPublic);
+                    var g = mi.MakeGenericMethod(target.GetGenericArguments());
                     var self = Expression.Parameter(typeof(S), "self");
                     var call = Expression.Call(g, self);
                     var func = Expression.Lambda(call, self);
