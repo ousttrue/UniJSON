@@ -184,20 +184,26 @@ namespace UniJSON
                 return new U[count];
             }
 
-            static Delegate GetCreator()
+            static Func<S, T> GetCreator()
             {
                 var t = typeof(T);
                 if (t.IsArray)
                 {
-                    var mi = typeof(GenericCreator<S, T>).GetMethod("ArrayCreator", 
-                        BindingFlags.NonPublic|BindingFlags.Static);
+                    var mi = typeof(GenericCreator<S, T>).GetMethod("ArrayCreator",
+                        BindingFlags.NonPublic | BindingFlags.Static);
                     var g = mi.MakeGenericMethod(t.GetElementType());
                     var src = Expression.Parameter(typeof(S), "src");
                     var call = Expression.Call(g, src);
                     var func = Expression.Lambda(call, src);
-                    return func.Compile();
+                    return (Func<S, T>)func.Compile();
                 }
-                throw new NotImplementedException();
+
+                {
+                    return _s =>
+                    {
+                        return Activator.CreateInstance<T>();
+                    };
+                }
             }
 
             delegate T Creator(S src);
@@ -208,10 +214,46 @@ namespace UniJSON
             {
                 if (s_creator == null)
                 {
-                    var d = (Func<S, T>)GetCreator();
+                    var d = GetCreator();
                     s_creator = new Creator(d);
                 }
                 return s_creator(src);
+            }
+        }
+
+        static object DictionaryDeserializer(IValueNode s)
+        {
+            switch (s.ValueType)
+            {
+                case ValueNodeType.Map:
+                    {
+                        var u = new Dictionary<string, object>();
+                        foreach (var kv in s.ObjectItems)
+                        {
+                            //var e = default(object);
+                            //kv.Value.Deserialize(ref e);
+                            u.Add(kv.Key.ToString(), DictionaryDeserializer(kv.Value));
+                        }
+                        return u;
+                    }
+
+                case ValueNodeType.Null:
+                    return null;
+
+                case ValueNodeType.Boolean:
+                    return s.GetBoolean();
+
+                case ValueNodeType.Integer:
+                    return s.GetInt32();
+
+                case ValueNodeType.Float:
+                    return s.GetDouble();
+
+                case ValueNodeType.String:
+                    return s.GetString();
+
+                default:
+                    throw new NotImplementedException(s.ValueType.ToString());
             }
         }
 
@@ -248,7 +290,7 @@ namespace UniJSON
                 return u;
             }
 
-            static Delegate GetDeserializer()
+            static Func<S, T> GetDeserializer()
             {
                 // primitive
                 {
@@ -283,12 +325,12 @@ namespace UniJSON
                         var self = Expression.Parameter(typeof(S), "self");
                         var call = Expression.Call(self, mi);
                         var func = Expression.Lambda(call, self);
-                        return func.Compile();
+                        return (Func<S, T>)func.Compile();
                     }
                 }
 
                 var target = typeof(T);
-                if(target.IsArray)
+                if (target.IsArray)
                 {
                     var mi = typeof(GenericDeserializer<S, T>).GetMethod("GenericArrayDeserializer",
                         BindingFlags.Static | BindingFlags.NonPublic);
@@ -296,21 +338,46 @@ namespace UniJSON
                     var self = Expression.Parameter(typeof(S), "self");
                     var call = Expression.Call(g, self);
                     var func = Expression.Lambda(call, self);
-                    return func.Compile();
+                    return (Func<S, T>)func.Compile();
                 }
 
-                if(target.IsGenericType && (target.GetGenericTypeDefinition() == typeof(List<>)))
+                if (target.IsGenericType)
                 {
-                    var mi = typeof(GenericDeserializer<S, T>).GetMethod("GenericListDeserializer",
+                    if (target.GetGenericTypeDefinition() == typeof(List<>))
+                    {
+                        var mi = typeof(GenericDeserializer<S, T>).GetMethod("GenericListDeserializer",
+                            BindingFlags.Static | BindingFlags.NonPublic);
+                        var g = mi.MakeGenericMethod(target.GetGenericArguments());
+                        var self = Expression.Parameter(typeof(S), "self");
+                        var call = Expression.Call(g, self);
+                        var func = Expression.Lambda(call, self);
+                        return (Func<S, T>)func.Compile();
+                    }
+
+                    if (target.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
+                        target.GetGenericArguments()[0] == typeof(string))
+                    {
+                        var mi = typeof(IValueNodeExtensions).GetMethod("DictionaryDeserializer",
                         BindingFlags.Static | BindingFlags.NonPublic);
-                    var g = mi.MakeGenericMethod(target.GetGenericArguments());
-                    var self = Expression.Parameter(typeof(S), "self");
-                    var call = Expression.Call(g, self);
-                    var func = Expression.Lambda(call, self);
-                    return func.Compile();
+                        var self = Expression.Parameter(typeof(IValueNode), "self");
+                        var call = Expression.Call(mi, self);
+                        var func = Expression.Lambda(call, self);
+                        var d = (Func<IValueNode, object>)func.Compile();
+                        return (S s) =>
+                        {
+                            var x = d(s);
+                            return (T)x;
+                        };
+                    }
                 }
 
-                throw new NotImplementedException();
+                {
+                    return (S s) =>
+                    {
+                        T t = default(GenericCreator<S, T>).Create(s);
+                        return t;
+                    };
+                }
             }
 
             delegate T Deserializer(S node);
@@ -321,7 +388,7 @@ namespace UniJSON
             {
                 if (s_deserializer == null)
                 {
-                    var d = (Func<S, T>)GetDeserializer();
+                    var d = GetDeserializer();
                     s_deserializer = new Deserializer(d);
                 }
                 value = s_deserializer(node);

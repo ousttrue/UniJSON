@@ -23,6 +23,11 @@ namespace UniJSON
             public float Y;
 
             public float[] Vector;
+
+            public override string ToString()
+            {
+                return string.Format("{{X={0}, Y={1}, {2}}}", X, Y, Vector);
+            }
         }
 
         [Test]
@@ -81,7 +86,7 @@ namespace UniJSON
             var t = default(T);
             parsed.Deserialize(ref t);
 
-            Assert.AreEqual(t, value);
+            Assert.AreEqual(value, t);
         }
 
         [Test]
