@@ -7,6 +7,7 @@ namespace UniJSON
 {
     public class JsonSerializerTests
     {
+        #region Serializer
         static void SerializeValue<T>(T value, string json)
         {
             var b = new BytesStore();
@@ -48,7 +49,7 @@ namespace UniJSON
                     new Dictionary<string, object>{
                     } } }, "{\"a\":{}}");
 
-            SerializeValue(new Point(), "{\"X\":0,\"Y\":0}");
+            SerializeValue(new Point { X = 1 }, "{\"X\":1,\"Y\":0}");
         }
 
         [Test]
@@ -70,5 +71,45 @@ namespace UniJSON
             Assert.AreEqual(1, json.ValueCount);
             Assert.AreEqual(1, json["Vector"][0].GetInt32());
         }
+        #endregion
+
+        #region Deserialize
+        static void DeserializeValue<T>(T value, string json)
+        {
+            var parsed = JsonParser.Parse(json);
+
+            var t = default(T);
+            parsed.Deserialize(ref t);
+
+            Assert.AreEqual(t, value);
+        }
+
+        [Test]
+        public void JsonDeserializerTest()
+        {
+            DeserializeValue(1, "1");
+            DeserializeValue(1.1f, "1.1");
+            DeserializeValue(1.2, "1.2");
+            DeserializeValue(true, "true");
+            DeserializeValue(false, "false");
+            DeserializeValue("ascii", "\"ascii\"");
+
+            DeserializeValue(new[] { 1 }, "[1]");
+            DeserializeValue(new[] { 1.1f }, "[1.1]");
+            DeserializeValue(new[] { 1.2 }, "[1.2]");
+            DeserializeValue(new[] { true, false }, "[true,false]");
+            DeserializeValue(new[] { "ascii" }, "[\"ascii\"]");
+            DeserializeValue(new List<int> { 1 }, "[1]");
+            //DeserializeValue(new object[] { null, 1, "a" }, "[null,1,\"a\"]");
+
+            DeserializeValue(new Dictionary<string, object> { }, "{}");
+            DeserializeValue(new Dictionary<string, object> { { "a", 1 } }, "{\"a\":1}");
+            DeserializeValue(new Dictionary<string, object> { { "a",
+                    new Dictionary<string, object>{
+                    } } }, "{\"a\":{}}");
+
+            DeserializeValue(new Point { X = 1 }, "{\"X\":1,\"Y\":0}");
+        }
+        #endregion
     }
 }
