@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-
+using System.Reflection;
 
 namespace UniJSON
 {
@@ -172,48 +172,118 @@ namespace UniJSON
         }
 
         #region Deserializer
-        static Delegate GetDeserializer<S, T>() where S : IValueNode
+        struct GenericCreator<S, T> where S : IValueNode
         {
-            // primitive
-            var mi = typeof(S).GetMethods().FirstOrDefault(x =>
+            static U[] ArrayCreator<U>(S src)
             {
-                if (!x.Name.StartsWith("Get"))
+                if (!src.IsArray())
                 {
-                    return false;
+                    throw new ArgumentException("value is not array");
                 }
-
-                if (!x.Name.EndsWith(typeof(T).Name))
-                {
-                    return false;
-                }
-
-                var parameters = x.GetParameters();
-                if (parameters.Length != 0)
-                {
-                    return false;
-                }
-
-                if (x.ReturnType != typeof(T))
-                {
-                    return false;
-                }
-
-                return true;
-            });
-
-            if (mi != null)
-            {
-                var self = Expression.Parameter(typeof(S), "self");
-                var call = Expression.Call(self, mi);
-                var func = Expression.Lambda(call, self);
-                return func.Compile();
+                var count = src.ValueCount;
+                return new U[count];
             }
 
-            throw new NotImplementedException();
+            static Delegate GetCreator()
+            {
+                var t = typeof(T);
+                if (t.IsArray)
+                {
+                    var mi = typeof(GenericCreator<S, T>).GetMethod("ArrayCreator", 
+                        BindingFlags.NonPublic|BindingFlags.Static);
+                    var g = mi.MakeGenericMethod(t.GetElementType());
+                    var src = Expression.Parameter(typeof(S), "src");
+                    var call = Expression.Call(g, src);
+                    var func = Expression.Lambda(call, src);
+                    return func.Compile();
+                }
+                throw new NotImplementedException();
+            }
+
+            delegate T Creator(S src);
+
+            static Creator s_creator;
+
+            public T Create(S src)
+            {
+                if (s_creator == null)
+                {
+                    var d = (Func<S, T>)GetCreator();
+                    s_creator = new Creator(d);
+                }
+                return s_creator(src);
+            }
         }
 
         struct GenericDeserializer<S, T> where S : IValueNode
         {
+            static U[] GenericArrayDeserializer<U>(S s)
+            {
+                if (!s.IsArray())
+                {
+                    throw new ArgumentException("not array: " + s.ValueType);
+                }
+                var u = new U[s.ValueCount];
+                int i = 0;
+                foreach (var x in s.ArrayItems)
+                {
+                    x.Deserialize(ref u[i++]);
+                }
+                return u;
+            }
+
+            static Delegate GetDeserializer()
+            {
+                // primitive
+                var mi = typeof(S).GetMethods().FirstOrDefault(x =>
+                {
+                    if (!x.Name.StartsWith("Get"))
+                    {
+                        return false;
+                    }
+
+                    if (!x.Name.EndsWith(typeof(T).Name))
+                    {
+                        return false;
+                    }
+
+                    var parameters = x.GetParameters();
+                    if (parameters.Length != 0)
+                    {
+                        return false;
+                    }
+
+                    if (x.ReturnType != typeof(T))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                if (mi != null)
+                {
+                    var self = Expression.Parameter(typeof(S), "self");
+                    var call = Expression.Call(self, mi);
+                    var func = Expression.Lambda(call, self);
+                    return func.Compile();
+                }
+
+                var target = typeof(T);
+                if(target.IsArray)
+                {
+                    var indexer = typeof(GenericDeserializer<S, T>).GetMethod("GenericArrayDeserializer",
+                        BindingFlags.Static | BindingFlags.NonPublic);
+                    var g = indexer.MakeGenericMethod(target.GetElementType());
+                    var self = Expression.Parameter(typeof(S), "self");
+                    var call = Expression.Call(g, self);
+                    var func = Expression.Lambda(call, self);
+                    return func.Compile();
+                }
+
+                throw new NotImplementedException();
+            }
+
             delegate T Deserializer(S node);
 
             static Deserializer s_deserializer;
@@ -222,7 +292,7 @@ namespace UniJSON
             {
                 if (s_deserializer == null)
                 {
-                    var d = (Func<S, T>)GetDeserializer<S, T>();
+                    var d = (Func<S, T>)GetDeserializer();
                     s_deserializer = new Deserializer(d);
                 }
                 value = s_deserializer(node);
