@@ -290,6 +290,17 @@ namespace UniJSON
                 return u;
             }
 
+            delegate void FieldSetter(IValueNode s, object o);
+            static FieldSetter GetFieldDeserializer<U>(FieldInfo fi)
+            {
+                return (s, o) =>
+                {
+                    var u = default(U);
+                    s.Deserialize(ref u);
+                    fi.SetValue(o, u);
+                };
+            }
+
             static Func<S, T> GetDeserializer()
             {
                 // primitive
@@ -372,10 +383,32 @@ namespace UniJSON
                 }
 
                 {
+                    var fields = target.GetFields(BindingFlags.Instance | BindingFlags.Public);
+                    var fieldDeserializers = fields.ToDictionary(x => Utf8String.From(x.Name), x =>
+                    {
+                        var mi = typeof(GenericDeserializer<S, T>).GetMethod("GetFieldDeserializer",
+                            BindingFlags.Static|BindingFlags.NonPublic);
+                        var g = mi.MakeGenericMethod(x.FieldType);
+                        return (FieldSetter)g.Invoke(null, new object[] { x });
+                    });
+                    
                     return (S s) =>
                     {
-                        T t = default(GenericCreator<S, T>).Create(s);
-                        return t;
+                        if (!s.IsMap())
+                        {
+                            throw new ArgumentException("is not map");
+                        }
+
+                        var t = (object)default(GenericCreator<S, T>).Create(s);
+                        foreach(var kv in s.ObjectItems)
+                        {
+                            FieldSetter setter;
+                            if (fieldDeserializers.TryGetValue(kv.Key, out setter))
+                            {
+                                setter(kv.Value, t);
+                            }
+                        }
+                        return (T)t;
                     };
                 }
             }
