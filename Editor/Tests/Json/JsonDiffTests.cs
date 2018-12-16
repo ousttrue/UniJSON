@@ -52,6 +52,7 @@ namespace UniJSON
             Assert.AreEqual(1, diff.Length);
         }
 
+#if UNITY_EDITOR
         [Test]
         public void Vector3()
         {
@@ -61,5 +62,6 @@ namespace UniJSON
             var dst = UnityEngine.JsonUtility.FromJson<UnityEngine.Vector3>(json);
             Assert.AreEqual(src, dst);
         }
+#endif
     }
 }

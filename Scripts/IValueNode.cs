@@ -396,7 +396,7 @@ namespace UniJSON
                     {
                         if (!s.IsMap())
                         {
-                            throw new ArgumentException("is not map");
+                            throw new ArgumentException(s.ValueType.ToString());
                         }
 
                         var t = (object)default(GenericCreator<S, T>).Create(s);

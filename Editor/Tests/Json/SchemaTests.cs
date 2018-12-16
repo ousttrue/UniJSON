@@ -36,7 +36,6 @@ namespace UniJSON
             var f = new JsonFormatter(2);
             s.ToJson(f);
             var json = f.ToString();
-            Debug.Log(json);
 
             var parsed = JsonParser.Parse(json);
             Assert.AreEqual(0, parsed["properties"]["age"]["minimum"].GetInt32());
