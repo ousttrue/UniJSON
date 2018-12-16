@@ -498,19 +498,19 @@ namespace UniJSON
         #region Getter
         public bool GetBoolean()
         {
-            if(Value.ValueType!=JsonValueType.Boolean) throw new JsonValueException();
+            if(Value.ValueType!=JsonValueType.Boolean) throw new JsonValueTypeException(Value.ValueType);
             return Value.GetBoolean();
         }
 
         public string GetString()
         {
-            if (Value.ValueType != JsonValueType.String) throw new JsonValueException();
+            if (Value.ValueType != JsonValueType.String) throw new JsonValueTypeException(Value.ValueType);
             return Value.GetString();
         }
 
         public Utf8String GetUtf8String()
         {
-            if (Value.ValueType != JsonValueType.String) throw new JsonValueException();
+            if (Value.ValueType != JsonValueType.String) throw new JsonValueTypeException(Value.ValueType);
             return Value.GetUtf8String();
         }
 
@@ -526,7 +526,7 @@ namespace UniJSON
             }
             else
             {
-                throw new JsonValueException();
+                throw new JsonValueTypeException(Value.ValueType);
             }
         }
 
@@ -542,7 +542,7 @@ namespace UniJSON
             }
             else
             {
-                throw new JsonValueException();
+                throw new JsonValueTypeException(Value.ValueType);
             }
         }
 
@@ -558,7 +558,7 @@ namespace UniJSON
             }
             else
             {
-                throw new JsonValueException();
+                throw new JsonValueTypeException(Value.ValueType);
             }
         }
 
@@ -574,7 +574,7 @@ namespace UniJSON
             }
             else
             {
-                throw new JsonValueException();
+                throw new JsonValueTypeException(Value.ValueType);
             }
         }
 
@@ -590,7 +590,7 @@ namespace UniJSON
             }
             else
             {
-                throw new JsonValueException();
+                throw new JsonValueTypeException(Value.ValueType);
             }
         }
 
@@ -606,7 +606,7 @@ namespace UniJSON
             }
             else
             {
-                throw new JsonValueException();
+                throw new JsonValueTypeException(Value.ValueType);
             }
         }
 
@@ -622,7 +622,7 @@ namespace UniJSON
             }
             else
             {
-                throw new JsonValueException();
+                throw new JsonValueTypeException(Value.ValueType);
             }
         }
 
@@ -638,7 +638,7 @@ namespace UniJSON
             }
             else
             {
-                throw new JsonValueException();
+                throw new JsonValueTypeException(Value.ValueType);
             }
         }
 
@@ -647,7 +647,7 @@ namespace UniJSON
             if (Value.ValueType != JsonValueType.Number
                 && Value.ValueType != JsonValueType.Integer)
             {
-                throw new JsonValueException();
+                throw new JsonValueTypeException(Value.ValueType);
             }
             return Value.GetSingle();
         }
@@ -657,7 +657,7 @@ namespace UniJSON
             if (Value.ValueType != JsonValueType.Number
                 && Value.ValueType != JsonValueType.Integer)
             {
-                throw new JsonValueException();
+                throw new JsonValueTypeException(Value.ValueType);
             }
             return Value.GetDouble();
         }

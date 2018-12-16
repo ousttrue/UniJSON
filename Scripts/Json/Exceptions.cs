@@ -17,4 +17,9 @@ namespace UniJSON
     {
         public JsonValueException(string msg=null) : base(msg) { }
     }
+
+    public class JsonValueTypeException: JsonValueException
+    {
+        public JsonValueTypeException(ValueType type) : base(type.ToString()) { }
+    }
 }
