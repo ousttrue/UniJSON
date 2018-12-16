@@ -26,6 +26,20 @@ namespace UniJSON
             Fuga,
         }
 
+        struct EnumTest
+        { 
+            public HogeFuga EnumDefault;
+
+            [JsonSchema(EnumSerializationType =EnumSerializationType.AsInt)]
+            public HogeFuga EnumAsInt;
+
+            [JsonSchema(EnumSerializationType = EnumSerializationType.AsString)]
+            public HogeFuga EnumAsString;
+
+            [JsonSchema(EnumSerializationType = EnumSerializationType.AsLowerString)]
+            public HogeFuga EnumAsLowerString;
+        }
+
         #region Serializer
         static void SerializeValue<T>(T value, string json)
         {
@@ -63,6 +77,8 @@ namespace UniJSON
             SerializeValue(new Point { X = 1 }, "{\"X\":1,\"Y\":0}");
 
             SerializeValue(HogeFuga.Fuga, "1");
+
+            SerializeValue(new EnumTest(), "{\"EnumDefault\":0,\"EnumAsInt\":0,\"EnumAsString\":\"Hoge\",\"EnumAsLowerString\":\"hoge\"}");
         }
 
         [Test]
@@ -124,6 +140,8 @@ namespace UniJSON
             DeserializeValue(new Point { X = 1 }, "{\"X\":1,\"Y\":0}");
 
             DeserializeValue(HogeFuga.Fuga, "1");
+
+            DeserializeValue(new EnumTest(), "{\"EnumDefault\":0,\"EnumAsInt\":0,\"EnumAsString\":\"Hoge\",\"EnumAsLowerString\":\"hoge\"}");
         }
         #endregion
     }

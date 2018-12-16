@@ -128,8 +128,7 @@ namespace UniJSON
             var c = new JsonSchemaValidationContext("test");
 
             {
-                var v = new JsonStringEnumValidator();
-                v.Values = new string[] { "a", "b" };
+                var v = JsonStringEnumValidator.Create(new string[] { "a", "b" }, EnumSerializationType.AsString);
                 Assert.Null(v.Validate(c, "a"));
                 Assert.NotNull(v.Validate(c, "c"));
             }

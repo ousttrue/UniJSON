@@ -341,17 +341,6 @@ namespace UniJSON
                 }
 
                 var target = typeof(T);
-                if (target.IsEnum)
-                {
-                    var value = Expression.Parameter(typeof(int), "value");
-                    var cast = Expression.Convert(value, target);
-                    var func = Expression.Lambda(cast, value);
-                    var compiled = (Func<int, T>)func.Compile();
-                    return s =>
-                    {
-                        return compiled(s.GetInt32());
-                    };
-                }
 
                 if (target.IsArray)
                 {
@@ -395,6 +384,29 @@ namespace UniJSON
                 }
 
                 {
+                    var schema = JsonSchema.FromType<T>();
+                    return s =>
+                    {
+                        var t = default(T);
+                        schema.Validator.Deserialize(s, ref t);
+                        return t;
+                    };
+                }
+
+#if false
+                if (target.IsEnum)
+                {
+                    var value = Expression.Parameter(typeof(int), "value");
+                    var cast = Expression.Convert(value, target);
+                    var func = Expression.Lambda(cast, value);
+                    var compiled = (Func<int, T>)func.Compile();
+                    return s =>
+                    {
+                        return compiled(s.GetInt32());
+                    };
+                }
+
+                {
                     var fields = target.GetFields(BindingFlags.Instance | BindingFlags.Public);
                     var fieldDeserializers = fields.ToDictionary(x => Utf8String.From(x.Name), x =>
                     {
@@ -423,6 +435,7 @@ namespace UniJSON
                         return (T)t;
                     };
                 }
+#endif
             }
 
             delegate T Deserializer(S node);
@@ -451,6 +464,6 @@ namespace UniJSON
             self.Deserialize(ref value);
             return value;
         }
-        #endregion
+#endregion
     }
 }

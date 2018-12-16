@@ -6,6 +6,7 @@ namespace UniJSON
     public enum EnumSerializationType
     {
         AsInt,
+        AsString,
         AsLowerString,
     }
 

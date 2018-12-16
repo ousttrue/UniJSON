@@ -3,8 +3,6 @@
 
 namespace UniJSON
 {
-
-
     public class JsonSchemaValidationContext
     {
         string[] m_stack = new string[64];
@@ -67,5 +65,7 @@ namespace UniJSON
         void Serialize(IFormatter f, JsonSchemaValidationContext context, Object o);
 
         void ToJson(IFormatter f);
+
+        void Deserialize<T>(IValueNode src, ref T dst);
     }
 }

@@ -272,6 +272,11 @@ namespace UniJSON
         {
             f.Key("type"); f.Value("object");
         }
+
+        public void Deserialize<T1>(IValueNode src, ref T1 dst)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public static class JsonDictionaryValidator

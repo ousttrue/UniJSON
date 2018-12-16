@@ -221,6 +221,11 @@ namespace UniJSON
                 f.Key("maximum"); f.Value(Maximum.Value);
             }
         }
+
+        public void Deserialize<T>(IValueNode src, ref T dst)
+        {
+            dst = GenericCast<int, T>.Cast(src.GetInt32());
+        }
     }
 
     /// <summary>
@@ -413,6 +418,11 @@ namespace UniJSON
             {
                 f.Key("maximum"); f.Value(Maximum.Value);
             }
+        }
+
+        public void Deserialize<T>(IValueNode src, ref T dst)
+        {
+            dst = UniJSON.GenericCast<double, T>.Cast(src.GetDouble());
         }
     }
 }

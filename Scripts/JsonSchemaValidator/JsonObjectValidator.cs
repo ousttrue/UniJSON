@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections;
+using System.Reflection;
 
 namespace UniJSON
 {
@@ -311,7 +312,7 @@ namespace UniJSON
             return null;
         }
 
-        class LockQueue<T> where T: class
+        class LockQueue<T> where T : class
         {
             Queue<T> m_queue = new Queue<T>();
 
@@ -327,7 +328,7 @@ namespace UniJSON
                 T t = null;
                 lock (((ICollection)m_queue).SyncRoot)
                 {
-                    if(m_queue.Count>0)
+                    if (m_queue.Count > 0)
                     {
                         t = m_queue.Dequeue();
                     }
@@ -344,7 +345,7 @@ namespace UniJSON
             {
                 map = new Dictionary<string, object>();
             }
-            
+
             // validate properties
             map.Clear();
             foreach (var kv in Properties)
@@ -421,6 +422,95 @@ namespace UniJSON
                 }
                 f.EndMap();
             }
+        }
+
+        struct GenericDeserializer<T>
+        {
+            delegate T Deserializer(IValueNode src);
+
+            static Deserializer s_d;
+
+            delegate void FieldSetter(IValueNode s, object o);
+            static FieldSetter GetFieldDeserializer<U>(FieldInfo fi)
+            {
+                return (s, o) =>
+                {
+                    var u = default(U);
+                    s.Deserialize(ref u);
+                    fi.SetValue(o, u);
+                };
+            }
+
+            static U DeserializeField<U>(JsonSchema prop, IValueNode s)
+            {
+                var u = default(U);
+                prop.Validator.Deserialize(s, ref u);
+                return u;
+            }
+
+            public void Deserialize(IValueNode src, ref T dst, Dictionary<string, JsonSchema> props)
+            {
+                if (s_d == null)
+                {
+                    var target = typeof(T);
+                    
+                    var fields = target.GetFields(BindingFlags.Instance | BindingFlags.Public);
+                    var fieldDeserializers = fields.ToDictionary(x => Utf8String.From(x.Name), x =>
+                    {
+                        /*
+                        var mi = typeof(GenericDeserializer<T>).GetMethod("GetFieldDeserializer",
+                            BindingFlags.Static | BindingFlags.NonPublic);
+                        var g = mi.MakeGenericMethod(x.FieldType);
+                        return (FieldSetter)g.Invoke(null, new object[] { x });
+                        */
+                        JsonSchema prop;
+                        if(!props.TryGetValue(x.Name, out prop))
+                        {
+                            return null;
+                        }
+
+                        var mi = typeof(GenericDeserializer<T>).GetMethod("DeserializeField",
+                            BindingFlags.Static | BindingFlags.NonPublic);
+                        var g = mi.MakeGenericMethod(x.FieldType);
+
+                        return (FieldSetter)((s, o) =>
+                        {
+                            var f = g.Invoke(null, new object[] { prop, s });
+                            x.SetValue(o, f);
+                        });
+                    });
+
+                    s_d = (IValueNode s) =>
+                    {
+                        if (!s.IsMap())
+                        {
+                            throw new ArgumentException(s.ValueType.ToString());
+                        }
+
+                        // boxing
+                        var t = (object)Activator.CreateInstance<T>();
+                        foreach (var kv in s.ObjectItems)
+                        {
+                            FieldSetter setter;
+                            if (fieldDeserializers.TryGetValue(kv.Key, out setter))
+                            {
+                                if (setter != null)
+                                {
+                                    setter(kv.Value, t);
+                                }
+                            }
+                        }
+                        return (T)t;
+                    };
+
+                }
+                dst = s_d(src);
+            }
+        }
+
+        public void Deserialize<T>(IValueNode src, ref T dst)
+        {
+            (default(GenericDeserializer<T>)).Deserialize(src, ref dst, Properties);
         }
     }
 }

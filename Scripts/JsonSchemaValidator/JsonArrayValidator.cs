@@ -153,5 +153,10 @@ namespace UniJSON
                 Items.ToJson(f);
             }
         }
+
+        public void Deserialize<T>(IValueNode src, ref T dst)
+        {
+            src.Deserialize(ref dst);
+        }
     }
 }

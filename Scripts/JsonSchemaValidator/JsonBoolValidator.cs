@@ -41,5 +41,10 @@ namespace UniJSON
         {
             f.Key("type"); f.Value("boolean");
         }
+
+        public void Deserialize<T>(IValueNode src, ref T dst)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -120,7 +120,7 @@ namespace UniJSON
                 return new JsonSchemaValidationException(c, string.Format("maxlength: {0}>{1}", value.Length, MaxLength.Value));
             }
 
-            if(Pattern!=null && !Pattern.IsMatch(value))
+            if (Pattern != null && !Pattern.IsMatch(value))
             {
                 return new JsonSchemaValidationException(c, string.Format("pattern: {0} not match {1}", Pattern, value));
             }
@@ -136,6 +136,11 @@ namespace UniJSON
         public void ToJson(IFormatter f)
         {
             f.Key("type"); f.Value("string");
+        }
+
+        public void Deserialize<T>(IValueNode src, ref T dst)
+        {
+            dst = GenericCast<string, T>.Cast(src.GetString());
         }
     }
 }
