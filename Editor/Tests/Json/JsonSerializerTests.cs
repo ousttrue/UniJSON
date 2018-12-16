@@ -7,16 +7,6 @@ namespace UniJSON
 {
     public class JsonSerializerTests
     {
-        #region Serializer
-        static void SerializeValue<T>(T value, string json)
-        {
-            var b = new BytesStore();
-            var f = new JsonFormatter(b);
-
-            f.Serialize(value);
-            Assert.AreEqual(json, new Utf8String(b.Bytes).ToString());
-        }
-
         struct Point
         {
             public float X;
@@ -28,6 +18,22 @@ namespace UniJSON
             {
                 return string.Format("{{X={0}, Y={1}, {2}}}", X, Y, Vector);
             }
+        }
+
+        enum HogeFuga
+        {
+            Hoge,
+            Fuga,
+        }
+
+        #region Serializer
+        static void SerializeValue<T>(T value, string json)
+        {
+            var b = new BytesStore();
+            var f = new JsonFormatter(b);
+
+            f.Serialize(value);
+            Assert.AreEqual(json, new Utf8String(b.Bytes).ToString());
         }
 
         [Test]
@@ -55,6 +61,8 @@ namespace UniJSON
                     } } }, "{\"a\":{}}");
 
             SerializeValue(new Point { X = 1 }, "{\"X\":1,\"Y\":0}");
+
+            SerializeValue(HogeFuga.Fuga, "1");
         }
 
         [Test]
@@ -114,6 +122,8 @@ namespace UniJSON
                     } } }, "{\"a\":{}}");
 
             DeserializeValue(new Point { X = 1 }, "{\"X\":1,\"Y\":0}");
+
+            DeserializeValue(HogeFuga.Fuga, "1");
         }
         #endregion
     }

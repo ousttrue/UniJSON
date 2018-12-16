@@ -341,6 +341,18 @@ namespace UniJSON
                 }
 
                 var target = typeof(T);
+                if (target.IsEnum)
+                {
+                    var value = Expression.Parameter(typeof(int), "value");
+                    var cast = Expression.Convert(value, target);
+                    var func = Expression.Lambda(cast, value);
+                    var compiled = (Func<int, T>)func.Compile();
+                    return s =>
+                    {
+                        return compiled(s.GetInt32());
+                    };
+                }
+
                 if (target.IsArray)
                 {
                     var mi = typeof(GenericDeserializer<S, T>).GetMethod("GenericArrayDeserializer",
