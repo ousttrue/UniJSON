@@ -118,6 +118,19 @@ namespace UniJSON
             return false;
         }
 
+        public void ToJsonScheama(IFormatter f)
+        {
+            f.Key("type"); f.Value("integer");
+            if (Minimum.HasValue)
+            {
+                f.Key("minimum"); f.Value(Minimum.Value);
+            }
+            if (Maximum.HasValue)
+            {
+                f.Key("maximum"); f.Value(Maximum.Value);
+            }
+        }
+
         public void Merge(IJsonSchemaValidator obj)
         {
             var rhs = obj as JsonIntValidator;
@@ -204,22 +217,9 @@ namespace UniJSON
             }
         }
 
-        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize<T>(IFormatter f, JsonSchemaValidationContext c, T o)
         {
-            f.Value((int)o);
-        }
-
-        public void ToJsonScheama(IFormatter f)
-        {
-            f.Key("type"); f.Value("integer");
-            if (Minimum.HasValue)
-            {
-                f.Key("minimum"); f.Value(Minimum.Value);
-            }
-            if (Maximum.HasValue)
-            {
-                f.Key("maximum"); f.Value(Maximum.Value);
-            }
+            f.Serialize(GenericCast<T, int>.Cast(o));
         }
 
         public void Deserialize<T>(IValueNode src, ref T dst)
@@ -325,6 +325,19 @@ namespace UniJSON
             return false;
         }
 
+        public void ToJsonScheama(IFormatter f)
+        {
+            f.Key("type"); f.Value("number");
+            if (Minimum.HasValue)
+            {
+                f.Key("minimum"); f.Value(Minimum.Value);
+            }
+            if (Maximum.HasValue)
+            {
+                f.Key("maximum"); f.Value(Maximum.Value);
+            }
+        }
+
         public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
             try
@@ -402,22 +415,9 @@ namespace UniJSON
             }
         }
 
-        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize<T>(IFormatter f, JsonSchemaValidationContext c, T o)
         {           
-            f.Value(Convert.ToDouble(o));
-        }
-
-        public void ToJsonScheama(IFormatter f)
-        {
-            f.Key("type"); f.Value("number");
-            if (Minimum.HasValue)
-            {
-                f.Key("minimum"); f.Value(Minimum.Value);
-            }
-            if (Maximum.HasValue)
-            {
-                f.Key("maximum"); f.Value(Maximum.Value);
-            }
+            f.Serialize(o);
         }
 
         public void Deserialize<T>(IValueNode src, ref T dst)

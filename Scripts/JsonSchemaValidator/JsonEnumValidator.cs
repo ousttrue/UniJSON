@@ -193,6 +193,18 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
+        public void ToJsonScheama(IFormatter f)
+        {
+            f.Key("type"); f.Value("string");
+            f.Key("enum");
+            f.BeginList(Values.Length);
+            foreach (var x in Values)
+            {
+                f.Value(x);
+            }
+            f.EndList();
+        }
+
         public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
             if (o == null)
@@ -230,7 +242,7 @@ namespace UniJSON
             }
         }
 
-        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize<T>(IFormatter f, JsonSchemaValidationContext c, T o)
         {
             var t = o.GetType();
 
@@ -241,7 +253,7 @@ namespace UniJSON
             }
             else
             {
-                value = (string)o;
+                value = GenericCast<T, string>.Cast(o);
             }
 
             if (SerializationType == EnumSerializationType.AsLowerString)
@@ -254,18 +266,6 @@ namespace UniJSON
             }
 
             f.Value(value);
-        }
-
-        public void ToJsonScheama(IFormatter f)
-        {
-            f.Key("type"); f.Value("string");
-            f.Key("enum");
-            f.BeginList(Values.Length);
-            foreach (var x in Values)
-            {
-                f.Value(x);
-            }
-            f.EndList();
         }
 
         static class GenericDeserializer<T>
@@ -354,6 +354,11 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
+        public void ToJsonScheama(IFormatter f)
+        {
+            f.Key("type"); f.Value("integer");
+        }
+
         public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
             if (Values.Contains(GenericCast<T, int>.Cast(o)))
@@ -366,14 +371,9 @@ namespace UniJSON
             }
         }
 
-        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize<T>(IFormatter f, JsonSchemaValidationContext c, T o)
         {
-            f.Value((int)o);
-        }
-
-        public void ToJsonScheama(IFormatter f)
-        {
-            f.Key("type"); f.Value("integer");
+            f.Serialize(GenericCast<T, int>.Cast(o));
         }
 
         static class GenericDeserializer<T>

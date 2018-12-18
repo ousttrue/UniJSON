@@ -125,7 +125,7 @@ namespace UniJSON
             return null;
         }
 
-        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize<T>(IFormatter f, JsonSchemaValidationContext c, T o)
         {
             var array = o as IEnumerable;
 

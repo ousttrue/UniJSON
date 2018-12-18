@@ -281,6 +281,22 @@ namespace UniJSON
             return false;
         }
 
+        public void ToJsonScheama(IFormatter f)
+        {
+            f.Key("type"); f.Value("object");
+            if (Properties.Count > 0)
+            {
+                f.Key("properties");
+                f.BeginMap(Properties.Count);
+                foreach (var kv in Properties)
+                {
+                    f.Key(kv.Key);
+                    kv.Value.ToJson(f);
+                }
+                f.EndMap();
+            }
+        }
+
         public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
             if (o == null)
@@ -338,7 +354,7 @@ namespace UniJSON
         }
         static LockQueue<Dictionary<string, object>> s_validValueMap = new LockQueue<Dictionary<string, object>>();
 
-        public void Serialize(IFormatter f, JsonSchemaValidationContext c, Object o)
+        public void Serialize<T>(IFormatter f, JsonSchemaValidationContext c, T o)
         {
             var map = s_validValueMap.Dequeue();
             if (map == null)
@@ -406,22 +422,6 @@ namespace UniJSON
             f.EndMap();
 
             s_validValueMap.Enqueue(map);
-        }
-
-        public void ToJsonScheama(IFormatter f)
-        {
-            f.Key("type"); f.Value("object");
-            if (Properties.Count > 0)
-            {
-                f.Key("properties");
-                f.BeginMap(Properties.Count);
-                foreach (var kv in Properties)
-                {
-                    f.Key(kv.Key);
-                    kv.Value.ToJson(f);
-                }
-                f.EndMap();
-            }
         }
 
         static class GenericDeserializer<T>

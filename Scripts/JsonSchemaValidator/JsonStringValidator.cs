@@ -98,6 +98,11 @@ namespace UniJSON
             return false;
         }
 
+        public void ToJsonScheama(IFormatter f)
+        {
+            f.Key("type"); f.Value("string");
+        }
+
         public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
             if (o == null)
@@ -128,14 +133,9 @@ namespace UniJSON
             return null;
         }
 
-        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize<T>(IFormatter f, JsonSchemaValidationContext c, T o)
         {
-            f.Value((string)o);
-        }
-
-        public void ToJsonScheama(IFormatter f)
-        {
-            f.Key("type"); f.Value("string");
+            f.Value(GenericCast<T, string>.Cast(o));
         }
 
         public void Deserialize<T>(IValueNode src, ref T dst)

@@ -202,6 +202,11 @@ namespace UniJSON
             return false;
         }
 
+        public void ToJsonScheama(IFormatter f)
+        {
+            f.Key("type"); f.Value("object");
+        }
+
         public JsonSchemaValidationException Validate<S>(JsonSchemaValidationContext c, S o)
         {
             if (o == null)
@@ -245,7 +250,7 @@ namespace UniJSON
 
         Dictionary<string, object> m_validValueMap = new Dictionary<string, object>();
 
-        public void Serialize(IFormatter f, JsonSchemaValidationContext c, Object o)
+        public void Serialize<S>(IFormatter f, JsonSchemaValidationContext c, S o)
         {
             // validate properties
             m_validValueMap.Clear();
@@ -268,12 +273,7 @@ namespace UniJSON
             f.EndMap();
         }
 
-        public void ToJsonScheama(IFormatter f)
-        {
-            f.Key("type"); f.Value("object");
-        }
-
-        public void Deserialize<T1>(IValueNode src, ref T1 dst)
+        public void Deserialize<S>(IValueNode src, ref S dst)
         {
             throw new NotImplementedException();
         }

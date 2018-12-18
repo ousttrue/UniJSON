@@ -27,19 +27,19 @@ namespace UniJSON
             return false;
         }
 
-        public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
+        public void ToJsonScheama(IFormatter f)
+        {
+            f.Key("type"); f.Value("boolean");
+        }
+
+        public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T value)
         {
             return null;
         }
 
-        public void Serialize(IFormatter f, JsonSchemaValidationContext c, object o)
+        public void Serialize<T>(IFormatter f, JsonSchemaValidationContext c, T value)
         {
-            f.Value((bool)o);
-        }
-
-        public void ToJsonScheama(IFormatter f)
-        {
-            f.Key("type"); f.Value("boolean");
+            f.Serialize(value);
         }
 
         public void Deserialize<T>(IValueNode src, ref T dst)
