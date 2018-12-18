@@ -424,7 +424,7 @@ namespace UniJSON
             }
         }
 
-        struct GenericDeserializer<T>
+        static class GenericDeserializer<T>
         {
             delegate T Deserializer(IValueNode src);
 
@@ -448,7 +448,7 @@ namespace UniJSON
                 return u;
             }
 
-            public void Deserialize(IValueNode src, ref T dst, Dictionary<string, JsonSchema> props)
+            public static void Deserialize(IValueNode src, ref T dst, Dictionary<string, JsonSchema> props)
             {
                 if (s_d == null)
                 {
@@ -510,7 +510,7 @@ namespace UniJSON
 
         public void Deserialize<T>(IValueNode src, ref T dst)
         {
-            (default(GenericDeserializer<T>)).Deserialize(src, ref dst, Properties);
+            GenericDeserializer<T>.Deserialize(src, ref dst, Properties);
         }
     }
 }

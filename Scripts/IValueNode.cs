@@ -257,7 +257,7 @@ namespace UniJSON
             }
         }
 
-        struct GenericDeserializer<S, T> where S : IValueNode
+        static class GenericDeserializer<S, T> where S : IValueNode
         {
             static U[] GenericArrayDeserializer<U>(S s)
             {
@@ -442,7 +442,7 @@ namespace UniJSON
 
             static Deserializer s_deserializer;
 
-            public void Deserialize(S node, ref T value)
+            public static void Deserialize(S node, ref T value)
             {
                 if (s_deserializer == null)
                 {
@@ -455,7 +455,7 @@ namespace UniJSON
 
         public static void Deserialize<S, T>(this S self, ref T value) where S : IValueNode
         {
-            (default(GenericDeserializer<S, T>)).Deserialize(self, ref value);
+            GenericDeserializer<S, T>.Deserialize(self, ref value);
         }
 
         public static bool GetBoolean<T>(this T self) where T : IValueNode

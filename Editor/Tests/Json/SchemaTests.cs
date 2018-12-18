@@ -1,6 +1,5 @@
-﻿using NUnit.Framework;
-using System.IO;
-using UnityEngine;
+﻿#pragma warning disable 0649
+using NUnit.Framework;
 
 
 namespace UniJSON

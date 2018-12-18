@@ -268,11 +268,11 @@ namespace UniJSON
             f.EndList();
         }
 
-        struct GenericDeserializer<T>
+        static class GenericDeserializer<T>
         {
             delegate T Deserializer(IValueNode src);
             static Deserializer s_d;
-            public void Deserialize(IValueNode src, ref T t)
+            public static void Deserialize(IValueNode src, ref T t)
             {
                 if (s_d == null)
                 {
@@ -301,7 +301,7 @@ namespace UniJSON
 
         public void Deserialize<T>(IValueNode src, ref T dst)
         {
-            (default(GenericDeserializer<T>)).Deserialize(src, ref dst);
+            GenericDeserializer<T>.Deserialize(src, ref dst);
         }
     }
 
@@ -376,13 +376,13 @@ namespace UniJSON
             f.Key("type"); f.Value("integer");
         }
 
-        struct GenericDeserializer<T>
+        static class GenericDeserializer<T>
         {
             delegate T Deserializer(IValueNode src);
 
             static Deserializer s_d;
 
-            public void Deserialize(IValueNode src, ref T dst)
+            public static void Deserialize(IValueNode src, ref T dst)
             {
                 if (s_d == null)
                 {
@@ -399,7 +399,7 @@ namespace UniJSON
 
         public void Deserialize<T>(IValueNode src, ref T dst)
         {
-            (default(GenericDeserializer<T>)).Deserialize(src, ref dst);
+            GenericDeserializer<T>.Deserialize(src, ref dst);
         }
     }
 }

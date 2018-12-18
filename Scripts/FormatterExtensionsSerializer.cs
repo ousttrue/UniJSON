@@ -10,7 +10,7 @@ namespace UniJSON
     {
         static Type SelfType = typeof(FormatterExtensionsSerializer);
 
-        struct GenericSerializer<T>
+        static class GenericSerializer<T>
         {
             delegate void Serializer(IFormatter f, T t);
 
@@ -111,12 +111,12 @@ namespace UniJSON
 
             static Serializer s_serializer;
 
-            public void Set(Action<IFormatter, T> serializer)
+            public static void Set(Action<IFormatter, T> serializer)
             {
                 s_serializer = new Serializer(serializer);
             }
 
-            public void Serialize(IFormatter f, T t)
+            public static void Serialize(IFormatter f, T t)
             {
                 if (s_serializer == null)
                 {
@@ -177,12 +177,12 @@ namespace UniJSON
                 return;
             }
 
-            (default(GenericSerializer<T>)).Serialize(f, arg);
+            GenericSerializer<T>.Serialize(f, arg);
         }
 
         public static void SetCustomSerializer<T>(Action<IFormatter, T> serializer)
         {
-            (default(GenericSerializer<T>)).Set(serializer);
+            GenericSerializer<T>.Set(serializer);
         }
     }
 }

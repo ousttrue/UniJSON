@@ -1,5 +1,5 @@
-﻿using NUnit.Framework;
-using System;
+﻿#pragma warning disable 0649
+using NUnit.Framework;
 using System.Collections.Generic;
 
 
