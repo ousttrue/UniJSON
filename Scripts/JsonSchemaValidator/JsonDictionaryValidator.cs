@@ -130,7 +130,7 @@ namespace UniJSON
             return true;
         }
 
-        public void Assign(IJsonSchemaValidator obj)
+        public void Merge(IJsonSchemaValidator obj)
         {
             var rhs = obj as JsonObjectValidator;
             if (rhs == null)

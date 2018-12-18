@@ -93,7 +93,7 @@ namespace UniJSON
             {
                 if (sub.Validator != null)
                 {
-                    Properties[key].Validator.Assign(sub.Validator);
+                    Properties[key].Validator.Merge(sub.Validator);
                 }
             }
             else
@@ -188,7 +188,7 @@ namespace UniJSON
             return true;
         }
 
-        public void Assign(IJsonSchemaValidator obj)
+        public void Merge(IJsonSchemaValidator obj)
         {
             var rhs = obj as JsonObjectValidator;
             if (rhs == null)

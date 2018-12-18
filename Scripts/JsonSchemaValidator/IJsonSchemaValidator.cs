@@ -52,7 +52,7 @@ namespace UniJSON
     public interface IJsonSchemaValidator
     {
         #region JsonSchema
-        void Assign(IJsonSchemaValidator obj);
+        void Merge(IJsonSchemaValidator rhs);
 
         /// <summary>
         /// Parse json schema

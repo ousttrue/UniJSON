@@ -118,7 +118,7 @@ namespace UniJSON
             return false;
         }
 
-        public void Assign(IJsonSchemaValidator obj)
+        public void Merge(IJsonSchemaValidator obj)
         {
             var rhs = obj as JsonIntValidator;
             if (rhs == null)
@@ -292,7 +292,7 @@ namespace UniJSON
             return true;
         }
 
-        public void Assign(IJsonSchemaValidator rhs)
+        public void Merge(IJsonSchemaValidator rhs)
         {
             throw new NotImplementedException();
         }

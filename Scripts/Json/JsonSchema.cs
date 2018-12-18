@@ -333,7 +333,7 @@ namespace UniJSON
                         }
                         else
                         {
-                            Validator.Assign(composition[0].Validator);
+                            Validator.Merge(composition[0].Validator);
                         }
                     }
                     else

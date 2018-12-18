@@ -56,7 +56,7 @@ namespace UniJSON
             return true;
         }
 
-        public void Assign(IJsonSchemaValidator rhs)
+        public void Merge(IJsonSchemaValidator rhs)
         {
             throw new NotImplementedException();
         }
