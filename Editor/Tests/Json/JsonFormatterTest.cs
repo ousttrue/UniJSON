@@ -15,7 +15,7 @@ namespace UniJSON
             formatter.Key("a"); formatter.Value(1);
             formatter.EndMap();
 
-            var json = formatter.ToString();
+            //var json = formatter.ToString();
         }
 
         [Test]
