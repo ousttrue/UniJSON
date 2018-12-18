@@ -51,21 +51,32 @@ namespace UniJSON
 
     public interface IJsonSchemaValidator
     {
+        #region JsonSchema
         void Assign(IJsonSchemaValidator obj);
 
-        bool Parse(IFileSystemAccessor fs, string key, JsonNode value);
-
         /// <summary>
-        /// 
+        /// Parse json schema
+        /// </summary>
+        /// <param name="fs"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        bool FromJsonSchema(IFileSystemAccessor fs, string key, JsonNode value);
+
+        void ToJsonScheama(IFormatter f);
+        #endregion
+
+        #region Serializer
+        /// <summary>
+        ///
         /// </summary>
         /// <param name="o"></param>
         /// <returns>return null if validate value</returns>
-        JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext context, T o);
+        JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext context, T value);
 
-        void Serialize(IFormatter f, JsonSchemaValidationContext context, Object o);
-
-        void ToJson(IFormatter f);
+        void Serialize(IFormatter f, JsonSchemaValidationContext context, object value);
 
         void Deserialize<T>(IValueNode src, ref T dst);
+        #endregion
     }
 }

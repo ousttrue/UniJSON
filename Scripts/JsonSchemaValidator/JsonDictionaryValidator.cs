@@ -153,7 +153,7 @@ namespace UniJSON
             }
         }
 
-        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        public bool FromJsonSchema(IFileSystemAccessor fs, string key, JsonNode value)
         {
             switch (key)
             {
@@ -268,7 +268,7 @@ namespace UniJSON
             f.EndMap();
         }
 
-        public void ToJson(IFormatter f)
+        public void ToJsonScheama(IFormatter f)
         {
             f.Key("type"); f.Value("object");
         }

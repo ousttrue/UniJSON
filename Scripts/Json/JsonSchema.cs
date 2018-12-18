@@ -301,7 +301,7 @@ namespace UniJSON
                         {
                             if (Validator != null)
                             {
-                                if (Validator.Parse(fs, kv.Key.ToString(), kv.Value))
+                                if (Validator.FromJsonSchema(fs, kv.Key.ToString(), kv.Value))
                                 {
                                     continue;
                                 }
@@ -403,7 +403,7 @@ namespace UniJSON
             f.BeginMap(2);
             if (!string.IsNullOrEmpty(Title)) { f.Key("title"); f.Value(Title); }
             if (!string.IsNullOrEmpty(Description)) { f.Key("description"); f.Value(Description); }
-            Validator.ToJson(f);
+            Validator.ToJsonScheama(f);
             f.EndMap();
         }
     }

@@ -90,7 +90,7 @@ namespace UniJSON
             return true;
         }
 
-        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        public bool FromJsonSchema(IFileSystemAccessor fs, string key, JsonNode value)
         {
             switch (key)
             {
@@ -209,7 +209,7 @@ namespace UniJSON
             f.Value((int)o);
         }
 
-        public void ToJson(IFormatter f)
+        public void ToJsonScheama(IFormatter f)
         {
             f.Key("type"); f.Value("integer");
             if (Minimum.HasValue)
@@ -297,7 +297,7 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public bool Parse(IFileSystemAccessor fs, string key, JsonNode value)
+        public bool FromJsonSchema(IFileSystemAccessor fs, string key, JsonNode value)
         {
             switch (key)
             {
@@ -407,7 +407,7 @@ namespace UniJSON
             f.Value(Convert.ToDouble(o));
         }
 
-        public void ToJson(IFormatter f)
+        public void ToJsonScheama(IFormatter f)
         {
             f.Key("type"); f.Value("number");
             if (Minimum.HasValue)
