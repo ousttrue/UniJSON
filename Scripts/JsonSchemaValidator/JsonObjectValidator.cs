@@ -281,7 +281,7 @@ namespace UniJSON
             return false;
         }
 
-        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
+        public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
             if (o == null)
             {

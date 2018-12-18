@@ -60,7 +60,7 @@ namespace UniJSON
         /// </summary>
         /// <param name="o"></param>
         /// <returns>return null if validate value</returns>
-        JsonSchemaValidationException Validate(JsonSchemaValidationContext context, Object o);
+        JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext context, T o);
 
         void Serialize(IFormatter f, JsonSchemaValidationContext context, Object o);
 

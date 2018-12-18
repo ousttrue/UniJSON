@@ -133,11 +133,11 @@ namespace UniJSON
             ExclusiveMinimum = rhs.ExclusiveMinimum;
         }
 
-        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
+        public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
             try
             {
-                var value = (int)o;
+                var value = GenericCast<T, int>.Cast(o);
 
                 if (Minimum.HasValue)
                 {
@@ -325,7 +325,7 @@ namespace UniJSON
             return false;
         }
 
-        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
+        public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
             try
             {

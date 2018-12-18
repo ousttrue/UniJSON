@@ -193,7 +193,7 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
+        public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
             if (o == null)
             {
@@ -208,7 +208,7 @@ namespace UniJSON
             }
             else
             {
-                value = (string)o;
+                value = GenericCast<T, string>.Cast(o);
             }
 
             if (SerializationType == EnumSerializationType.AsLowerString)
@@ -354,9 +354,9 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public JsonSchemaValidationException Validate(JsonSchemaValidationContext c, object o)
+        public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
-            if (Values.Contains((int)o))
+            if (Values.Contains(GenericCast<T, int>.Cast(o)))
             {
                 return null;
             }

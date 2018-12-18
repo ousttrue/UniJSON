@@ -99,7 +99,7 @@ namespace UniJSON
             return false;
         }
 
-        public JsonSchemaValidationException Validate(JsonSchemaValidationContext context, object o)
+        public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext context, T o)
         {
             if (o == null)
             {
