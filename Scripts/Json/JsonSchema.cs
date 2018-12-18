@@ -244,7 +244,7 @@ namespace UniJSON
                         break;
 
                     case "enum":
-                        Validator = JsonEnumValidator.Create(kv.Value, EnumSerializationType.AsLowerString);
+                        Validator = JsonEnumValidator.Create(kv.Value, EnumSerializationType.AsString);
                         break;
 
                     case "const":
@@ -354,7 +354,7 @@ namespace UniJSON
                         {
                             // extend enum
                             // enum, enum..., type
-                            Validator = JsonEnumValidator.Create(composition, EnumSerializationType.AsLowerString);
+                            Validator = JsonEnumValidator.Create(composition, EnumSerializationType.AsString);
                         }
                     }
                     //throw new NotImplementedException();

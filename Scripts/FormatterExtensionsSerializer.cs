@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-
+using System.Reflection;
 
 namespace UniJSON
 {
@@ -28,6 +28,7 @@ namespace UniJSON
                     return (Action<IFormatter, T>)lambda.Compile();
                 }
 
+                try
                 {
                     // primitive
                     var mi = typeof(IFormatter).GetMethod("Value", new Type[] { t });
@@ -41,6 +42,10 @@ namespace UniJSON
                         var lambda = Expression.Lambda(call, self, arg);
                         return (Action<IFormatter, T>)lambda.Compile();
                     }
+                }
+                catch (AmbiguousMatchException)
+                {
+                    // do nothing
                 }
 
                 {

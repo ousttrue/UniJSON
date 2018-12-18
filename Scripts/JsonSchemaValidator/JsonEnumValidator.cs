@@ -97,6 +97,9 @@ namespace UniJSON
                 case EnumSerializationType.AsLowerString:
                     return JsonStringEnumValidator.Create(GetStringValues(t, excludes, x => x.ToLower()), serializationType);
 
+                case EnumSerializationType.AsUpperString:
+                    return JsonStringEnumValidator.Create(GetStringValues(t, excludes, x => x.ToUpper()), serializationType);
+
                 default:
                     throw new NotImplementedException();
             }
@@ -140,6 +143,10 @@ namespace UniJSON
 
                 case EnumSerializationType.AsLowerString:
                     Values = values.Select(x => x.ToLower()).ToArray();
+                    break;
+
+                case EnumSerializationType.AsUpperString:
+                    Values = values.Select(x => x.ToUpper()).ToArray();
                     break;
 
                 default:
@@ -208,6 +215,10 @@ namespace UniJSON
             {
                 value = value.ToLower();
             }
+            else if (SerializationType == EnumSerializationType.AsUpperString)
+            {
+                value = value.ToUpper();
+            }
 
             if (Values.Contains(value))
             {
@@ -236,6 +247,10 @@ namespace UniJSON
             if (SerializationType == EnumSerializationType.AsLowerString)
             {
                 value = value.ToLower();
+            }
+            else if (SerializationType == EnumSerializationType.AsUpperString)
+            {
+                value = value.ToUpper();
             }
 
             f.Value(value);

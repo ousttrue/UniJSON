@@ -28,11 +28,15 @@ namespace UniJSON
                 var a = fi.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault() as JsonSchemaAttribute;
                 if (a == null)
                 {
-                    // default
-                    if (!fi.IsStatic && fi.IsPublic)
+                    a = fi.FieldType.GetCustomAttributes(typeof(JsonSchemaAttribute), true).FirstOrDefault() as JsonSchemaAttribute;
+                    if (a == null)
                     {
-                        // only public instance field
-                        a = new JsonSchemaAttribute();
+                        // default
+                        if (!fi.IsStatic && fi.IsPublic)
+                        {
+                            // only public instance field
+                            a = new JsonSchemaAttribute();
+                        }
                     }
                 }
 

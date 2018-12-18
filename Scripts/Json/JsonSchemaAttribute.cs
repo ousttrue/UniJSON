@@ -8,6 +8,7 @@ namespace UniJSON
         AsInt,
         AsString,
         AsLowerString,
+        AsUpperString,
     }
 
     public class BaseJsonSchemaAttribute : Attribute
