@@ -242,30 +242,63 @@ namespace UniJSON
             }
         }
 
+        public static class GenericSerializer<T>
+        {
+            delegate void Serializer(JsonStringEnumValidator v, 
+                IFormatter f, JsonSchemaValidationContext c, T o);
+
+            static Serializer s_serializer;
+
+            public static void Serialize(JsonStringEnumValidator validator,
+                IFormatter f, JsonSchemaValidationContext c, T o)
+            {
+                if (s_serializer == null)
+                {
+                    var t = typeof(T);
+                    if (t.IsEnum)
+                    {
+                        s_serializer = (vv, ff, cc, oo) =>
+                        {
+                            var value = Enum.GetName(t, oo);
+                            if (vv.SerializationType == EnumSerializationType.AsLowerString)
+                            {
+                                value = value.ToLower();
+                            }
+                            else if (vv.SerializationType == EnumSerializationType.AsUpperString)
+                            {
+                                value = value.ToUpper();
+                            }
+                            ff.Value(value);
+                        };
+                    }
+                    else if (t == typeof(string))
+                    {
+                        s_serializer = (vv, ff, cc, oo) =>
+                        {
+                            var value = GenericCast<T, string>.Cast(o);
+                            if (vv.SerializationType == EnumSerializationType.AsLowerString)
+                            {
+                                value = value.ToLower();
+                            }
+                            else if (vv.SerializationType == EnumSerializationType.AsUpperString)
+                            {
+                                value = value.ToUpper();
+                            }
+                            ff.Value(value);
+                        };
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                s_serializer(validator, f, c, o);
+            }
+        }
+
         public void Serialize<T>(IFormatter f, JsonSchemaValidationContext c, T o)
         {
-            var t = o.GetType();
-
-            var value = default(string);
-            if (t.IsEnum)
-            {
-                value = Enum.GetName(t, o);
-            }
-            else
-            {
-                value = GenericCast<T, string>.Cast(o);
-            }
-
-            if (SerializationType == EnumSerializationType.AsLowerString)
-            {
-                value = value.ToLower();
-            }
-            else if (SerializationType == EnumSerializationType.AsUpperString)
-            {
-                value = value.ToUpper();
-            }
-
-            f.Value(value);
+            GenericSerializer<T>.Serialize(this, f, c, o);
         }
 
         static class GenericDeserializer<T>
