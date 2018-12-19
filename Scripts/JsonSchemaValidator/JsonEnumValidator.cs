@@ -8,7 +8,7 @@ namespace UniJSON
 {
     public static class JsonEnumValidator
     {
-        public static IJsonSchemaValidator Create(JsonNode value, EnumSerializationType type)
+        public static IJsonSchemaValidator Create(JsonNode value)
         {
             foreach (var x in value.ArrayItemsRaw)
             {
@@ -25,7 +25,7 @@ namespace UniJSON
                     return JsonStringEnumValidator.Create(value.ArrayItemsRaw
                         .Where(y => y.IsString())
                         .Select(y => y.GetString())
-                        , type
+                        , EnumSerializationType.AsString
                         );
                 }
                 else
@@ -149,8 +149,11 @@ namespace UniJSON
                     Values = values.Select(x => x.ToUpper()).ToArray();
                     break;
 
+                case EnumSerializationType.AsInt:
+                    throw new ArgumentException("JsonStringEnumValidator not allow AsInt");
+
                 default:
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("");
             }
         }
 

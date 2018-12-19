@@ -153,7 +153,14 @@ namespace UniJSON
 
             if (a.EnumValues != null)
             {
-                validator = JsonEnumValidator.Create(a.EnumValues, a.EnumSerializationType);
+                try
+                {
+                    validator = JsonEnumValidator.Create(a.EnumValues, a.EnumSerializationType);
+                }
+                catch(Exception)
+                {
+                    throw new Exception(String.Join(", ", a.EnumValues.Select(x => x.ToString()).ToArray()));
+                }
             }
             else if (t.IsEnum)
             {
@@ -244,7 +251,7 @@ namespace UniJSON
                         break;
 
                     case "enum":
-                        Validator = JsonEnumValidator.Create(kv.Value, EnumSerializationType.AsString);
+                        Validator = JsonEnumValidator.Create(kv.Value);
                         break;
 
                     case "const":

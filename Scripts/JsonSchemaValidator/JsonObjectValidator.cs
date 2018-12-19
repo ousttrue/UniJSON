@@ -316,14 +316,12 @@ namespace UniJSON
                 {
                     using (c.Push(x))
                     {
-                        /*
                         var value = o.GetValueByKey(x);
                         var ex = Properties[x].Validator.Validate(c, value);
                         if (ex != null)
                         {
                             return ex;
                         }
-                        */
                     }
                 }
             }
