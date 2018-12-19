@@ -345,7 +345,7 @@ namespace UniJSON
                     var name = fi.Name;
                     return (v, f, c, s) =>
                     {
-                        c.Push(name);
+                        //c.Push(name);
 
                         var validator = v.Properties[name].Validator;
 
@@ -383,7 +383,7 @@ namespace UniJSON
                         validator.Serialize(f, c, value);
                         //f.Serialize(value);
 
-                        c.Pop();
+                        //c.Pop();
                     };
                 }
 
@@ -416,13 +416,12 @@ namespace UniJSON
             {
                 if (s_serializer == null)
                 {
-                    if (typeof(T) == typeof(object))
+                    var t = typeof(T);
+                    if (t == typeof(object))
                     {
                         throw new ArgumentException("object cannot serialize");
                     }
                     var serializer = new Serializer();
-                    var t = typeof(T);
-                    UnityEngine.Debug.LogFormat("{0}", t.Name);
                     var fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public);
                     foreach (var fi in fields)
                     {

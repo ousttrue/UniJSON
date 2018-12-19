@@ -264,7 +264,7 @@ namespace UniJSON
                     f.Key(kv.Key);
 
                     // value
-                    using (c.Push(kv.Key))
+                    //using (c.Push(kv.Key))
                     {
                         AdditionalProperties.Validator.Serialize(f, c, kv.Value);
                     }

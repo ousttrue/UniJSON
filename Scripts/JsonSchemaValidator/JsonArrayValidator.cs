@@ -135,7 +135,7 @@ namespace UniJSON
                 int i = 0;
                 foreach (var x in array)
                 {
-                    using (c.Push(i++))
+                    //using (c.Push(i++))
                     {
                         v.Serialize(f, c, x);
                     }
@@ -151,7 +151,7 @@ namespace UniJSON
                 int i = 0;
                 foreach (var x in list)
                 {
-                    using (c.Push(i++))
+                    //using (c.Push(i++))
                     {
                         v.Serialize(f, c, x);
                     }
