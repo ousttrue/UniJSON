@@ -44,7 +44,7 @@ namespace UniJSON
 
         public void Deserialize<T>(IValueNode src, ref T dst)
         {
-            throw new NotImplementedException();
+            dst = GenericCast<bool, T>.Cast(src.GetBoolean());
         }
     }
 }
