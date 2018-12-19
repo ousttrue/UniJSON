@@ -416,8 +416,14 @@ namespace UniJSON
             {
                 if (s_serializer == null)
                 {
+                    if (typeof(T) == typeof(object))
+                    {
+                        throw new ArgumentException("object cannot serialize");
+                    }
                     var serializer = new Serializer();
-                    var fields = typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Public);
+                    var t = typeof(T);
+                    UnityEngine.Debug.LogFormat("{0}", t.Name);
+                    var fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public);
                     foreach (var fi in fields)
                     {
                         serializer.AddField(fi);

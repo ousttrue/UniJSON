@@ -278,7 +278,7 @@ namespace UniJSON
                     {
                         s_serializer = (vv, ff, cc, oo) =>
                         {
-                            var value = GenericCast<T, string>.Cast(o);
+                            var value = GenericCast<T, string>.Cast(oo);
                             if (vv.SerializationType == EnumSerializationType.AsLowerString)
                             {
                                 value = value.ToLower();

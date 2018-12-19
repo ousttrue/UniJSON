@@ -157,7 +157,7 @@ namespace UniJSON
                 {
                     validator = JsonEnumValidator.Create(a.EnumValues, a.EnumSerializationType);
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     throw new Exception(String.Join(", ", a.EnumValues.Select(x => x.ToString()).ToArray()));
                 }
@@ -398,13 +398,6 @@ namespace UniJSON
             Validator.Serialize(f, c, o);
         }
 
-        public string Serialize(Object o)
-        {
-            var f = new JsonFormatter();
-            Serialize(f, o);
-            return f.ToString();
-        }
-
         public void ToJson(IFormatter f)
         {
             f.BeginMap(2);
@@ -412,6 +405,16 @@ namespace UniJSON
             if (!string.IsNullOrEmpty(Description)) { f.Key("description"); f.Value(Description); }
             Validator.ToJsonScheama(f);
             f.EndMap();
+        }
+    }
+
+    public static class JsonSchemaExtensions
+    {
+        public static string Serialize<T>(this JsonSchema s, T o)
+        {
+            var f = new JsonFormatter();
+            s.Serialize(f, o);
+            return f.ToString();
         }
     }
 }
