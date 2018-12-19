@@ -391,7 +391,7 @@ namespace UniJSON
 
                 public void AddField(FieldInfo fi)
                 {
-                    var mi = typeof(Serializer).GetMethod(nameof(CreateSerializer),
+                    var mi = typeof(Serializer).GetMethod("CreateSerializer",
                         BindingFlags.Static | BindingFlags.NonPublic);
                     var g = mi.MakeGenericMethod(fi.FieldType);
                     var f = Expression.Constant(fi);
