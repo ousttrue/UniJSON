@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 
 
@@ -9,6 +8,14 @@ namespace UniJSON
 {
     public struct MsgPackNode : IValueNode
     {
+        public bool IsValid
+        {
+            get
+            {
+                return Values != null;
+            }
+        }
+
         public override string ToString()
         {
             if (this.IsArray())

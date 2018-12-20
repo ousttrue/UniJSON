@@ -23,7 +23,7 @@ namespace UniJSON
             throw new ArgumentException();
         }
 
-        public static int GetCount(this object self)
+        public static int GetCount(object self)
         {
             var count = 0;
             foreach (var x in self as IEnumerable)

@@ -109,7 +109,7 @@ namespace UniJSON
                 return new JsonSchemaValidationException(context, "null");
             }
 
-            var count = o.GetCount();
+            var count = ObjectExtensions.GetCount(o);
             if (count == 0)
             {
                 return new JsonSchemaValidationException(context, "empty");

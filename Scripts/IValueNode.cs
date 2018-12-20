@@ -20,6 +20,8 @@ namespace UniJSON
 
     public interface IValueNode
     {
+        bool IsValid { get; }
+
         ArraySegment<Byte> Bytes { get; }
 
         ValueNodeType ValueType { get; }

@@ -13,6 +13,14 @@ namespace UniJSON
             private set;
         }
 
+        public int Count
+        {
+            get
+            {
+                return Path.Count;
+            }
+        }
+
         public Utf8String this[int index]
         {
             get

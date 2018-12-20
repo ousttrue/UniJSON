@@ -7,6 +7,14 @@ namespace UniJSON
 {
     public struct JsonNode : IValueNode
     {
+        public bool IsValid
+        {
+            get
+            {
+                return Values != null;
+            }
+        }
+
         public ValueNodeType ValueType
         {
             get
