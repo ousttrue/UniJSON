@@ -208,8 +208,7 @@ namespace UniJSON
             var composition = new List<JsonSchema>();
             foreach (var kv in root.ObjectItemsRaw)
             {
-                //Console.WriteLine(kv.Key);
-                switch (kv.Key.ToString())
+                switch (kv.Key.GetString())
                 {
                     case "$schema":
                         Schema = kv.Value.GetString();
@@ -269,7 +268,7 @@ namespace UniJSON
                     case "anyOf": // composition
                     case "allOf": // composition
                         {
-                            compositionType = (CompositionType)Enum.Parse(typeof(CompositionType), kv.Key.ToString(), true);
+                            compositionType = (CompositionType)Enum.Parse(typeof(CompositionType), kv.Key.GetString(), true);
                             foreach (var item in kv.Value.ArrayItemsRaw)
                             {
                                 if (item.ContainsKey(s_ref))
@@ -308,7 +307,7 @@ namespace UniJSON
                         {
                             if (Validator != null)
                             {
-                                if (Validator.FromJsonSchema(fs, kv.Key.ToString(), kv.Value))
+                                if (Validator.FromJsonSchema(fs, kv.Key.GetString(), kv.Value))
                                 {
                                     continue;
                                 }

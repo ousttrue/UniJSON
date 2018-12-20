@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using System;
-using System.IO;
 using System.Linq;
 
 
@@ -196,7 +195,7 @@ namespace UniJSON
                 var it = node.ObjectItemsRaw.GetEnumerator();
 
                 Assert.IsTrue(it.MoveNext());
-                Assert.AreEqual("key", it.Current.Key.ToString());
+                Assert.AreEqual("key", it.Current.Key.GetString());
                 Assert.AreEqual("value", it.Current.Value.GetString());
 
                 Assert.IsFalse(it.MoveNext());
@@ -212,7 +211,7 @@ namespace UniJSON
                 var it = node.ObjectItemsRaw.GetEnumerator();
 
                 Assert.IsTrue(it.MoveNext());
-                Assert.AreEqual("key", it.Current.Key.ToString());
+                Assert.AreEqual("key", it.Current.Key.GetString());
                 Assert.AreEqual("value", it.Current.Value.GetString());
 
                 Assert.IsFalse(it.MoveNext());
@@ -231,11 +230,11 @@ namespace UniJSON
                     var it = node.ObjectItemsRaw.GetEnumerator();
 
                     Assert.IsTrue(it.MoveNext());
-                    Assert.AreEqual("key", it.Current.Key.ToString());
+                    Assert.AreEqual("key", it.Current.Key.GetString());
                     Assert.True(it.Current.Value.IsMap());
 
                     Assert.IsTrue(it.MoveNext());
-                    Assert.AreEqual("key2", it.Current.Key.ToString());
+                    Assert.AreEqual("key2", it.Current.Key.GetString());
                     Assert.True(it.Current.Value.IsMap());
 
                     Assert.IsFalse(it.MoveNext());
@@ -247,7 +246,7 @@ namespace UniJSON
                     var it = nested.ObjectItemsRaw.GetEnumerator();
 
                     Assert.IsTrue(it.MoveNext());
-                    Assert.AreEqual("nestedKey2", it.Current.Key.ToString());
+                    Assert.AreEqual("nestedKey2", it.Current.Key.GetString());
                     Assert.AreEqual("nestedValue2", it.Current.Value.GetString());
 
                     Assert.IsFalse(it.MoveNext());
@@ -269,6 +268,8 @@ namespace UniJSON
                 Assert.AreEqual(2, node.Bytes.Count);
 
                 Assert.True(node.IsArray());
+
+                Assert.AreEqual("[\n]", node.ToString("  "));
             }
 
             {
@@ -282,6 +283,8 @@ namespace UniJSON
                 Assert.AreEqual(1, node[0].GetDouble());
                 Assert.AreEqual(2, node[1].GetDouble());
                 Assert.AreEqual(3, node[2].GetDouble());
+
+                Assert.AreEqual("[\n  1,\n  2,\n  3\n]", node.ToString("  "));
             }
 
             {
@@ -306,6 +309,8 @@ namespace UniJSON
 
                 Assert.AreEqual("key", node[0].GetString());
                 Assert.AreEqual(1, node[1].GetDouble());
+
+                Assert.AreEqual("[\n  \"key\",\n  1\n]", node.ToString("  "));
             }
         }
 

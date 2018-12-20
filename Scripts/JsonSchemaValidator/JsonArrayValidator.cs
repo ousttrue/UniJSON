@@ -132,7 +132,7 @@ namespace UniJSON
         {
             f.BeginList(array.Length);
             {
-                int i = 0;
+                //int i = 0;
                 foreach (var x in array)
                 {
                     //using (c.Push(i++))
@@ -148,7 +148,7 @@ namespace UniJSON
         {
             f.BeginList(list.Count);
             {
-                int i = 0;
+                //int i = 0;
                 foreach (var x in list)
                 {
                     //using (c.Push(i++))

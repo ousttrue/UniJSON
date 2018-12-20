@@ -42,7 +42,6 @@ namespace UniJSON
 
         public override string ToString()
         {
-            //return "[" + ParentIndex + "]" + ValueType + ": " + Segment.ToString();
             switch (ValueType)
             {
                 case JsonValueType.Null:
@@ -51,10 +50,8 @@ namespace UniJSON
                 case JsonValueType.Number:
                 case JsonValueType.Array:
                 case JsonValueType.Object:
-                    return Segment.ToString();
-
                 case JsonValueType.String:
-                    return GetString();
+                    return Segment.ToString();
 
                 default:
                     throw new NotImplementedException();

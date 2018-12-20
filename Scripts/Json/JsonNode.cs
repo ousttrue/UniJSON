@@ -43,6 +43,87 @@ namespace UniJSON
             return Value.ToString();
         }
 
+        IEnumerable<string> ToString(string indent, int level, bool value = false)
+        {
+            if (this.IsArray())
+            {
+                if (!value) for (int i = 0; i < level; ++i) yield return indent;
+                yield return "[\n";
+
+                var isFirst = true;
+                var childLevel = level + 1;
+                foreach (var x in ArrayItemsRaw)
+                {
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        yield return ",\n";
+                    }
+
+                    foreach (var y in x.ToString(indent, childLevel))
+                    {
+                        yield return y;
+                    }
+                }
+                if (!isFirst)
+                {
+                    yield return "\n";
+                }
+
+                for (int i = 0; i < level; ++i) yield return indent;
+                yield return "]";
+            }
+            else if (this.IsMap())
+            {
+                if (!value) for (int i = 0; i < level; ++i) yield return indent;
+                yield return "{\n";
+
+                var isFirst = true;
+                var childLevel = level + 1;
+                foreach (var kv in ObjectItemsRaw)
+                {
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        yield return ",\n";
+                    }
+
+                    // key
+                    for (int i = 0; i < childLevel; ++i) yield return indent;
+                    yield return kv.Key.ToString();
+                    yield return ": ";
+
+                    foreach (var y in kv.Value.ToString(indent, childLevel, true))
+                    {
+                        yield return y;
+                    }
+                }
+                if (!isFirst)
+                {
+                    yield return "\n";
+                }
+
+                for (int i = 0; i < level; ++i) yield return indent;
+                yield return "}";
+            }
+            else
+            {
+                if (!value) for (int i = 0; i < level; ++i) yield return indent;
+                yield return Value.ToString();
+            }
+        }
+
+        public string ToString(string indent)
+        {
+            return string.Join("", ToString(indent, 0).ToArray());
+        }
+
         public override int GetHashCode()
         {
             return base.GetHashCode();
@@ -90,7 +171,7 @@ namespace UniJSON
                         //var l = ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
                         //var r = rhs.ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
                         //return l.Equals(r);
-                        return ObjectItemsRaw.OrderBy(x => x.Key).SequenceEqual(rhs.ObjectItemsRaw.OrderBy(x => x.Key));
+                        return ObjectItemsRaw.OrderBy(x => x.Key.GetUtf8String()).SequenceEqual(rhs.ObjectItemsRaw.OrderBy(x => x.Key.GetUtf8String()));
                     }
             }
 
@@ -264,7 +345,7 @@ namespace UniJSON
             {
                 foreach (var kv in ObjectItemsRaw)
                 {
-                    if (kv.Key == key)
+                    if (kv.Key.GetUtf8String() == key)
                     {
                         return kv.Value;
                     }
@@ -277,10 +358,10 @@ namespace UniJSON
         {
             get
             {
-                return ObjectItemsRaw.Select(x => new KeyValuePair<Utf8String, IValueNode>(x.Key, x.Value as IValueNode));
+                return ObjectItemsRaw.Select(x => new KeyValuePair<Utf8String, IValueNode>(x.Key.GetUtf8String(), x.Value as IValueNode));
             }
         }
-        public IEnumerable<KeyValuePair<Utf8String, JsonNode>> ObjectItemsRaw
+        public IEnumerable<KeyValuePair<JsonNode, JsonNode>> ObjectItemsRaw
         {
             get
             {
@@ -288,10 +369,10 @@ namespace UniJSON
                 var it = Children.GetEnumerator();
                 while (it.MoveNext())
                 {
-                    var key = it.Current.GetUtf8String();
+                    var key = it.Current;
 
                     it.MoveNext();
-                    yield return new KeyValuePair<Utf8String, JsonNode>(key, it.Current);
+                    yield return new KeyValuePair<JsonNode, JsonNode>(key, it.Current);
                 }
             }
         }
@@ -382,7 +463,7 @@ namespace UniJSON
             {
                 foreach (var kv in node.ObjectItemsRaw)
                 {
-                    parent.AddNode(kv.Key, kv.Value);
+                    parent.AddNode(kv.Key.GetUtf8String(), kv.Value);
                 }
             }
         }
