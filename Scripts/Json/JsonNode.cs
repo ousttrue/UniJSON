@@ -279,7 +279,13 @@ namespace UniJSON
         }
         JsonValue Value
         {
-            get { return Values[m_index]; }
+            get {
+                if (Values == null)
+                {
+                    return default(JsonValue);
+                }
+                return Values[m_index];
+            }
         }
         public ArraySegment<byte> Bytes
         {
