@@ -182,7 +182,7 @@ namespace UniJSON
                 Assert.AreEqual(2, node.Bytes.Count);
 
                 Assert.True(node.IsMap());
-                Assert.AreEqual(0, node.ObjectItemsRaw.Count());
+                Assert.AreEqual(0, node.ObjectItems.Count());
             }
 
             {
@@ -192,7 +192,7 @@ namespace UniJSON
                 Assert.AreEqual(json.Length, node.Bytes.Count);
                 Assert.True(node.IsMap());
 
-                var it = node.ObjectItemsRaw.GetEnumerator();
+                var it = node.ObjectItems.GetEnumerator();
 
                 Assert.IsTrue(it.MoveNext());
                 Assert.AreEqual("key", it.Current.Key.GetString());
@@ -208,7 +208,7 @@ namespace UniJSON
                 Assert.AreEqual(json.Length, node.Bytes.Count);
                 Assert.True(node.IsMap());
 
-                var it = node.ObjectItemsRaw.GetEnumerator();
+                var it = node.ObjectItems.GetEnumerator();
 
                 Assert.IsTrue(it.MoveNext());
                 Assert.AreEqual("key", it.Current.Key.GetString());
@@ -227,7 +227,7 @@ namespace UniJSON
                 Assert.True(node.IsMap());
 
                 {
-                    var it = node.ObjectItemsRaw.GetEnumerator();
+                    var it = node.ObjectItems.GetEnumerator();
 
                     Assert.IsTrue(it.MoveNext());
                     Assert.AreEqual("key", it.Current.Key.GetString());
@@ -243,7 +243,7 @@ namespace UniJSON
                 var nested = node["key2"];
 
                 {
-                    var it = nested.ObjectItemsRaw.GetEnumerator();
+                    var it = nested.ObjectItems.GetEnumerator();
 
                     Assert.IsTrue(it.MoveNext());
                     Assert.AreEqual("nestedKey2", it.Current.Key.GetString());
@@ -297,7 +297,7 @@ namespace UniJSON
 
                 Assert.True(node.IsArray());
 
-                var it = node.ArrayItemsRaw.GetEnumerator();
+                var it = node.ArrayItems.GetEnumerator();
 
                 Assert.IsTrue(it.MoveNext());
                 Assert.AreEqual("key", it.Current.GetString());

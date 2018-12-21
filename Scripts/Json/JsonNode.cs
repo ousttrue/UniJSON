@@ -60,7 +60,7 @@ namespace UniJSON
 
                 var isFirst = true;
                 var childLevel = level + 1;
-                foreach (var x in ArrayItemsRaw)
+                foreach (var x in ArrayItems)
                 {
                     if (isFirst)
                     {
@@ -91,7 +91,7 @@ namespace UniJSON
 
                 var isFirst = true;
                 var childLevel = level + 1;
-                foreach (var kv in ObjectItemsRaw)
+                foreach (var kv in ObjectItems)
                 {
                     if (isFirst)
                     {
@@ -172,14 +172,14 @@ namespace UniJSON
                     return Value.GetString() == rhs.GetString();
 
                 case JsonValueType.Array:
-                    return ArrayItemsRaw.SequenceEqual(rhs.ArrayItemsRaw);
+                    return ArrayItems.SequenceEqual(rhs.ArrayItems);
 
                 case JsonValueType.Object:
                     {
-                        //var l = ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
-                        //var r = rhs.ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
+                        //var l = ObjectItems.ToDictionary(x => x.Key, x => x.Value);
+                        //var r = rhs.ObjectItems.ToDictionary(x => x.Key, x => x.Value);
                         //return l.Equals(r);
-                        return ObjectItemsRaw.OrderBy(x => x.Key.GetUtf8String()).SequenceEqual(rhs.ObjectItemsRaw.OrderBy(x => x.Key.GetUtf8String()));
+                        return ObjectItems.OrderBy(x => x.Key.GetUtf8String()).SequenceEqual(rhs.ObjectItems.OrderBy(x => x.Key.GetUtf8String()));
                     }
             }
 
@@ -211,8 +211,8 @@ namespace UniJSON
             if (Value.ValueType == JsonValueType.Object)
             {
 
-                var l = ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
-                var r = rhs.ObjectItemsRaw.ToDictionary(x => x.Key, x => x.Value);
+                var l = ObjectItems.ToDictionary(x => x.Key, x => x.Value);
+                var r = rhs.ObjectItems.ToDictionary(x => x.Key, x => x.Value);
 
                 foreach (var kv in l)
                 {
@@ -241,8 +241,8 @@ namespace UniJSON
             }
             else if (Value.ValueType == JsonValueType.Array)
             {
-                var ll = ArrayItemsRaw.GetEnumerator();
-                var rr = rhs.ArrayItemsRaw.GetEnumerator();
+                var ll = ArrayItems.GetEnumerator();
+                var rr = rhs.ArrayItems.GetEnumerator();
                 while (true)
                 {
                     var lll = ll.MoveNext();
@@ -357,7 +357,7 @@ namespace UniJSON
         {
             get
             {
-                foreach (var kv in ObjectItemsRaw)
+                foreach (var kv in ObjectItems)
                 {
                     if (kv.Key.GetUtf8String() == key)
                     {
@@ -369,13 +369,6 @@ namespace UniJSON
         }
 
         public IEnumerable<KeyValuePair<JsonNode, JsonNode>> ObjectItems
-        {
-            get
-            {
-                return ObjectItemsRaw.Select(x => new KeyValuePair<JsonNode, JsonNode>(x.Key, x.Value));
-            }
-        }
-        public IEnumerable<KeyValuePair<JsonNode, JsonNode>> ObjectItemsRaw
         {
             get
             {
@@ -398,7 +391,7 @@ namespace UniJSON
             get
             {
                 int i = 0;
-                foreach (var v in ArrayItemsRaw)
+                foreach (var v in ArrayItems)
                 {
                     if (i++ == index)
                     {
@@ -409,13 +402,6 @@ namespace UniJSON
             }
         }
         public IEnumerable<JsonNode> ArrayItems
-        {
-            get
-            {
-                return ArrayItemsRaw;
-            }
-        }
-        public IEnumerable<JsonNode> ArrayItemsRaw
         {
             get
             {
@@ -468,14 +454,14 @@ namespace UniJSON
             var parent = new JsonNode(Values, index);
             if (node.Value.ValueType == JsonValueType.Array)
             {
-                foreach (var value in node.ArrayItemsRaw)
+                foreach (var value in node.ArrayItems)
                 {
                     parent.AddNode(value);
                 }
             }
             else if (node.Value.ValueType == JsonValueType.Object)
             {
-                foreach (var kv in node.ObjectItemsRaw)
+                foreach (var kv in node.ObjectItems)
                 {
                     parent.AddNode(kv.Key.GetUtf8String(), kv.Value);
                 }
@@ -496,7 +482,7 @@ namespace UniJSON
                 if (jsonPointer[0][0] == '*')
                 {
                     // wildcard
-                    foreach (var child in ArrayItemsRaw)
+                    foreach (var child in ArrayItems)
                     {
                         foreach (var childChild in child.GetNodes(jsonPointer.Unshift()))
                         {
@@ -520,7 +506,7 @@ namespace UniJSON
                 if (jsonPointer[0][0] == '*')
                 {
                     // wildcard
-                    foreach (var kv in ObjectItemsRaw)
+                    foreach (var kv in ObjectItems)
                     {
                         foreach (var childChild in kv.Value.GetNodes(jsonPointer.Unshift()))
                         {

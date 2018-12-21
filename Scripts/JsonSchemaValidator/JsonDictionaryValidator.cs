@@ -167,7 +167,7 @@ namespace UniJSON
 
                 case "required":
                     {
-                        foreach (var req in value.ArrayItemsRaw)
+                        foreach (var req in value.ArrayItems)
                         {
                             m_required.Add(req.GetString());
                         }
@@ -188,9 +188,9 @@ namespace UniJSON
 
                 case "dependencies":
                     {
-                        foreach (var kv in value.ObjectItemsRaw)
+                        foreach (var kv in value.ObjectItems)
                         {
-                            Dependencies.Add(kv.Key.GetString(), kv.Value.ArrayItemsRaw.Select(x => x.GetString()).ToArray());
+                            Dependencies.Add(kv.Key.GetString(), kv.Value.ArrayItems.Select(x => x.GetString()).ToArray());
                         }
                     }
                     return true;
