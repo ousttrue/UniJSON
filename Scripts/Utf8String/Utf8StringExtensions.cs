@@ -162,10 +162,23 @@ namespace UniJSON
         public static Int32 ToInt32(this Utf8String src)
         {
             Int32 value = 0;
+            Int32 sign = 1;
             var p = new Utf8Iterator(src.Bytes);
+            bool isFirst = true;
             while (p.MoveNext())
             {
                 var b = p.Current;
+
+                if (isFirst)
+                {
+                    isFirst = false;
+                    if (b == '-')
+                    {
+                        sign = -1;
+                        continue;
+                    }
+                }
+
                 switch (b)
                 {
                     case 0x30: value = value * 10; break;
@@ -181,7 +194,7 @@ namespace UniJSON
                     default: throw new ArgumentOutOfRangeException();
                 }
             }
-            return value;
+            return value * sign;
         }
         public static Int64 ToInt64(this Utf8String src)
         {
