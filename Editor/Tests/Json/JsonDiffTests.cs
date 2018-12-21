@@ -22,18 +22,18 @@ namespace UniJSON
 
             {
                 var it = root.Traverse().GetEnumerator();
-                it.MoveNext(); Assert.AreEqual("/", new JsonPointer(it.Current).ToString());
-                it.MoveNext(); Assert.AreEqual("/a", new JsonPointer(it.Current).ToString());
-                it.MoveNext(); Assert.AreEqual("/a/0", new JsonPointer(it.Current).ToString());
-                it.MoveNext(); Assert.AreEqual("/a/0/aa", new JsonPointer(it.Current).ToString());
+                it.MoveNext(); Assert.AreEqual("/", it.Current.Pointer().ToString());
+                it.MoveNext(); Assert.AreEqual("/a", it.Current.Pointer().ToString());
+                it.MoveNext(); Assert.AreEqual("/a/0", it.Current.Pointer().ToString());
+                it.MoveNext(); Assert.AreEqual("/a/0/aa", it.Current.Pointer().ToString());
                 Assert.False(it.MoveNext());
             }
 
             {
                 var it = root.Traverse().GetEnumerator();
-                root.SetValue("/a", "JsonPath");
-                it.MoveNext(); Assert.AreEqual("/", new JsonPointer(it.Current).ToString());
-                it.MoveNext(); Assert.AreEqual("/a", new JsonPointer(it.Current).ToString());
+                root.SetValue(Utf8String.From("/a"), "JsonPath");
+                it.MoveNext(); Assert.AreEqual("/", it.Current.Pointer().ToString());
+                it.MoveNext(); Assert.AreEqual("/a", it.Current.Pointer().ToString());
                 Assert.False(it.MoveNext());
             }
         }

@@ -247,7 +247,7 @@ namespace UniJSON
 
         public static class GenericSerializer<T>
         {
-            delegate void Serializer(JsonStringEnumValidator v, 
+            delegate void Serializer(JsonStringEnumValidator v,
                 IFormatter f, JsonSchemaValidationContext c, T o);
 
             static Serializer s_serializer;
@@ -304,11 +304,11 @@ namespace UniJSON
             GenericSerializer<T>.Serialize(this, f, c, o);
         }
 
-        static class GenericDeserializer<T>
+        static class GenericDeserializer<S, T> where S : IValueNode<S>
         {
-            delegate T Deserializer(IValueNode src);
+            delegate T Deserializer(S src);
             static Deserializer s_d;
-            public static void Deserialize(IValueNode src, ref T t)
+            public static void Deserialize(S src, ref T t)
             {
                 if (s_d == null)
                 {
@@ -335,9 +335,9 @@ namespace UniJSON
             }
         }
 
-        public void Deserialize<T>(IValueNode src, ref T dst)
+        public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
         {
-            GenericDeserializer<T>.Deserialize(src, ref dst);
+            GenericDeserializer<S, T>.Deserialize(src, ref dst);
         }
     }
 
@@ -412,13 +412,13 @@ namespace UniJSON
             f.Serialize(GenericCast<T, int>.Cast(o));
         }
 
-        static class GenericDeserializer<T>
+        static class GenericDeserializer<S, T> where S : IValueNode<S>
         {
-            delegate T Deserializer(IValueNode src);
+            delegate T Deserializer(S src);
 
             static Deserializer s_d;
 
-            public static void Deserialize(IValueNode src, ref T dst)
+            public static void Deserialize(S src, ref T dst)
             {
                 if (s_d == null)
                 {
@@ -433,9 +433,9 @@ namespace UniJSON
             }
         }
 
-        public void Deserialize<T>(IValueNode src, ref T dst)
+        public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
         {
-            GenericDeserializer<T>.Deserialize(src, ref dst);
+            GenericDeserializer<S, T>.Deserialize(src, ref dst);
         }
     }
 }

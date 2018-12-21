@@ -5,7 +5,7 @@ using System.Text;
 
 namespace UniJSON
 {
-    public struct JsonPointer
+    public struct JsonPointer<T> where T: IValueNode<T>
     {
         public ArraySegment<Utf8String> Path
         {
@@ -29,15 +29,15 @@ namespace UniJSON
             }
         }
 
-        public JsonPointer Unshift()
+        public JsonPointer<T> Unshift()
         {
-            return new JsonPointer
+            return new JsonPointer<T>
             {
                 Path = new ArraySegment<Utf8String>(Path.Array, Path.Offset + 1, Path.Count - 1)
             };
         }
 
-        public JsonPointer(IValueNode node)
+        public JsonPointer(T node)
         {
             Path = new ArraySegment<Utf8String>(node.Path().Skip(1).Select(x => GetKeyFromParent(x)).ToArray());
         }
@@ -75,7 +75,7 @@ namespace UniJSON
             return sb.ToString();
         }
 
-        static Utf8String GetKeyFromParent(IValueNode json)
+        static Utf8String GetKeyFromParent(T json)
         {
             var parent = json.Parent;
             if (parent.IsArray())

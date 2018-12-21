@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 namespace UniJSON
 {
-    public class RpcDispatcher
+    public class RpcDispatcher<T> where T : IValueNode<T>
     {
-        delegate void Callback(int id, IValueNode args, IRpc f);
+        delegate void Callback(int id, T args, IRpc f);
         Dictionary<string, Callback> m_map = new Dictionary<string, Callback>();
 
         #region Action
@@ -66,7 +66,7 @@ namespace UniJSON
         }
         #endregion
 
-        public void Call(IRpc f, int id, string method, IValueNode args)
+        public void Call(IRpc f, int id, string method, T args)
         {
             Callback callback;
             if (!m_map.TryGetValue(method, out callback))

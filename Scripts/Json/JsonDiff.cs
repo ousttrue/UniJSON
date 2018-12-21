@@ -9,15 +9,15 @@ namespace UniJSON
         ValueChanged,
     }
 
-    public struct JsonDiff<T> where T : IValueNode, new()
+    public struct JsonDiff<T> where T : IValueNode<T>, new()
     {
-        public JsonPointer Path;
+        public JsonPointer<T> Path;
         public JsonDiffType DiffType;
         public string Msg;
 
         public JsonDiff(T node, JsonDiffType diffType, string msg)
         {
-            Path = new JsonPointer(node);
+            Path = new JsonPointer<T>(node);
             DiffType = diffType;
             Msg = msg;
         }

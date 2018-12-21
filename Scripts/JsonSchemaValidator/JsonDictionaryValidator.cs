@@ -237,7 +237,7 @@ namespace UniJSON
                 foreach (var kv in d)
                 {
                     c.Push(kv.Key);
-                    var result= AdditionalProperties.Validator.Validate(c, kv.Value);
+                    var result = AdditionalProperties.Validator.Validate(c, kv.Value);
                     if (result != null)
                     {
                         return result;
@@ -273,7 +273,7 @@ namespace UniJSON
             f.EndMap();
         }
 
-        public void Deserialize<S>(IValueNode src, ref S dst)
+        public void Deserialize<U, V>(U src, ref V dst) where U : IValueNode<U>
         {
             throw new NotImplementedException();
         }

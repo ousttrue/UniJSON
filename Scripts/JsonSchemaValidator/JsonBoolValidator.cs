@@ -42,7 +42,7 @@ namespace UniJSON
             f.Serialize(value);
         }
 
-        public void Deserialize<T>(IValueNode src, ref T dst)
+        public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
         {
             dst = GenericCast<bool, T>.Cast(src.GetBoolean());
         }

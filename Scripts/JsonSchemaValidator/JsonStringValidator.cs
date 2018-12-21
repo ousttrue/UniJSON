@@ -138,7 +138,7 @@ namespace UniJSON
             f.Value(GenericCast<T, string>.Cast(o));
         }
 
-        public void Deserialize<T>(IValueNode src, ref T dst)
+        public void Deserialize<S, T>(S src, ref T dst)where S: IValueNode<S>
         {
             dst = GenericCast<string, T>.Cast(src.GetString());
         }

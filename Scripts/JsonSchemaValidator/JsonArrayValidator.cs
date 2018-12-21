@@ -160,7 +160,7 @@ namespace UniJSON
             f.EndList();
         }
 
-        static class  GenericSerializer<T>
+        static class GenericSerializer<T>
         {
             delegate void Serializer(IJsonSchemaValidator v, IFormatter f, JsonSchemaValidationContext c, T o);
 
@@ -217,7 +217,7 @@ namespace UniJSON
             }
         }
 
-        public void Deserialize<T>(IValueNode src, ref T dst)
+        public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
         {
             src.Deserialize(ref dst);
         }

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace UniJSON
 {
-    public struct JsonNode : IValueNode
+    public struct JsonNode : IValueNode<JsonNode>
     {
         public bool IsValid
         {
@@ -186,7 +186,7 @@ namespace UniJSON
             return false;
         }
 
-        public IEnumerable<JsonDiff<JsonNode>> Diff(JsonNode rhs, JsonPointer path = default(JsonPointer))
+        public IEnumerable<JsonDiff<JsonNode>> Diff(JsonNode rhs, JsonPointer<JsonNode> path = default(JsonPointer<JsonNode>))
         {
             switch (Value.ValueType)
             {
@@ -322,7 +322,7 @@ namespace UniJSON
                 return Value.ParentIndex >= 0 && Value.ParentIndex < Values.Count;
             }
         }
-        public IValueNode Parent
+        public JsonNode Parent
         {
             get
             {
@@ -368,11 +368,11 @@ namespace UniJSON
             }
         }
 
-        public IEnumerable<KeyValuePair<IValueNode, IValueNode>> ObjectItems
+        public IEnumerable<KeyValuePair<JsonNode, JsonNode>> ObjectItems
         {
             get
             {
-                return ObjectItemsRaw.Select(x => new KeyValuePair<IValueNode, IValueNode>(x.Key, x.Value as IValueNode));
+                return ObjectItemsRaw.Select(x => new KeyValuePair<JsonNode, JsonNode>(x.Key, x.Value));
             }
         }
         public IEnumerable<KeyValuePair<JsonNode, JsonNode>> ObjectItemsRaw
@@ -408,11 +408,11 @@ namespace UniJSON
                 throw new KeyNotFoundException();
             }
         }
-        public IEnumerable<IValueNode> ArrayItems
+        public IEnumerable<JsonNode> ArrayItems
         {
             get
             {
-                return ArrayItemsRaw.Select(x => x as IValueNode);
+                return ArrayItemsRaw;
             }
         }
         public IEnumerable<JsonNode> ArrayItemsRaw
@@ -482,7 +482,7 @@ namespace UniJSON
             }
         }
 
-        public IEnumerable<JsonNode> GetNodes(JsonPointer jsonPointer)
+        public IEnumerable<JsonNode> GetNodes(JsonPointer<JsonNode> jsonPointer)
         {
             if (jsonPointer.Path.Count == 0)
             {
@@ -558,7 +558,7 @@ namespace UniJSON
 
         public IEnumerable<JsonNode> GetNodes(Utf8String jsonPointer)
         {
-            return GetNodes(new JsonPointer(jsonPointer));
+            return GetNodes(new JsonPointer<JsonNode>(jsonPointer));
         }
 
         public void SetValue<T>(Utf8String jsonPointer, T value)
@@ -579,7 +579,7 @@ namespace UniJSON
 
         public void RemoveValue(Utf8String jsonPointer)
         {
-            foreach (var node in GetNodes(new JsonPointer(jsonPointer)))
+            foreach (var node in GetNodes(new JsonPointer<JsonNode>(jsonPointer)))
             {
                 if (node.Parent.IsMap())
                 {

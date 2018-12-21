@@ -222,7 +222,7 @@ namespace UniJSON
             f.Serialize(GenericCast<T, int>.Cast(o));
         }
 
-        public void Deserialize<T>(IValueNode src, ref T dst)
+        public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
         {
             dst = GenericCast<int, T>.Cast(src.GetInt32());
         }
@@ -409,18 +409,18 @@ namespace UniJSON
 
                 return null;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return new JsonSchemaValidationException(c, ex);
             }
         }
 
         public void Serialize<T>(IFormatter f, JsonSchemaValidationContext c, T o)
-        {           
+        {
             f.Serialize(o);
         }
 
-        public void Deserialize<T>(IValueNode src, ref T dst)
+        public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
         {
             dst = UniJSON.GenericCast<double, T>.Cast(src.GetDouble());
         }

@@ -19,7 +19,7 @@ namespace UniJSON
         Map,
     }
 
-    public interface IValueNode
+    public interface IValueNode<T> where T: IValueNode<T>
     {
         bool IsValid { get; }
 
@@ -28,9 +28,9 @@ namespace UniJSON
         ValueNodeType ValueType { get; }
 
         bool HasParent { get; }
-        IValueNode Parent { get; }
-        IEnumerable<IValueNode> ArrayItems { get; }
-        IEnumerable<KeyValuePair<IValueNode, IValueNode>> ObjectItems { get; }
+        T Parent { get; }
+        IEnumerable<T> ArrayItems { get; }
+        IEnumerable<KeyValuePair<T, T>> ObjectItems { get; }
 
         int ValueCount { get; }
         int ValueIndex { get; }
@@ -49,48 +49,53 @@ namespace UniJSON
         Single GetSingle();
         Double GetDouble();
 
-        void SetValue<T>(Utf8String jsonPointer, T value);
+        void SetValue<U>(Utf8String jsonPointer, U value);
         void RemoveValue(Utf8String jsonPointer);
     }
 
     public static class IValueNodeExtensions
     {
-        public static bool IsNull<T>(this T self) where T : IValueNode
+        public static bool IsNull<T>(this T self) where T : IValueNode<T>
         {
             return self.ValueType == ValueNodeType.Null;
         }
 
-        public static bool IsBoolean<T>(this T self) where T : IValueNode
+        public static bool IsBoolean<T>(this T self) where T : IValueNode<T>
         {
             return self.ValueType == ValueNodeType.Boolean;
         }
 
-        public static bool IsString<T>(this T self) where T : IValueNode
+        public static bool IsString<T>(this T self) where T : IValueNode<T>
         {
             return self.ValueType == ValueNodeType.String;
         }
 
-        public static bool IsInteger<T>(this T self) where T : IValueNode
+        public static bool IsInteger<T>(this T self) where T : IValueNode<T>
         {
             return self.ValueType == ValueNodeType.Integer;
         }
 
-        public static bool IsFloat<T>(this T self) where T : IValueNode
+        public static bool IsFloat<T>(this T self) where T : IValueNode<T>
         {
             return self.ValueType == ValueNodeType.Float;
         }
 
-        public static bool IsArray<T>(this T self) where T : IValueNode
+        public static bool IsArray<T>(this T self) where T : IValueNode<T>
         {
             return self.ValueType == ValueNodeType.Array;
         }
 
-        public static bool IsMap<T>(this T self) where T : IValueNode
+        public static bool IsMap<T>(this T self) where T : IValueNode<T>
         {
             return self.ValueType == ValueNodeType.Map;
         }
 
-        public static IEnumerable<IValueNode> Path<T>(this T self) where T : IValueNode
+        public static JsonPointer<T> Pointer<T>(this T self) where T : IValueNode<T>
+        {
+            return new JsonPointer<T>(self);
+        }
+
+        public static IEnumerable<T> Path<T>(this T self) where T : IValueNode<T>
         {
             if (self.HasParent)
             {
@@ -102,7 +107,7 @@ namespace UniJSON
             yield return self;
         }
 
-        public static int IndexOf<T>(this T self, T child) where T : IValueNode
+        public static int IndexOf<T>(this T self, T child) where T : IValueNode<T>
         {
             int i = 0;
             foreach (var v in self.ArrayItems)
@@ -116,18 +121,18 @@ namespace UniJSON
             throw new KeyNotFoundException();
         }
 
-        public static bool ContainsKey<T>(this T self, Utf8String key) where T : IValueNode
+        public static bool ContainsKey<T>(this T self, Utf8String key) where T : IValueNode<T>
         {
             return self.ObjectItems.Any(x => x.Key.GetUtf8String() == key);
         }
 
-        public static bool ContainsKey<T>(this T self, String key) where T : IValueNode
+        public static bool ContainsKey<T>(this T self, String key) where T : IValueNode<T>
         {
             var ukey = Utf8String.From(key);
             return self.ContainsKey(ukey);
         }
 
-        public static Utf8String KeyOf<T>(this T self, T node) where T : IValueNode
+        public static Utf8String KeyOf<T>(this T self, T node) where T : IValueNode<T>
         {
             foreach (var kv in self.ObjectItems)
             {
@@ -139,7 +144,7 @@ namespace UniJSON
             throw new KeyNotFoundException();
         }
 
-        public static IEnumerable<IValueNode> Traverse<T>(this T self) where T : IValueNode
+        public static IEnumerable<T> Traverse<T>(this T self) where T : IValueNode<T>
         {
             yield return self;
             if (self.IsArray())
@@ -164,18 +169,18 @@ namespace UniJSON
             }
         }
 
-        public static void SetValue<T>(this IValueNode self, String jsonPointer, T value)
+        public static void SetValue<T>(this T self, String jsonPointer, T value) where T : IValueNode<T>
         {
             self.SetValue<T>(Utf8String.From(jsonPointer), value);
         }
 
-        public static void RemoveValue(this IValueNode self, String jsonPointer)
+        public static void RemoveValue<T>(this T self, String jsonPointer)where T: IValueNode<T>
         {
             self.RemoveValue(Utf8String.From(jsonPointer));
         }
 
         #region Deserializer
-        struct GenericCreator<S, T> where S : IValueNode
+        struct GenericCreator<S, T> where S : IValueNode<S>
         {
             static U[] ArrayCreator<U>(S src)
             {
@@ -224,7 +229,7 @@ namespace UniJSON
             }
         }
 
-        static object DictionaryDeserializer(IValueNode s)
+        static object DictionaryDeserializer<T>(T s)where T: IValueNode<T>
         {
             switch (s.ValueType)
             {
@@ -260,7 +265,7 @@ namespace UniJSON
             }
         }
 
-        static class GenericDeserializer<S, T> where S : IValueNode
+        static class GenericDeserializer<S, T> where S : IValueNode<S>
         {
             static U[] GenericArrayDeserializer<U>(S s)
             {
@@ -293,7 +298,7 @@ namespace UniJSON
                 return u;
             }
 
-            delegate void FieldSetter(IValueNode s, object o);
+            delegate void FieldSetter(S s, object o);
             static FieldSetter GetFieldDeserializer<U>(FieldInfo fi)
             {
                 return (s, o) =>
@@ -374,10 +379,11 @@ namespace UniJSON
                     {
                         var mi = typeof(IValueNodeExtensions).GetMethod("DictionaryDeserializer",
                         BindingFlags.Static | BindingFlags.NonPublic);
-                        var self = Expression.Parameter(typeof(IValueNode), "self");
-                        var call = Expression.Call(mi, self);
+                        var g = mi.MakeGenericMethod(typeof(S));
+                        var self = Expression.Parameter(typeof(S), "self");
+                        var call = Expression.Call(g, self);
                         var func = Expression.Lambda(call, self);
-                        var d = (Func<IValueNode, object>)func.Compile();
+                        var d = (Func<S, object>)func.Compile();
                         return (S s) =>
                         {
                             var x = d(s);
@@ -456,12 +462,12 @@ namespace UniJSON
             }
         }
 
-        public static void Deserialize<S, T>(this S self, ref T value) where S : IValueNode
+        public static void Deserialize<S, T>(this S self, ref T value) where S : IValueNode<S>
         {
             GenericDeserializer<S, T>.Deserialize(self, ref value);
         }
 
-        public static bool GetBoolean<T>(this T self) where T : IValueNode
+        public static bool GetBoolean<T>(this T self) where T : IValueNode<T>
         {
             var value = default(bool);
             self.Deserialize(ref value);

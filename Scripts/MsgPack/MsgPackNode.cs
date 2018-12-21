@@ -6,7 +6,7 @@ using System.Text;
 
 namespace UniJSON
 {
-    public struct MsgPackNode : IValueNode
+    public struct MsgPackNode : IValueNode<MsgPackNode>
     {
         public bool IsValid
         {
@@ -150,7 +150,7 @@ namespace UniJSON
                 return Value.ParentIndex >= 0 && Value.ParentIndex < Values.Count;
             }
         }
-        public IValueNode Parent
+        public MsgPackNode Parent
         {
             get
             {
@@ -850,16 +850,16 @@ namespace UniJSON
             }
         }
 
-        public IEnumerable<IValueNode> ArrayItems
+        public IEnumerable<MsgPackNode> ArrayItems
         {
             get
             {
                 if (!this.IsArray()) throw new MsgPackTypeException("is not array");
-                return Children.Select(x => x as IValueNode);
+                return Children.Select(x => x);
             }
         }
 
-        public IEnumerable<KeyValuePair<IValueNode, IValueNode>> ObjectItems
+        public IEnumerable<KeyValuePair<MsgPackNode, MsgPackNode>> ObjectItems
         {
             get
             {
@@ -870,7 +870,7 @@ namespace UniJSON
                     var key = it.Current;
 
                     it.MoveNext();
-                    yield return new KeyValuePair<IValueNode, IValueNode>(key, it.Current);
+                    yield return new KeyValuePair<MsgPackNode, MsgPackNode>(key, it.Current);
                 }
             }
         }
