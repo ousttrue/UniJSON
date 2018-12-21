@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+
 namespace UniJSON
 {
     public enum ValueNodeType
@@ -29,7 +30,7 @@ namespace UniJSON
         bool HasParent { get; }
         IValueNode Parent { get; }
         IEnumerable<IValueNode> ArrayItems { get; }
-        IEnumerable<KeyValuePair<Utf8String, IValueNode>> ObjectItems { get; }
+        IEnumerable<KeyValuePair<IValueNode, IValueNode>> ObjectItems { get; }
 
         int ValueCount { get; }
         int ValueIndex { get; }
@@ -117,7 +118,7 @@ namespace UniJSON
 
         public static bool ContainsKey<T>(this T self, Utf8String key) where T : IValueNode
         {
-            return self.ObjectItems.Any(x => x.Key == key);
+            return self.ObjectItems.Any(x => x.Key.GetUtf8String() == key);
         }
 
         public static bool ContainsKey<T>(this T self, String key) where T : IValueNode
@@ -132,7 +133,7 @@ namespace UniJSON
             {
                 if (node.ValueIndex == kv.Value.ValueIndex)
                 {
-                    return kv.Key;
+                    return kv.Key.GetUtf8String();
                 }
             }
             throw new KeyNotFoundException();
@@ -234,7 +235,7 @@ namespace UniJSON
                         {
                             //var e = default(object);
                             //kv.Value.Deserialize(ref e);
-                            u.Add(kv.Key.ToString(), DictionaryDeserializer(kv.Value));
+                            u.Add(kv.Key.GetString(), DictionaryDeserializer(kv.Value));
                         }
                         return u;
                     }

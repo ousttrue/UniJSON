@@ -368,11 +368,11 @@ namespace UniJSON
             }
         }
 
-        public IEnumerable<KeyValuePair<Utf8String, IValueNode>> ObjectItems
+        public IEnumerable<KeyValuePair<IValueNode, IValueNode>> ObjectItems
         {
             get
             {
-                return ObjectItemsRaw.Select(x => new KeyValuePair<Utf8String, IValueNode>(x.Key.GetUtf8String(), x.Value as IValueNode));
+                return ObjectItemsRaw.Select(x => new KeyValuePair<IValueNode, IValueNode>(x.Key, x.Value as IValueNode));
             }
         }
         public IEnumerable<KeyValuePair<JsonNode, JsonNode>> ObjectItemsRaw

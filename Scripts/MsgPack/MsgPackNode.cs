@@ -859,7 +859,7 @@ namespace UniJSON
             }
         }
 
-        public IEnumerable<KeyValuePair<Utf8String, IValueNode>> ObjectItems
+        public IEnumerable<KeyValuePair<IValueNode, IValueNode>> ObjectItems
         {
             get
             {
@@ -867,10 +867,10 @@ namespace UniJSON
                 var it = Children.GetEnumerator();
                 while (it.MoveNext())
                 {
-                    var key = it.Current.GetUtf8String();
+                    var key = it.Current;
 
                     it.MoveNext();
-                    yield return new KeyValuePair<Utf8String, IValueNode>(key, it.Current);
+                    yield return new KeyValuePair<IValueNode, IValueNode>(key, it.Current);
                 }
             }
         }

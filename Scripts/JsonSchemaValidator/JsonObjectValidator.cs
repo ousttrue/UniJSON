@@ -506,7 +506,7 @@ namespace UniJSON
                         foreach (var kv in s.ObjectItems)
                         {
                             FieldSetter setter;
-                            if (fieldDeserializers.TryGetValue(kv.Key, out setter))
+                            if (fieldDeserializers.TryGetValue(kv.Key.GetUtf8String(), out setter))
                             {
                                 if (setter != null)
                                 {
