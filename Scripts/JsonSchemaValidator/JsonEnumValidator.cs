@@ -10,11 +10,11 @@ namespace UniJSON
     {
         public static IJsonSchemaValidator Create(JsonNode value)
         {
-            foreach (var x in value.ArrayItems)
+            foreach (var x in value.ArrayItems())
             {
                 if (x.IsInteger() || x.IsFloat())
                 {
-                    return JsonIntEnumValidator.Create(value.ArrayItems
+                    return JsonIntEnumValidator.Create(value.ArrayItems()
                         .Where(y => y.IsInteger() || y.IsFloat())
                         .Select(y => y.GetInt32())
                         );
@@ -22,7 +22,7 @@ namespace UniJSON
                 else if (x.IsString())
                 {
 
-                    return JsonStringEnumValidator.Create(value.ArrayItems
+                    return JsonStringEnumValidator.Create(value.ArrayItems()
                         .Where(y => y.IsString())
                         .Select(y => y.GetString())
                         , EnumSerializationType.AsString

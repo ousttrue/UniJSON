@@ -206,7 +206,7 @@ namespace UniJSON
 
             var compositionType = default(CompositionType);
             var composition = new List<JsonSchema>();
-            foreach (var kv in root.ObjectItems)
+            foreach (var kv in root.ObjectItems())
             {
                 switch (kv.Key.GetString())
                 {
@@ -269,7 +269,7 @@ namespace UniJSON
                     case "allOf": // composition
                         {
                             compositionType = (CompositionType)Enum.Parse(typeof(CompositionType), kv.Key.GetString(), true);
-                            foreach (var item in kv.Value.ArrayItems)
+                            foreach (var item in kv.Value.ArrayItems())
                             {
                                 if (item.ContainsKey(s_ref))
                                 {

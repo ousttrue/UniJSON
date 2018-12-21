@@ -238,7 +238,7 @@ namespace UniJSON
 
                 case "required":
                     {
-                        foreach (var req in value.ArrayItems)
+                        foreach (var req in value.ArrayItems())
                         {
                             m_required.Add(req.GetString());
                         }
@@ -247,7 +247,7 @@ namespace UniJSON
 
                 case "properties":
                     {
-                        foreach (var prop in value.ObjectItems)
+                        foreach (var prop in value.ObjectItems())
                         {
                             AddProperty(fs, prop.Key.GetString(), prop.Value);
                         }
@@ -268,9 +268,9 @@ namespace UniJSON
 
                 case "dependencies":
                     {
-                        foreach (var kv in value.ObjectItems)
+                        foreach (var kv in value.ObjectItems())
                         {
-                            Dependencies.Add(kv.Key.GetString(), kv.Value.ArrayItems.Select(x => x.GetString()).ToArray());
+                            Dependencies.Add(kv.Key.GetString(), kv.Value.ArrayItems().Select(x => x.GetString()).ToArray());
                         }
                     }
                     return true;
@@ -503,7 +503,7 @@ namespace UniJSON
 
                         // boxing
                         var t = (object)Activator.CreateInstance<T>();
-                        foreach (var kv in s.ObjectItems)
+                        foreach (var kv in s.ObjectItems())
                         {
                             FieldSetter setter;
                             if (fieldDeserializers.TryGetValue(kv.Key.GetUtf8String(), out setter))

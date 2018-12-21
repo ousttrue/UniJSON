@@ -14,7 +14,7 @@ namespace UniJSON
         {
             m_map.Add(method, (id, args, f) =>
             {
-                var it = args.ArrayItems.GetEnumerator();
+                var it = args.ArrayItems().GetEnumerator();
 
                 var a0 = default(A0);
                 it.MoveNext();
@@ -43,7 +43,7 @@ namespace UniJSON
         {
             m_map.Add(method, (id, args, f) =>
             {
-                var it = args.ArrayItems.GetEnumerator();
+                var it = args.ArrayItems().GetEnumerator();
 
                 var a0 = default(A0);
                 it.MoveNext();

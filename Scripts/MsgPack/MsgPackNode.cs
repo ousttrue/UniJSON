@@ -23,7 +23,7 @@ namespace UniJSON
                 var sb = new StringBuilder();
                 bool isFirst = true;
                 sb.Append("[");
-                foreach (var x in ArrayItems)
+                foreach (var x in this.ArrayItems())
                 {
                     if (isFirst)
                     {
@@ -43,7 +43,7 @@ namespace UniJSON
                 var sb = new StringBuilder();
                 bool isFirst = true;
                 sb.Append("{");
-                foreach (var x in ObjectItems)
+                foreach (var x in this.ObjectItems())
                 {
                     if (isFirst)
                     {
@@ -831,50 +831,6 @@ namespace UniJSON
         }
 
         #region  Collection
-        public int ValueCount
-        {
-            get
-            {
-                if (Value.Format.IsArray())
-                {
-                    return Children.Count();
-                }
-                else if (Value.Format.IsMap())
-                {
-                    return Children.Count() / 2;
-                }
-                else
-                {
-                    throw new MsgPackTypeException("Not array or map");
-                }
-            }
-        }
-
-        public IEnumerable<MsgPackNode> ArrayItems
-        {
-            get
-            {
-                if (!this.IsArray()) throw new MsgPackTypeException("is not array");
-                return Children.Select(x => x);
-            }
-        }
-
-        public IEnumerable<KeyValuePair<MsgPackNode, MsgPackNode>> ObjectItems
-        {
-            get
-            {
-                if (!this.IsMap()) throw new MsgPackTypeException("is not map");
-                var it = Children.GetEnumerator();
-                while (it.MoveNext())
-                {
-                    var key = it.Current;
-
-                    it.MoveNext();
-                    yield return new KeyValuePair<MsgPackNode, MsgPackNode>(key, it.Current);
-                }
-            }
-        }
-
         public MsgPackNode this[int i]
         {
             get

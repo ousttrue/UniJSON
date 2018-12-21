@@ -33,19 +33,6 @@ namespace UniJSON
             }
         }
 
-        public int ValueCount
-        {
-            get
-            {
-                switch (Value.ValueType)
-                {
-                    case JsonValueType.Array: return Children.Count();
-                    case JsonValueType.Object: return Children.Count() / 2;
-                    default: throw new NotImplementedException();
-                }
-            }
-        }
-
         public override string ToString()
         {
             return Value.ToString();
@@ -60,7 +47,7 @@ namespace UniJSON
 
                 var isFirst = true;
                 var childLevel = level + 1;
-                foreach (var x in ArrayItems)
+                foreach (var x in this.ArrayItems())
                 {
                     if (isFirst)
                     {
@@ -91,7 +78,7 @@ namespace UniJSON
 
                 var isFirst = true;
                 var childLevel = level + 1;
-                foreach (var kv in ObjectItems)
+                foreach (var kv in this.ObjectItems())
                 {
                     if (isFirst)
                     {
@@ -172,14 +159,14 @@ namespace UniJSON
                     return Value.GetString() == rhs.GetString();
 
                 case JsonValueType.Array:
-                    return ArrayItems.SequenceEqual(rhs.ArrayItems);
+                    return this.ArrayItems().SequenceEqual(rhs.ArrayItems());
 
                 case JsonValueType.Object:
                     {
-                        //var l = ObjectItems.ToDictionary(x => x.Key, x => x.Value);
-                        //var r = rhs.ObjectItems.ToDictionary(x => x.Key, x => x.Value);
+                        //var l = ObjectItems().ToDictionary(x => x.Key, x => x.Value);
+                        //var r = rhs.ObjectItems().ToDictionary(x => x.Key, x => x.Value);
                         //return l.Equals(r);
-                        return ObjectItems.OrderBy(x => x.Key.GetUtf8String()).SequenceEqual(rhs.ObjectItems.OrderBy(x => x.Key.GetUtf8String()));
+                        return this.ObjectItems().OrderBy(x => x.Key.GetUtf8String()).SequenceEqual(rhs.ObjectItems().OrderBy(x => x.Key.GetUtf8String()));
                     }
             }
 
@@ -211,8 +198,8 @@ namespace UniJSON
             if (Value.ValueType == JsonValueType.Object)
             {
 
-                var l = ObjectItems.ToDictionary(x => x.Key, x => x.Value);
-                var r = rhs.ObjectItems.ToDictionary(x => x.Key, x => x.Value);
+                var l = this.ObjectItems().ToDictionary(x => x.Key, x => x.Value);
+                var r = rhs.ObjectItems().ToDictionary(x => x.Key, x => x.Value);
 
                 foreach (var kv in l)
                 {
@@ -241,8 +228,8 @@ namespace UniJSON
             }
             else if (Value.ValueType == JsonValueType.Array)
             {
-                var ll = ArrayItems.GetEnumerator();
-                var rr = rhs.ArrayItems.GetEnumerator();
+                var ll = this.ArrayItems().GetEnumerator();
+                var rr = rhs.ArrayItems().GetEnumerator();
                 while (true)
                 {
                     var lll = ll.MoveNext();
@@ -357,7 +344,7 @@ namespace UniJSON
         {
             get
             {
-                foreach (var kv in ObjectItems)
+                foreach (var kv in this.ObjectItems())
                 {
                     if (kv.Key.GetUtf8String() == key)
                     {
@@ -365,22 +352,6 @@ namespace UniJSON
                     }
                 }
                 throw new KeyNotFoundException();
-            }
-        }
-
-        public IEnumerable<KeyValuePair<JsonNode, JsonNode>> ObjectItems
-        {
-            get
-            {
-                if (this.Value.ValueType != JsonValueType.Object) throw new JsonValueException("is not object");
-                var it = Children.GetEnumerator();
-                while (it.MoveNext())
-                {
-                    var key = it.Current;
-
-                    it.MoveNext();
-                    yield return new KeyValuePair<JsonNode, JsonNode>(key, it.Current);
-                }
             }
         }
         #endregion
@@ -391,7 +362,7 @@ namespace UniJSON
             get
             {
                 int i = 0;
-                foreach (var v in ArrayItems)
+                foreach (var v in this.ArrayItems())
                 {
                     if (i++ == index)
                     {
@@ -399,14 +370,6 @@ namespace UniJSON
                     }
                 }
                 throw new KeyNotFoundException();
-            }
-        }
-        public IEnumerable<JsonNode> ArrayItems
-        {
-            get
-            {
-                if (this.Value.ValueType != JsonValueType.Array) throw new JsonValueException("is not object");
-                return Children;
             }
         }
         #endregion
@@ -454,14 +417,14 @@ namespace UniJSON
             var parent = new JsonNode(Values, index);
             if (node.Value.ValueType == JsonValueType.Array)
             {
-                foreach (var value in node.ArrayItems)
+                foreach (var value in node.ArrayItems())
                 {
                     parent.AddNode(value);
                 }
             }
             else if (node.Value.ValueType == JsonValueType.Object)
             {
-                foreach (var kv in node.ObjectItems)
+                foreach (var kv in node.ObjectItems())
                 {
                     parent.AddNode(kv.Key.GetUtf8String(), kv.Value);
                 }
@@ -482,7 +445,7 @@ namespace UniJSON
                 if (jsonPointer[0][0] == '*')
                 {
                     // wildcard
-                    foreach (var child in ArrayItems)
+                    foreach (var child in this.ArrayItems())
                     {
                         foreach (var childChild in child.GetNodes(jsonPointer.Unshift()))
                         {
@@ -506,7 +469,7 @@ namespace UniJSON
                 if (jsonPointer[0][0] == '*')
                 {
                     // wildcard
-                    foreach (var kv in ObjectItems)
+                    foreach (var kv in this.ObjectItems())
                     {
                         foreach (var childChild in kv.Value.GetNodes(jsonPointer.Unshift()))
                         {

@@ -32,7 +32,7 @@ namespace UniJSON.MsgPack
 
             var value = MsgPackParser.Parse(bytes);
 
-            Assert.AreEqual(2, value.ValueCount);
+            Assert.AreEqual(2, value.ValueCount());
             Assert.AreEqual(1, value["0"].GetValue());
             Assert.AreEqual(3, value["2"].GetValue());
         }

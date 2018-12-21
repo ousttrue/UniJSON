@@ -29,10 +29,8 @@ namespace UniJSON
 
         bool HasParent { get; }
         T Parent { get; }
-        IEnumerable<T> ArrayItems { get; }
-        IEnumerable<KeyValuePair<T, T>> ObjectItems { get; }
+        IEnumerable<T> Children { get; }
 
-        int ValueCount { get; }
         int ValueIndex { get; }
 
         Boolean GetBoolean();
@@ -110,7 +108,7 @@ namespace UniJSON
         public static int IndexOf<T>(this T self, T child) where T : IValueNode<T>
         {
             int i = 0;
-            foreach (var v in self.ArrayItems)
+            foreach (var v in self.ArrayItems())
             {
                 if (v.ValueIndex == child.ValueIndex)
                 {
@@ -121,9 +119,38 @@ namespace UniJSON
             throw new KeyNotFoundException();
         }
 
+        public static IEnumerable<KeyValuePair<T, T>> ObjectItems<T>(this T self) where T: IValueNode<T>
+        {
+            if (!self.IsMap()) throw new JsonValueException("is not object");
+            var it = self.Children.GetEnumerator();
+            while (it.MoveNext())
+            {
+                var key = it.Current;
+
+                it.MoveNext();
+                yield return new KeyValuePair<T, T>(key, it.Current);
+            }            
+        }
+
+        public static IEnumerable<T> ArrayItems<T>(this T self) where T : IValueNode<T>
+        {
+            if (!self.IsArray()) throw new JsonValueException("is not object");
+            return self.Children;
+        }
+
+        public static int ValueCount<T>(this T self) where T : IValueNode<T>
+        {
+            switch (self.ValueType)
+            {
+                case ValueNodeType.Array: return self.Children.Count();
+                case ValueNodeType.Map: return self.Children.Count() / 2;
+                default: throw new NotImplementedException();
+            }
+        }
+
         public static bool ContainsKey<T>(this T self, Utf8String key) where T : IValueNode<T>
         {
-            return self.ObjectItems.Any(x => x.Key.GetUtf8String() == key);
+            return self.ObjectItems().Any(x => x.Key.GetUtf8String() == key);
         }
 
         public static bool ContainsKey<T>(this T self, String key) where T : IValueNode<T>
@@ -134,7 +161,7 @@ namespace UniJSON
 
         public static Utf8String KeyOf<T>(this T self, T node) where T : IValueNode<T>
         {
-            foreach (var kv in self.ObjectItems)
+            foreach (var kv in self.ObjectItems())
             {
                 if (node.ValueIndex == kv.Value.ValueIndex)
                 {
@@ -149,7 +176,7 @@ namespace UniJSON
             yield return self;
             if (self.IsArray())
             {
-                foreach (var x in self.ArrayItems)
+                foreach (var x in self.ArrayItems())
                 {
                     foreach (var y in x.Traverse())
                     {
@@ -159,7 +186,7 @@ namespace UniJSON
             }
             else if (self.IsMap())
             {
-                foreach (var kv in self.ObjectItems)
+                foreach (var kv in self.ObjectItems())
                 {
                     foreach (var y in kv.Value.Traverse())
                     {
@@ -188,7 +215,7 @@ namespace UniJSON
                 {
                     throw new ArgumentException("value is not array");
                 }
-                var count = src.ValueCount;
+                var count = src.ValueCount();
                 return new U[count];
             }
 
@@ -236,7 +263,7 @@ namespace UniJSON
                 case ValueNodeType.Map:
                     {
                         var u = new Dictionary<string, object>();
-                        foreach (var kv in s.ObjectItems)
+                        foreach (var kv in s.ObjectItems())
                         {
                             //var e = default(object);
                             //kv.Value.Deserialize(ref e);
@@ -273,9 +300,9 @@ namespace UniJSON
                 {
                     throw new ArgumentException("not array: " + s.ValueType);
                 }
-                var u = new U[s.ValueCount];
+                var u = new U[s.ValueCount()];
                 int i = 0;
-                foreach (var x in s.ArrayItems)
+                foreach (var x in s.ArrayItems())
                 {
                     x.Deserialize(ref u[i++]);
                 }
@@ -288,8 +315,8 @@ namespace UniJSON
                 {
                     throw new ArgumentException("not array: " + s.ValueType);
                 }
-                var u = new List<U>(s.ValueCount);
-                foreach (var x in s.ArrayItems)
+                var u = new List<U>(s.ValueCount());
+                foreach (var x in s.ArrayItems())
                 {
                     var e = default(U);
                     x.Deserialize(ref e);
@@ -433,7 +460,7 @@ namespace UniJSON
                         }
 
                         var t = (object)default(GenericCreator<S, T>).Create(s);
-                        foreach(var kv in s.ObjectItems)
+                        foreach(var kv in s.ObjectItems())
                         {
                             FieldSetter setter;
                             if (fieldDeserializers.TryGetValue(kv.Key, out setter))
