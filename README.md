@@ -16,7 +16,7 @@ JSON serializer and deserializer and schema utilities for Unity(.Net3.5)
 
 ## ToDo
 
-* [ ] Utf8String Escape
+* [x] Utf8String Escape
 * [ ] itoa
 
 * [x] anyOf to enum
@@ -28,7 +28,45 @@ JSON serializer and deserializer and schema utilities for Unity(.Net3.5)
 * [ ] object.additionalProperties
 * [ ] default value
 
-## Example
+## Usage
+
+### Json Create
+
+```cs
+var f = new JsonFormatter();
+f.BeginMap();
+f.Key("X"); f.Value(1);
+f.Key("Y"); f.Value(1);
+f.Key("Z"); f.Value(1);
+f.EndMap();
+var json = f.ToString();
+// {"X":1,"Y":2,"Z":3}
+```
+
+### Json Serialize
+
+```cs
+var f = new JsonFormatter();
+f.Serialize(new Vector3(1, 2, 3));
+var json = f.ToString();
+// {"X":1,"Y":2,"Z":3}
+```
+
+### Json Parse
+
+```cs
+var parsed = json.ParseAsJson();
+var x = parsed["X"].GetInt32();
+```
+
+### Json Deserialize
+
+```cs
+var v = default(Vector3);
+json.Deserialize(ref v);
+```
+
+### JsonSchema
 
 ```cs
 [Serializable]
@@ -62,5 +100,18 @@ public void AccessorSparseIndices()
 
     Assert.AreEqual(fromSchema, fromClass);
 }
+```
+
+### MsgPack
+
+Same as json interface
+
+```cs
+var f = new MsgPackFormatter();
+f.Serialize(new Vector3(1, 2, 3));
+var msgpack = f.GetStoreBytes();
+
+var parsed = msgpack.ParseAsMsgPack();
+var x = parsed["X"].GetInt32();
 ```
 
