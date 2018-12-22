@@ -36,7 +36,7 @@ namespace UniJSON
         #endregion
 
         #region object
-        public JsonValueType ValueType;
+        public ValueNodeType ValueType;
         public int MinProperties;
         public bool Required;
         public string[] Dependencies;

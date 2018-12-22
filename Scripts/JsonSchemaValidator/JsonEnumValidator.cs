@@ -8,7 +8,7 @@ namespace UniJSON
 {
     public static class JsonEnumValidator
     {
-        public static IJsonSchemaValidator Create(JsonNode value)
+        public static IJsonSchemaValidator Create(ListTreeNode<JsonValue> value)
         {
             foreach (var x in value.ArrayItems())
             {
@@ -191,7 +191,7 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public bool FromJsonSchema(IFileSystemAccessor fs, string key, JsonNode value)
+        public bool FromJsonSchema(IFileSystemAccessor fs, string key, ListTreeNode<JsonValue> value)
         {
             throw new NotImplementedException();
         }
@@ -385,7 +385,7 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public bool FromJsonSchema(IFileSystemAccessor fs, string key, JsonNode value)
+        public bool FromJsonSchema(IFileSystemAccessor fs, string key, ListTreeNode<JsonValue> value)
         {
             throw new NotImplementedException();
         }

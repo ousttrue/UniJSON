@@ -184,11 +184,11 @@ namespace UniJSON
         #endregion
 
         #region FromJson
-        static JsonValueType ParseValueType(string type)
+        static ValueNodeType ParseValueType(string type)
         {
             try
             {
-                return (JsonValueType)Enum.Parse(typeof(JsonValueType), type, true);
+                return (ValueNodeType)Enum.Parse(typeof(ValueNodeType), type, true);
             }
             catch (ArgumentException)
             {
@@ -200,7 +200,7 @@ namespace UniJSON
 
         static Utf8String s_ref = Utf8String.From("$ref");
 
-        public void Parse(IFileSystemAccessor fs, JsonNode root, string Key)
+        public void Parse(IFileSystemAccessor fs, ListTreeNode<JsonValue> root, string Key)
         {
             m_context.Push(Key);
 
@@ -334,7 +334,7 @@ namespace UniJSON
                         // inheritance
                         if (Validator == null)
                         {
-                            //Validator = JsonSchemaValidatorFactory.Create(composition[0].Validator.JsonValueType);
+                            //Validator = JsonSchemaValidatorFactory.Create(composition[0].Validator.ValueNodeType);
                             Validator = composition[0].Validator;
                         }
                         else

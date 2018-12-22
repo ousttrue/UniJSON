@@ -64,7 +64,7 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
-        public bool FromJsonSchema(IFileSystemAccessor fs, string key, JsonNode value)
+        public bool FromJsonSchema(IFileSystemAccessor fs, string key, ListTreeNode<JsonValue> value)
         {
             switch (key)
             {

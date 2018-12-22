@@ -61,7 +61,7 @@ namespace UniJSON
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        bool FromJsonSchema(IFileSystemAccessor fs, string key, JsonNode value);
+        bool FromJsonSchema(IFileSystemAccessor fs, string key, ListTreeNode<JsonValue> value);
 
         void ToJsonScheama(IFormatter f);
         #endregion

@@ -11,16 +11,16 @@ namespace UniJSON
 
     public static class JsonParser
     {
-        static JsonValueType GetValueType(Utf8String segment)
+        static ValueNodeType GetValueType(Utf8String segment)
         {
             switch ((char)segment[0])
             {
-                case '{': return JsonValueType.Object;
-                case '[': return JsonValueType.Array;
-                case '"': return JsonValueType.String;
-                case 't': return JsonValueType.Boolean;
-                case 'f': return JsonValueType.Boolean;
-                case 'n': return JsonValueType.Null;
+                case '{': return ValueNodeType.Object;
+                case '[': return ValueNodeType.Array;
+                case '"': return ValueNodeType.String;
+                case 't': return ValueNodeType.Boolean;
+                case 'f': return ValueNodeType.Boolean;
+                case 'n': return ValueNodeType.Null;
 
                 case '-': // fall through
                 case '0': // fall through
@@ -36,11 +36,11 @@ namespace UniJSON
                     {
                         if (segment.IsInt)
                         {
-                            return JsonValueType.Integer;
+                            return ValueNodeType.Integer;
                         }
                         else
                         {
-                            return JsonValueType.Number;
+                            return ValueNodeType.Number;
                         }
                     }
 
@@ -56,7 +56,7 @@ namespace UniJSON
         /// <param name="valueType"></param>
         /// <param name="parentIndex"></param>
         /// <returns></returns>
-        static JsonValue ParsePrimitive(Utf8String segment, JsonValueType valueType, int parentIndex)
+        static JsonValue ParsePrimitive(Utf8String segment, ValueNodeType valueType, int parentIndex)
         {
             int i = 1;
             for (; i < segment.ByteLength; ++i)
@@ -79,7 +79,7 @@ namespace UniJSON
             int pos;
             if (segment.TrySearchAscii((Byte)'"', 1, out pos))
             {
-                return new JsonValue(segment.Subbytes(0, pos + 1), JsonValueType.String, parentIndex);
+                return new JsonValue(segment.Subbytes(0, pos + 1), ValueNodeType.String, parentIndex);
             }
             else
             {
@@ -196,7 +196,7 @@ namespace UniJSON
 
                 // key
                 var key = Parse(current, values, parentIndex);
-                if (key.ValueType != JsonValueType.String)
+                if (key.ValueType != ValueNodeType.String)
                 {
                     throw new JsonParseException("object key must string: " + key.Segment);
                 }
@@ -241,40 +241,40 @@ namespace UniJSON
             var valueType = GetValueType(segment);
             switch (valueType)
             {
-                case JsonValueType.Boolean:
-                case JsonValueType.Integer:
-                case JsonValueType.Number:
-                case JsonValueType.Null:
+                case ValueNodeType.Boolean:
+                case ValueNodeType.Integer:
+                case ValueNodeType.Number:
+                case ValueNodeType.Null:
                     {
                         var value= ParsePrimitive(segment, valueType, parentIndex);
                         values.Add(value);
                         return value;
                     }
 
-                case JsonValueType.String:
+                case ValueNodeType.String:
                     {
                         var value= ParseString(segment, parentIndex);
                         values.Add(value);
                         return value;
                     }
 
-                case JsonValueType.Array: // fall through
+                case ValueNodeType.Array: // fall through
                     {
                         var index = values.Count;
                         values.Add(new JsonValue()); // placeholder
                         var current = ParseArray(segment, values, index);
                         values[index] = new JsonValue(segment.Subbytes(0, current.Bytes.Offset + 1 - segment.Bytes.Offset),
-                            JsonValueType.Array, parentIndex);
+                            ValueNodeType.Array, parentIndex);
                         return values[index];
                     }
 
-                case JsonValueType.Object: // fall through
+                case ValueNodeType.Object: // fall through
                     {
                         var index = values.Count;
                         values.Add(new JsonValue()); // placeholder
                         var current=ParseObject(segment, values, index);
                         values[index] = new JsonValue(segment.Subbytes(0, current.Bytes.Offset + 1 - segment.Bytes.Offset),
-                            JsonValueType.Object, parentIndex);
+                            ValueNodeType.Object, parentIndex);
                         return values[index];
                     }
 
@@ -283,23 +283,23 @@ namespace UniJSON
             }
         }
 
-        public static JsonNode Parse(String json)
+        public static ListTreeNode<JsonValue> Parse(String json)
         {
             return Parse(Utf8String.From(json));
         }
 
-        public static JsonNode Parse(Utf8String json)
+        public static ListTreeNode<JsonValue> Parse(Utf8String json)
         {
             var result = new List<JsonValue>();
             var value = Parse(json, result, -1);
-            if (value.ValueType != JsonValueType.Array && value.ValueType != JsonValueType.Object)
+            if (value.ValueType != ValueNodeType.Array && value.ValueType != ValueNodeType.Object)
             {
                 result.Add(value);
-                return new JsonNode(result);
+                return new ListTreeNode<JsonValue>(result);
             }
             else
             {
-                return new JsonNode(result);
+                return new ListTreeNode<JsonValue>(result);
             }
         }
     }

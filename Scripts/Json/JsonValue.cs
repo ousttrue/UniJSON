@@ -3,28 +3,16 @@
 
 namespace UniJSON
 {
-    public enum JsonValueType
-    {
-        Unknown,
-
-        Null,
-        Boolean,
-
-        Number,
-        String,
-
-        Object,
-        Array,
-
-        Integer, // JsonSchema
-
-        //Close, // internal use
-    }
-
-    public struct JsonValue: ITreeItem
+    public struct JsonValue: ITreeItem, IValue<JsonValue>
     {
         public Utf8String Segment;
-        public JsonValueType ValueType;
+        public ArraySegment<Byte> Bytes { get { return Segment.Bytes; } }
+
+        public ValueNodeType ValueType
+        {
+            get;
+            private set;
+        }
 
         public int ParentIndex
         {
@@ -32,12 +20,21 @@ namespace UniJSON
             private set;
         }
 
-        public JsonValue(Utf8String segment, JsonValueType valueType, int parentIndex)
+        public JsonValue(Utf8String segment, ValueNodeType valueType, int parentIndex)
         {
             Segment = segment;
             ValueType = valueType;
             ParentIndex = parentIndex;
-            //UnityEngine.Debug.LogFormat("{0}", this.ToString());
+        }
+
+        public JsonValue New(ArraySegment<byte> bytes, ValueNodeType valueType, int parentIndex)
+        {
+            return new JsonValue(new Utf8String(bytes), valueType, parentIndex);
+        }
+
+        public JsonValue Key(Utf8String key, int parentIndex)
+        {
+            return new JsonValue(JsonString.Quote(key), ValueNodeType.String, parentIndex);
         }
 
         public static readonly JsonValue Empty = new JsonValue
@@ -49,13 +46,13 @@ namespace UniJSON
         {
             switch (ValueType)
             {
-                case JsonValueType.Null:
-                case JsonValueType.Boolean:
-                case JsonValueType.Integer:
-                case JsonValueType.Number:
-                case JsonValueType.Array:
-                case JsonValueType.Object:
-                case JsonValueType.String:
+                case ValueNodeType.Null:
+                case ValueNodeType.Boolean:
+                case ValueNodeType.Integer:
+                case ValueNodeType.Number:
+                case ValueNodeType.Array:
+                case ValueNodeType.Object:
+                case ValueNodeType.String:
                     return Segment.ToString();
 
                 default:
@@ -82,7 +79,7 @@ namespace UniJSON
             }
         }
 
-        public SByte GetInt8()
+        public SByte GetSByte()
         {
             return Segment.ToSByte();
         }
@@ -99,7 +96,7 @@ namespace UniJSON
             return Segment.ToInt64();
         }
 
-        public Byte GetUInt8()
+        public Byte GetByte()
         {
             return Segment.ToByte();
         }

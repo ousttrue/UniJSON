@@ -85,7 +85,7 @@ namespace UniJSON
             }
         }
 
-        public void AddProperty(IFileSystemAccessor fs, string key, JsonNode value)
+        public void AddProperty(IFileSystemAccessor fs, string key, ListTreeNode<JsonValue> value)
         {
             var sub = new JsonSchema();
             sub.Parse(fs, value, key);
@@ -224,7 +224,7 @@ namespace UniJSON
             }
         }
 
-        public bool FromJsonSchema(IFileSystemAccessor fs, string key, JsonNode value)
+        public bool FromJsonSchema(IFileSystemAccessor fs, string key, ListTreeNode<JsonValue> value)
         {
             switch (key)
             {

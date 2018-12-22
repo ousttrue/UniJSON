@@ -2,7 +2,7 @@
 {
     public static class StringExtensions
     {
-        public static JsonNode ParseAsJson(this string json)
+        public static ListTreeNode<JsonValue> ParseAsJson(this string json)
         {
             return JsonParser.Parse(json);
         }

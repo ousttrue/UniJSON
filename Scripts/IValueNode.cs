@@ -19,9 +19,30 @@ namespace UniJSON
         String,
         Binary,
         Integer,
-        Float,
+        Number,
         Array,
-        Map,
+        Object,
+    }
+
+    public interface IValue<T> where T: struct
+    {
+        T New(ArraySegment<byte> bytes, ValueNodeType valueType, int parentIndex);
+        T Key(Utf8String key, int parentIndex);
+        ValueNodeType ValueType { get; }
+        ArraySegment<Byte> Bytes { get; }
+        Boolean GetBoolean();
+        String GetString();
+        Utf8String GetUtf8String();
+        SByte GetSByte();
+        Int16 GetInt16();
+        Int32 GetInt32();
+        Int64 GetInt64();
+        Byte GetByte();
+        UInt16 GetUInt16();
+        UInt32 GetUInt32();
+        UInt64 GetUInt64();
+        Single GetSingle();
+        Double GetDouble();
     }
 
     public interface IValueNode<T> where T: IValueNode<T>
@@ -80,7 +101,7 @@ namespace UniJSON
 
         public static bool IsFloat<T>(this T self) where T : IValueNode<T>
         {
-            return self.ValueType == ValueNodeType.Float;
+            return self.ValueType == ValueNodeType.Number;
         }
 
         public static bool IsArray<T>(this T self) where T : IValueNode<T>
@@ -90,7 +111,7 @@ namespace UniJSON
 
         public static bool IsMap<T>(this T self) where T : IValueNode<T>
         {
-            return self.ValueType == ValueNodeType.Map;
+            return self.ValueType == ValueNodeType.Object;
         }
 
         public static JsonPointer<T> Pointer<T>(this T self) where T : IValueNode<T>
@@ -148,7 +169,7 @@ namespace UniJSON
             switch (self.ValueType)
             {
                 case ValueNodeType.Array: return self.Children.Count();
-                case ValueNodeType.Map: return self.Children.Count() / 2;
+                case ValueNodeType.Object: return self.Children.Count() / 2;
                 default: throw new NotImplementedException();
             }
         }
@@ -265,7 +286,7 @@ namespace UniJSON
         {
             switch (s.ValueType)
             {
-                case ValueNodeType.Map:
+                case ValueNodeType.Object:
                     {
                         var u = new Dictionary<string, object>();
                         foreach (var kv in s.ObjectItems())
@@ -286,7 +307,7 @@ namespace UniJSON
                 case ValueNodeType.Integer:
                     return s.GetInt32();
 
-                case ValueNodeType.Float:
+                case ValueNodeType.Number:
                     return s.GetDouble();
 
                 case ValueNodeType.String:

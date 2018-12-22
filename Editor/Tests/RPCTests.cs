@@ -40,7 +40,7 @@ namespace UniJSON
         [Test]
         public void JsonRpcDispatcherTest()
         {
-            var dispatcher = new RpcDispatcher<JsonNode>();
+            var dispatcher = new RpcDispatcher<ListTreeNode<JsonValue>>();
             var f = new JsonFormatter();
 
             {

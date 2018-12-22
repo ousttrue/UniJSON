@@ -83,7 +83,7 @@ namespace UniJSON
                         }
                         else if (Value.Format.IsMap())
                         {
-                            return ValueNodeType.Map;
+                            return ValueNodeType.Object;
                         }
                         else if (Value.Format.IsInteger())
                         {
@@ -91,7 +91,7 @@ namespace UniJSON
                         }
                         else if (Value.Format.IsFloat())
                         {
-                            return ValueNodeType.Float;
+                            return ValueNodeType.Number;
                         }
                         else if (Value.Format.IsString())
                         {
