@@ -1,33 +1,6 @@
 # UniJSON
 JSON serializer and deserializer and schema utilities for Unity(.Net3.5)
 
-## JSON
-
-* https://www.json.org/
-
-## JSON Schema
-
-* http://json-schema.org/
-* https://github.com/KhronosGroup/glTF/tree/master/specification/2.0/schema
-
-## JSON Patch
-
-* http://jsonpatch.com/
-
-## ToDo
-
-* [x] Utf8String Escape
-* [ ] itoa
-
-* [x] anyOf to enum
-* [ ] string.pattern
-* [x] enum.values
-* [x] array.items
-* [x] object.required
-* [x] object.dependencies
-* [ ] object.additionalProperties
-* [ ] default value
-
 ## Usage
 
 ### Json Create
@@ -114,4 +87,18 @@ var msgpack = f.GetStoreBytes();
 var parsed = msgpack.ParseAsMsgPack();
 var x = parsed["X"].GetInt32();
 ```
+
+## Reference
+### JSON
+
+* https://www.json.org/
+
+### JSON Schema
+
+* http://json-schema.org/
+* https://github.com/KhronosGroup/glTF/tree/master/specification/2.0/schema
+
+### JSON Patch
+
+* http://jsonpatch.com/
 
