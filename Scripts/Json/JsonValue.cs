@@ -37,11 +37,6 @@ namespace UniJSON
             return new JsonValue(JsonString.Quote(key), ValueNodeType.String, parentIndex);
         }
 
-        public static readonly JsonValue Empty = new JsonValue
-        {
-            ParentIndex = -1
-        };
-
         public override string ToString()
         {
             switch (ValueType)
@@ -79,57 +74,17 @@ namespace UniJSON
             }
         }
 
-        public SByte GetSByte()
-        {
-            return Segment.ToSByte();
-        }
-        public Int16 GetInt16()
-        {
-            return Segment.ToInt16();
-        }
-        public Int32 GetInt32()
-        {
-            return Segment.ToInt32();
-        }
-        public Int64 GetInt64()
-        {
-            return Segment.ToInt64();
-        }
-
-        public Byte GetByte()
-        {
-            return Segment.ToByte();
-        }
-        public UInt16 GetUInt16()
-        {
-            return Segment.ToUInt16();
-        }
-        public UInt32 GetUInt32()
-        {
-            return Segment.ToUInt32();
-        }
-        public UInt64 GetUInt64()
-        {
-            return Segment.ToUInt64();
-        }
-
-        public Single GetSingle()
-        {
-            return Segment.ToSingle();
-        }
-        public Double GetDouble()
-        {
-            return Segment.ToDouble();
-        }
-
-        public String GetString()
-        {
-            return JsonString.Unquote(Segment.ToString());
-        }
-        public Utf8String GetUtf8String()
-        {
-            return JsonString.Unquote(Segment);
-        }
+        public SByte GetSByte() { return Segment.ToSByte(); }
+        public Int16 GetInt16() { return Segment.ToInt16(); }
+        public Int32 GetInt32() { return Segment.ToInt32(); }
+        public Int64 GetInt64() { return Segment.ToInt64(); }
+        public Byte GetByte() { return Segment.ToByte(); }
+        public UInt16 GetUInt16() { return Segment.ToUInt16(); }
+        public UInt32 GetUInt32() { return Segment.ToUInt32(); }
+        public UInt64 GetUInt64() { return Segment.ToUInt64(); }
+        public Single GetSingle() { return Segment.ToSingle(); }
+        public Double GetDouble() { return Segment.ToDouble(); }
+        public String GetString() { return JsonString.Unquote(Segment.ToString()); }        public Utf8String GetUtf8String() { return JsonString.Unquote(Segment); }
 
         public T GetValue<T>()
         {
