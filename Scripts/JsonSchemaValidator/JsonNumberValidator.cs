@@ -422,7 +422,7 @@ namespace UniJSON
 
         public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
         {
-            dst = UniJSON.GenericCast<double, T>.Cast(src.GetDouble());
+            dst = GenericCast<double, T>.Cast(src.GetDouble());
         }
     }
 }
