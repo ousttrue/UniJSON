@@ -300,14 +300,7 @@ namespace UniJSON
         {
             get
             {
-                foreach (var kv in this.ObjectItems())
-                {
-                    if (kv.Key.GetUtf8String() == key)
-                    {
-                        return kv.Value;
-                    }
-                }
-                throw new KeyNotFoundException();
+                return this.GetObjectItem(key);
             }
         }
 
@@ -315,15 +308,7 @@ namespace UniJSON
         {
             get
             {
-                int i = 0;
-                foreach (var v in this.ArrayItems())
-                {
-                    if (i++ == index)
-                    {
-                        return v;
-                    }
-                }
-                throw new KeyNotFoundException();
+                return this.GetArrrayItem(index);
             }
         }
 
@@ -383,11 +368,10 @@ namespace UniJSON
             ValueIndex = index;
         }
 
-        #region
-
+        #region Getter
         public bool GetBoolean() { return Value.GetBoolean(); }
-        public string GetString(){return Value.GetString();}
-        public Utf8String GetUtf8String(){ return Value.GetUtf8String(); }
+        public string GetString() { return Value.GetString(); }
+        public Utf8String GetUtf8String() { return Value.GetUtf8String(); }
         public sbyte GetSByte() { return Value.GetSByte(); }
         public short GetInt16() { return Value.GetInt16(); }
         public int GetInt32() { return Value.GetInt32(); }
@@ -406,7 +390,7 @@ namespace UniJSON
             var f = new JsonFormatter();
             f.Serialize(value);
 
-            foreach (var node in GetNodes(jsonPointer))
+            foreach (var node in this.GetNodes(jsonPointer))
             {
                 Values[node.ValueIndex] = default(T).New(
                     f.GetStoreBytes(),
@@ -417,7 +401,7 @@ namespace UniJSON
 
         public void RemoveValue(Utf8String jsonPointer)
         {
-            foreach (var node in GetNodes(new JsonPointer<ListTreeNode<T>>(jsonPointer)))
+            foreach (var node in this.GetNodes(new JsonPointer<ListTreeNode<T>>(jsonPointer)))
             {
                 if (node.Parent.IsMap())
                 {
@@ -427,83 +411,14 @@ namespace UniJSON
             }
         }
 
-        public IEnumerable<ListTreeNode<T>> GetNodes(JsonPointer<ListTreeNode<T>> jsonPointer)
+        public void AddKey(Utf8String key)
         {
-            if (jsonPointer.Path.Count == 0)
-            {
-                yield return this;
-                yield break;
-            }
-
-            if (Value.ValueType == ValueNodeType.Array)
-            {
-                // array
-                if (jsonPointer[0][0] == '*')
-                {
-                    // wildcard
-                    foreach (var child in this.ArrayItems())
-                    {
-                        foreach (var childChild in child.GetNodes(jsonPointer.Unshift()))
-                        {
-                            yield return childChild;
-                        }
-                    }
-                }
-                else
-                {
-                    int index = jsonPointer[0].ToInt32();
-                    var child = this[index];
-                    foreach (var childChild in child.GetNodes(jsonPointer.Unshift()))
-                    {
-                        yield return childChild;
-                    }
-                }
-            }
-            else if (Value.ValueType == ValueNodeType.Object)
-            {
-                // object
-                if (jsonPointer[0][0] == '*')
-                {
-                    // wildcard
-                    foreach (var kv in this.ObjectItems())
-                    {
-                        foreach (var childChild in kv.Value.GetNodes(jsonPointer.Unshift()))
-                        {
-                            yield return childChild;
-                        }
-                    }
-                }
-                else
-                {
-                    ListTreeNode<T> child;
-                    try
-                    {
-                        child = this[jsonPointer[0]];
-                    }
-                    catch (KeyNotFoundException)
-                    {
-                        // key
-                        Values.Add(default(T).Key(jsonPointer[0], ValueIndex));
-                        // value
-                        Values.Add(default(T).New(default(ArraySegment<byte>), ValueNodeType.Object, ValueIndex));
-
-                        child = this[jsonPointer[0]];
-                    }
-                    foreach (var childChild in child.GetNodes(jsonPointer.Unshift()))
-                    {
-                        yield return childChild;
-                    }
-                }
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
+            Values.Add(default(T).Key(key, ValueIndex));
         }
 
-        public IEnumerable<ListTreeNode<T>> GetNodes(Utf8String jsonPointer)
+        public void AddValue(ArraySegment<byte> bytes, ValueNodeType valueType)
         {
-            return GetNodes(new JsonPointer<ListTreeNode<T>>(jsonPointer));
+            Values.Add(default(T).New(bytes, valueType, ValueIndex));
         }
         #endregion
     }

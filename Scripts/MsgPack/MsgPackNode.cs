@@ -830,6 +830,16 @@ namespace UniJSON
             throw new NotImplementedException();
         }
 
+        public void AddKey(Utf8String key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddValue(ArraySegment<byte> bytes, ValueNodeType valueType)
+        {
+            throw new NotImplementedException();
+        }
+
         #region  Collection
         public MsgPackNode this[int i]
         {

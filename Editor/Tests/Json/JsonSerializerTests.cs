@@ -97,7 +97,7 @@ namespace UniJSON
 
             var json = JsonParser.Parse(new Utf8String(f.GetStoreBytes()));
 
-            Assert.AreEqual(1, json.ValueCount());
+            Assert.AreEqual(1, json.GetObjectCount());
             Assert.AreEqual(1, json["Vector"][0].GetInt32());
         }
         #endregion

@@ -26,7 +26,7 @@ namespace UniJSON.MsgPack
 
             var parsed = MsgPackParser.Parse(bytes);
 
-            Assert.AreEqual(4, parsed.ValueCount());
+            Assert.AreEqual(4, parsed.GetArrayCount());
             Assert.AreEqual(0, parsed[0].GetValue());
             Assert.AreEqual(1, parsed[1].GetValue());
             Assert.False((Boolean)parsed[2].GetValue());
@@ -43,7 +43,7 @@ namespace UniJSON.MsgPack
 
             var value = MsgPackParser.Parse(bytes);
             Assert.IsTrue(value.IsArray());
-            Assert.AreEqual(20, value.ValueCount());
+            Assert.AreEqual(20, value.GetArrayCount());
             for (int i = 0; i < 20; ++i)
             {
                 Assert.AreEqual(i, value[i].GetValue());
@@ -59,7 +59,7 @@ namespace UniJSON.MsgPack
                 f.Serialize(i128);
                 var bytes128 = f.GetStoreBytes();
                 var deserialized = MsgPackParser.Parse(bytes128);
-                Assert.AreEqual(128, deserialized.ValueCount());
+                Assert.AreEqual(128, deserialized.GetArrayCount());
                 for (int i = 0; i < i128.Length; ++i)
                 {
                     Assert.AreEqual(i128[i], deserialized[i].GetValue());
@@ -72,7 +72,7 @@ namespace UniJSON.MsgPack
                 f.Serialize(i129);
                 var bytes129 = f.GetStoreBytes();
                 var deserialized = MsgPackParser.Parse(bytes129);
-                Assert.AreEqual(129, deserialized.ValueCount());
+                Assert.AreEqual(129, deserialized.GetArrayCount());
                 for (int i = 0; i < i129.Length; ++i)
                 {
                     Assert.AreEqual(i129[i], deserialized[i].GetValue());

@@ -82,13 +82,13 @@ namespace UniJSON
                 f.Request("add", 1, 2);
 
                 var request = MsgPackParser.Parse(f.GetStoreBytes());
-                Assert.AreEqual(4, request.ValueCount());
+                Assert.AreEqual(4, request.GetArrayCount());
                 Assert.AreEqual(MsgPackFormatter.REQUEST_TYPE, request[0].GetInt32());
 
                 f.GetStore().Clear();
                 dispatcher.Call(f, request[1].GetInt32(), request[2].GetString(), request[3]);
                 var response = MsgPackParser.Parse(f.GetStoreBytes());
-                Assert.AreEqual(4, response.ValueCount());
+                Assert.AreEqual(4, response.GetArrayCount());
                 Assert.AreEqual(MsgPackFormatter.RESPONSE_TYPE, response[0].GetInt32());
                 Assert.True(response[2].IsNull());
                 Assert.AreEqual(3, response[3].GetInt32());

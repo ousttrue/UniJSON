@@ -7,232 +7,8 @@ using System.Reflection;
 
 namespace UniJSON
 {
-    public interface ITreeItem
+    public static class IValueNodeDeserializerExtensions
     {
-        int ParentIndex { get; }
-    }
-
-    public enum ValueNodeType
-    {
-        Null,
-        Boolean,
-        String,
-        Binary,
-        Integer,
-        Number,
-        Array,
-        Object,
-    }
-
-    public interface IValue<T> where T: struct
-    {
-        T New(ArraySegment<byte> bytes, ValueNodeType valueType, int parentIndex);
-        T Key(Utf8String key, int parentIndex);
-        ValueNodeType ValueType { get; }
-        ArraySegment<Byte> Bytes { get; }
-        Boolean GetBoolean();
-        String GetString();
-        Utf8String GetUtf8String();
-        SByte GetSByte();
-        Int16 GetInt16();
-        Int32 GetInt32();
-        Int64 GetInt64();
-        Byte GetByte();
-        UInt16 GetUInt16();
-        UInt32 GetUInt32();
-        UInt64 GetUInt64();
-        Single GetSingle();
-        Double GetDouble();
-    }
-
-    public interface IValueNode<T> where T: IValueNode<T>
-    {
-        bool IsValid { get; }
-
-        ArraySegment<Byte> Bytes { get; }
-
-        ValueNodeType ValueType { get; }
-
-        bool HasParent { get; }
-        T Parent { get; }
-        IEnumerable<T> Children { get; }
-
-        int ValueIndex { get; }
-
-        Boolean GetBoolean();
-        String GetString();
-        Utf8String GetUtf8String();
-        SByte GetSByte();
-        Int16 GetInt16();
-        Int32 GetInt32();
-        Int64 GetInt64();
-        Byte GetByte();
-        UInt16 GetUInt16();
-        UInt32 GetUInt32();
-        UInt64 GetUInt64();
-        Single GetSingle();
-        Double GetDouble();
-
-        void SetValue<U>(Utf8String jsonPointer, U value);
-        void RemoveValue(Utf8String jsonPointer);
-    }
-
-    public static class IValueNodeExtensions
-    {
-        public static bool IsNull<T>(this T self) where T : IValueNode<T>
-        {
-            return self.ValueType == ValueNodeType.Null;
-        }
-
-        public static bool IsBoolean<T>(this T self) where T : IValueNode<T>
-        {
-            return self.ValueType == ValueNodeType.Boolean;
-        }
-
-        public static bool IsString<T>(this T self) where T : IValueNode<T>
-        {
-            return self.ValueType == ValueNodeType.String;
-        }
-
-        public static bool IsInteger<T>(this T self) where T : IValueNode<T>
-        {
-            return self.ValueType == ValueNodeType.Integer;
-        }
-
-        public static bool IsFloat<T>(this T self) where T : IValueNode<T>
-        {
-            return self.ValueType == ValueNodeType.Number;
-        }
-
-        public static bool IsArray<T>(this T self) where T : IValueNode<T>
-        {
-            return self.ValueType == ValueNodeType.Array;
-        }
-
-        public static bool IsMap<T>(this T self) where T : IValueNode<T>
-        {
-            return self.ValueType == ValueNodeType.Object;
-        }
-
-        public static JsonPointer<T> Pointer<T>(this T self) where T : IValueNode<T>
-        {
-            return new JsonPointer<T>(self);
-        }
-
-        public static IEnumerable<T> Path<T>(this T self) where T : IValueNode<T>
-        {
-            if (self.HasParent)
-            {
-                foreach (var x in self.Parent.Path())
-                {
-                    yield return x;
-                }
-            }
-            yield return self;
-        }
-
-        public static int IndexOf<T>(this T self, T child) where T : IValueNode<T>
-        {
-            int i = 0;
-            foreach (var v in self.ArrayItems())
-            {
-                if (v.ValueIndex == child.ValueIndex)
-                {
-                    return i;
-                }
-                ++i;
-            }
-            throw new KeyNotFoundException();
-        }
-
-        public static IEnumerable<KeyValuePair<T, T>> ObjectItems<T>(this T self) where T: IValueNode<T>
-        {
-            if (!self.IsMap()) throw new JsonValueException("is not object");
-            var it = self.Children.GetEnumerator();
-            while (it.MoveNext())
-            {
-                var key = it.Current;
-
-                it.MoveNext();
-                yield return new KeyValuePair<T, T>(key, it.Current);
-            }            
-        }
-
-        public static IEnumerable<T> ArrayItems<T>(this T self) where T : IValueNode<T>
-        {
-            if (!self.IsArray()) throw new JsonValueException("is not object");
-            return self.Children;
-        }
-
-        public static int ValueCount<T>(this T self) where T : IValueNode<T>
-        {
-            switch (self.ValueType)
-            {
-                case ValueNodeType.Array: return self.Children.Count();
-                case ValueNodeType.Object: return self.Children.Count() / 2;
-                default: throw new NotImplementedException();
-            }
-        }
-
-        public static bool ContainsKey<T>(this T self, Utf8String key) where T : IValueNode<T>
-        {
-            return self.ObjectItems().Any(x => x.Key.GetUtf8String() == key);
-        }
-
-        public static bool ContainsKey<T>(this T self, String key) where T : IValueNode<T>
-        {
-            var ukey = Utf8String.From(key);
-            return self.ContainsKey(ukey);
-        }
-
-        public static Utf8String KeyOf<T>(this T self, T node) where T : IValueNode<T>
-        {
-            foreach (var kv in self.ObjectItems())
-            {
-                if (node.ValueIndex == kv.Value.ValueIndex)
-                {
-                    return kv.Key.GetUtf8String();
-                }
-            }
-            throw new KeyNotFoundException();
-        }
-
-        public static IEnumerable<T> Traverse<T>(this T self) where T : IValueNode<T>
-        {
-            yield return self;
-            if (self.IsArray())
-            {
-                foreach (var x in self.ArrayItems())
-                {
-                    foreach (var y in x.Traverse())
-                    {
-                        yield return y;
-                    }
-                }
-            }
-            else if (self.IsMap())
-            {
-                foreach (var kv in self.ObjectItems())
-                {
-                    foreach (var y in kv.Value.Traverse())
-                    {
-                        yield return y;
-                    }
-                }
-            }
-        }
-
-        public static void SetValue<T>(this T self, String jsonPointer, T value) where T : IValueNode<T>
-        {
-            self.SetValue<T>(Utf8String.From(jsonPointer), value);
-        }
-
-        public static void RemoveValue<T>(this T self, String jsonPointer)where T: IValueNode<T>
-        {
-            self.RemoveValue(Utf8String.From(jsonPointer));
-        }
-
-        #region Deserializer
         struct GenericCreator<S, T> where S : IValueNode<S>
         {
             static U[] ArrayCreator<U>(S src)
@@ -241,7 +17,7 @@ namespace UniJSON
                 {
                     throw new ArgumentException("value is not array");
                 }
-                var count = src.ValueCount();
+                var count = src.GetArrayCount();
                 return new U[count];
             }
 
@@ -282,7 +58,7 @@ namespace UniJSON
             }
         }
 
-        static object DictionaryDeserializer<T>(T s)where T: IValueNode<T>
+        static object DictionaryDeserializer<T>(T s) where T : IValueNode<T>
         {
             switch (s.ValueType)
             {
@@ -326,7 +102,7 @@ namespace UniJSON
                 {
                     throw new ArgumentException("not array: " + s.ValueType);
                 }
-                var u = new U[s.ValueCount()];
+                var u = new U[s.GetArrayCount()];
                 int i = 0;
                 foreach (var x in s.ArrayItems())
                 {
@@ -341,7 +117,7 @@ namespace UniJSON
                 {
                     throw new ArgumentException("not array: " + s.ValueType);
                 }
-                var u = new List<U>(s.ValueCount());
+                var u = new List<U>(s.GetArrayCount());
                 foreach (var x in s.ArrayItems())
                 {
                     var e = default(U);
@@ -430,7 +206,7 @@ namespace UniJSON
                     if (target.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
                         target.GetGenericArguments()[0] == typeof(string))
                     {
-                        var mi = typeof(IValueNodeExtensions).GetMethod("DictionaryDeserializer",
+                        var mi = typeof(IValueNodeDeserializerExtensions).GetMethod("DictionaryDeserializer",
                         BindingFlags.Static | BindingFlags.NonPublic);
                         var g = mi.MakeGenericMethod(typeof(S));
                         var self = Expression.Parameter(typeof(S), "self");
@@ -526,6 +302,5 @@ namespace UniJSON
             self.Deserialize(ref value);
             return value;
         }
-#endregion
     }
 }
