@@ -298,6 +298,85 @@ namespace UniJSON
             }
         }
 
+        public static class GenericValidator<T>
+        {
+            class ObjectValidator
+            {
+                delegate JsonSchemaValidationException FieldValidator(IJsonSchemaValidator v, 
+                    JsonSchemaValidationContext c, T o);
+
+                Dictionary<string, FieldValidator> m_validators = new Dictionary<string, FieldValidator>();
+
+                static FieldValidator CreteFieldValidator<U>(Func<T, U> getter, string name)
+                {
+                    return (v, c, o) =>
+                    {
+                        using (c.Push(name))
+                        {
+                            return v.Validate(c, getter(o));
+                        }
+                    };
+                }
+
+                public ObjectValidator()
+                {
+                    var mi = typeof(ObjectValidator).GetMethod(nameof(CreteFieldValidator),
+                        BindingFlags.Static|BindingFlags.NonPublic);
+
+                    var t = typeof(T);
+                    foreach(var fi in t.GetFields())
+                    {
+                        var value = Expression.Parameter(typeof(T), "value");
+                        var fieldValue = Expression.Field(value, fi);
+                        var compileld = Expression.Lambda(fieldValue, value).Compile();
+
+                        var getter = Expression.Constant(compileld);
+                        var name = Expression.Constant(fi.Name);
+                        var g = mi.MakeGenericMethod(fi.FieldType);
+                        var call = Expression.Call(g, getter, name);
+                        var lambda = (Func<FieldValidator>)Expression.Lambda(call).Compile();
+
+                        m_validators.Add(fi.Name, lambda());
+                    }
+                }
+
+                public JsonSchemaValidationException Validate(List<string> required, Dictionary<string, JsonSchema> properties,
+                    JsonSchemaValidationContext c, T o)
+                {
+                    foreach (var x in required)
+                    {
+                        JsonSchema s;
+                        if(properties.TryGetValue(x, out s))
+                        {
+                            FieldValidator fv;
+                            if (m_validators.TryGetValue(x, out fv))
+                            {
+                                var ex = fv(s.Validator, c, o);
+                                if (ex != null)
+                                {
+                                    return ex;
+                                }
+                            }
+                        }
+                    }
+                    return null;
+                }
+            }
+
+            static ObjectValidator s_validator;
+
+            public static JsonSchemaValidationException Validate(List<string> required,
+                Dictionary<string, JsonSchema> properties,
+                JsonSchemaValidationContext c, T o)
+            {
+                if (s_validator == null)
+                {
+                    s_validator = new ObjectValidator();
+                }
+                return s_validator.Validate(required, properties, c, o);
+            }
+        }
+
         public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext c, T o)
         {
             if (o == null)
@@ -312,17 +391,10 @@ namespace UniJSON
 
             if (Required != null)
             {
-                foreach (var x in Required)
+                var ex = GenericValidator<T>.Validate(Required, Properties, c, o);
+                if (ex != null)
                 {
-                    using (c.Push(x))
-                    {
-                        var value = o.GetValueByKey(x);
-                        var ex = Properties[x].Validator.Validate(c, value);
-                        if (ex != null)
-                        {
-                            return ex;
-                        }
-                    }
+                    return ex;
                 }
             }
 
