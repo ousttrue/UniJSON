@@ -22,15 +22,5 @@ namespace UniJSON
 
             throw new ArgumentException();
         }
-
-        public static int GetCount(object self)
-        {
-            var count = 0;
-            foreach (var x in self as IEnumerable)
-            {
-                ++count;
-            }
-            return count;
-        }
     }
 }

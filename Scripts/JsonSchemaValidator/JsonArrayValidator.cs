@@ -102,6 +102,42 @@ namespace UniJSON
             return false;
         }
 
+        static class GenericCounter<T>
+        {
+            delegate int Counter(T value);
+
+            static Counter s_counter;
+
+            public static int Count(T value)
+            {
+                if (s_counter == null)
+                {
+                    var t = typeof(T);
+                    if (t.IsArray)
+                    {
+                        var pi = t.GetProperty("Length");
+                        var v = Expression.Parameter(t, "value");
+                        var call = Expression.Property(v, pi);
+                        var compiled = (Func<T, int>)Expression.Lambda(call, v).Compile();
+                        s_counter = new Counter(compiled);
+                    }
+                    else if (t.GetIsGenericList())
+                    {
+                        var pi = t.GetProperty("Count");
+                        var v = Expression.Parameter(t, "value");
+                        var call = Expression.Property(v, pi);
+                        var compiled = (Func<T, int>)Expression.Lambda(call, v).Compile();
+                        s_counter = new Counter(compiled);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+                return s_counter(value);
+            }
+        }
+
         public JsonSchemaValidationException Validate<T>(JsonSchemaValidationContext context, T o)
         {
             if (o == null)
@@ -109,7 +145,7 @@ namespace UniJSON
                 return new JsonSchemaValidationException(context, "null");
             }
 
-            var count = ObjectExtensions.GetCount(o);
+            var count = GenericCounter<T>.Count(o);
             if (count == 0)
             {
                 return new JsonSchemaValidationException(context, "empty");
@@ -178,7 +214,7 @@ namespace UniJSON
                             BindingFlags.Static | BindingFlags.NonPublic);
                         g = mi.MakeGenericMethod(t.GetElementType());
                     }
-                    else if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>))
+                    else if (t.GetIsGenericList())
                     {
                         // ToDo: IList
                         var mi = typeof(JsonArrayValidator).GetMethod("ListSerializer",
