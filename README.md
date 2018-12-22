@@ -30,6 +30,7 @@ var json = f.ToString();
 ### Json Parse
 
 ```cs
+var json = "{\"X\":1,\"Y\":2,\"Z\":3}";
 var parsed = json.ParseAsJson();
 var x = parsed["X"].GetInt32();
 ```
@@ -84,7 +85,7 @@ Same as json interface
 ```cs
 var f = new MsgPackFormatter();
 f.Serialize(new Vector3(1, 2, 3));
-var msgpack = f.GetStoreBytes();
+ArraySegment<byte> msgpack = f.GetStoreBytes();
 
 var parsed = msgpack.ParseAsMsgPack();
 var x = parsed["X"].GetInt32();
@@ -104,3 +105,15 @@ var x = parsed["X"].GetInt32();
 
 * http://jsonpatch.com/
 
+### MsgPack
+
+* https://github.com/msgpack/msgpack/blob/master/spec.md
+
+### MsgPack-RPC
+
+* https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md
+
+### TOML
+
+* https://github.com/toml-lang/toml
+ 
