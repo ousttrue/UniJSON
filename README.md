@@ -18,6 +18,8 @@ var json = f.ToString();
 
 ### Json Serialize
 
+Serialize public fields automatically.
+
 ```cs
 var f = new JsonFormatter();
 f.Serialize(new Vector3(1, 2, 3));
