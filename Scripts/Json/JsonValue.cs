@@ -21,11 +21,16 @@ namespace UniJSON
         //Close, // internal use
     }
 
-    public struct JsonValue
+    public struct JsonValue: ITreeItem
     {
         public Utf8String Segment;
         public JsonValueType ValueType;
-        public int ParentIndex;
+
+        public int ParentIndex
+        {
+            get;
+            private set;
+        }
 
         public JsonValue(Utf8String segment, JsonValueType valueType, int parentIndex)
         {

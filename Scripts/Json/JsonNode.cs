@@ -5,13 +5,65 @@ using System.Linq;
 
 namespace UniJSON
 {
+
     public struct JsonNode : IValueNode<JsonNode>
     {
+        #region tmp
         public bool IsValid
         {
             get
             {
-                return Values != null;
+                return m_node.IsValid;
+            }
+        }
+
+        public bool HasParent
+        {
+            get
+            {
+                return m_node.HasParent;
+            }
+        }
+
+        public int ValueIndex
+        {
+            get
+            {
+                return m_node.ValueIndex;
+            }
+        }
+        #endregion
+
+        ListTreeNode<JsonValue> m_node;
+        List<JsonValue> Values
+        {
+            get { return m_node.Values; }
+        }
+        public JsonValue Value
+        {
+            get { return m_node.Value; }
+        }
+        public IEnumerable<JsonNode> Children
+        {
+            get
+            {
+                var values = Values;
+                return m_node.Children.Select(i => new JsonNode(values, i));
+            }
+        }
+        public JsonNode Parent
+        {
+            get
+            {
+                if (Value.ParentIndex < 0)
+                {
+                    throw new Exception("no parent");
+                }
+                if (Value.ParentIndex >= Values.Count)
+                {
+                    throw new IndexOutOfRangeException();
+                }
+                return new JsonNode(Values, Value.ParentIndex);
             }
         }
 
@@ -263,25 +315,6 @@ namespace UniJSON
             }
         }
 
-        public readonly List<JsonValue> Values;
-        int m_index;
-        public int ValueIndex
-        {
-            get
-            {
-                return m_index;
-            }
-        }
-        JsonValue Value
-        {
-            get {
-                if (Values == null)
-                {
-                    return default(JsonValue);
-                }
-                return Values[m_index];
-            }
-        }
         public ArraySegment<byte> Bytes
         {
             get
@@ -289,46 +322,10 @@ namespace UniJSON
                 return Value.Segment.Bytes;
             }
         }
-        public IEnumerable<JsonNode> Children
-        {
-            get
-            {
-                for (int i = 0; i < Values.Count; ++i)
-                {
-                    if (Values[i].ParentIndex == m_index)
-                    {
-                        yield return new JsonNode(Values, i);
-                    }
-                }
-            }
-        }
-        public bool HasParent
-        {
-            get
-            {
-                return Value.ParentIndex >= 0 && Value.ParentIndex < Values.Count;
-            }
-        }
-        public JsonNode Parent
-        {
-            get
-            {
-                if (Value.ParentIndex < 0)
-                {
-                    throw new Exception("no parent");
-                }
-                if (Value.ParentIndex >= Values.Count)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-                return new JsonNode(Values, Value.ParentIndex);
-            }
-        }
 
         public JsonNode(List<JsonValue> values, int index = 0)
         {
-            Values = values;
-            m_index = index;
+            m_node = new ListTreeNode<JsonValue>(values, index);
         }
 
         #region object interface
@@ -382,7 +379,7 @@ namespace UniJSON
                 throw new Exception("is not object");
             }
 
-            var parentIndex = m_index;
+            var parentIndex = m_node.ValueIndex;
             var indices = Values
                 .Select((value, index) => new { value, index })
                 .Where(x => x.value.ParentIndex == parentIndex)
@@ -405,14 +402,14 @@ namespace UniJSON
                 throw new InvalidOperationException();
             }
 
-            Values.Add(new JsonValue(Utf8String.From("\"" + key + "\""), JsonValueType.String, m_index));
+            Values.Add(new JsonValue(Utf8String.From("\"" + key + "\""), JsonValueType.String, m_node.ValueIndex));
             AddNode(node);
         }
 
         private void AddNode(JsonNode node)
         {
             var index = Values.Count;
-            Values.Add(new JsonValue(node.Value.Segment, node.Value.ValueType, m_index));
+            Values.Add(new JsonValue(node.Value.Segment, node.Value.ValueType, m_node.ValueIndex));
 
             var parent = new JsonNode(Values, index);
             if (node.Value.ValueType == JsonValueType.Array)
@@ -487,9 +484,9 @@ namespace UniJSON
                     catch (KeyNotFoundException)
                     {
                         // key
-                        Values.Add(new JsonValue(JsonString.Quote(jsonPointer[0]), JsonValueType.String, m_index));
+                        Values.Add(new JsonValue(JsonString.Quote(jsonPointer[0]), JsonValueType.String, m_node.ValueIndex));
                         // value
-                        Values.Add(new JsonValue(default(Utf8String), JsonValueType.Object, m_index));
+                        Values.Add(new JsonValue(default(Utf8String), JsonValueType.Object, m_node.ValueIndex));
 
                         child = this[jsonPointer[0]];
                     }
@@ -517,12 +514,10 @@ namespace UniJSON
 
             foreach (var node in GetNodes(jsonPointer))
             {
-                Values[node.m_index] = new JsonValue
-                {
-                    ParentIndex = node.Value.ParentIndex,
-                    Segment = new Utf8String(f.GetStoreBytes()),
-                    ValueType = JsonValueType.Boolean
-                };
+                Values[node.m_node.ValueIndex] = new JsonValue(
+                    new Utf8String(f.GetStoreBytes()), 
+                    JsonValueType.Boolean, 
+                    node.Value.ParentIndex);
             }
         }
 
@@ -532,9 +527,9 @@ namespace UniJSON
             {
                 if (node.Parent.IsMap())
                 {
-                    Values[node.m_index - 1] = JsonValue.Empty; // remove key
+                    Values[node.m_node.ValueIndex - 1] = JsonValue.Empty; // remove key
                 }
-                Values[node.m_index] = JsonValue.Empty; // remove
+                Values[node.m_node.ValueIndex] = JsonValue.Empty; // remove
             }
         }
         #endregion
@@ -542,7 +537,7 @@ namespace UniJSON
         #region Getter
         public bool GetBoolean()
         {
-            if(Value.ValueType!=JsonValueType.Boolean) throw new JsonValueTypeException(Value.ValueType);
+            if (Value.ValueType != JsonValueType.Boolean) throw new JsonValueTypeException(Value.ValueType);
             return Value.GetBoolean();
         }
 
@@ -564,7 +559,7 @@ namespace UniJSON
             {
                 return Value.GetInt8();
             }
-            else if(Value.ValueType == JsonValueType.Number)
+            else if (Value.ValueType == JsonValueType.Number)
             {
                 return (sbyte)Value.GetDouble();
             }

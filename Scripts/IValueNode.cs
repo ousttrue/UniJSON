@@ -7,6 +7,11 @@ using System.Reflection;
 
 namespace UniJSON
 {
+    public interface ITreeItem
+    {
+        int ParentIndex { get; }
+    }
+
     public enum ValueNodeType
     {
         Null,
