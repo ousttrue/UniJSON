@@ -34,9 +34,6 @@ namespace UniJSON
 
         void AddKey(Utf8String key);
         void AddValue(ArraySegment<Byte> bytes, ValueNodeType valueType);
-
-        void SetValue<U>(Utf8String jsonPointer, U value);
-        void RemoveValue(Utf8String jsonPointer);
     }
 
     public static class IValueNodeExtensions
