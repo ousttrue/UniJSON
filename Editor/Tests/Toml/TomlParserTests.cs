@@ -1,11 +1,7 @@
 ﻿using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 
-namespace UniJSON.UniJSON.Editor.Tests.Toml
+namespace UniJSON
 {
     class TomlParserTests
     {
@@ -13,7 +9,11 @@ namespace UniJSON.UniJSON.Editor.Tests.Toml
         public void Tests()
         {
             {
-                var result = TomlParser.Parse("");
+                var result = TomlParser.Parse(@"
+value = 1
+");
+                Assert.True(result.IsMap());
+                Assert.AreEqual(1, result["value"].GetInt32());
             }
         }
     }

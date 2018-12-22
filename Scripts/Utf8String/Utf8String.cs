@@ -22,13 +22,13 @@ namespace UniJSON
         public int CompareTo(Utf8String other)
         {
             int i = 0;
-            for(;  i<ByteLength && i<other.ByteLength; ++i)
+            for (; i < ByteLength && i < other.ByteLength; ++i)
             {
                 if (this[i] < other[i])
                 {
                     return 1;
                 }
-                else if(this[i] > other[i])
+                else if (this[i] > other[i])
                 {
                     return -1;
                 }
@@ -37,7 +37,7 @@ namespace UniJSON
             {
                 return -1;
             }
-            else if(i < other.ByteLength)
+            else if (i < other.ByteLength)
             {
                 return 1;
             }
@@ -340,6 +340,24 @@ namespace UniJSON
             return Subbytes(i);
         }
 
+        public Utf8String TrimEnd()
+        {
+            var i = ByteLength-1;
+            for (; i >= 0; --i)
+            {
+                if (!IsSpace(this[i]))
+                {
+                    break;
+                }
+            }
+            return Subbytes(0, i+1);
+        }
+
+        public Utf8String Trim()
+        {
+            return TrimStart().TrimEnd();
+        }
+
         public override bool Equals(Object obj)
         {
             return obj is Utf8String && Equals((Utf8String)obj);
@@ -422,7 +440,5 @@ namespace UniJSON
                 return true;
             }
         }
-
     }
-
 }

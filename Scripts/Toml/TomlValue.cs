@@ -1,18 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 
 namespace UniJSON
 {
     public struct TomlValue : ITreeItem, IValue<TomlValue>
     {
-        public int ParentIndex => throw new NotImplementedException();
+        public override string ToString()
+        {
+            return m_segment.ToString();
+        }
 
-        public ValueNodeType ValueType => throw new NotImplementedException();
+        public int ParentIndex { get; private set; }
 
-        public ArraySegment<byte> Bytes => throw new NotImplementedException();
+        public ValueNodeType ValueType { get; private set; }
+
+        Utf8String m_segment;
+        public ArraySegment<byte> Bytes { get { return m_segment.Bytes; } }
+
+        public TomlValue(Utf8String segment, ValueNodeType valueType, int parentIndex)
+        {
+            ParentIndex = parentIndex;
+            ValueType = valueType;
+            m_segment = segment;
+        }
 
         public bool GetBoolean()
         {
@@ -36,7 +46,7 @@ namespace UniJSON
 
         public int GetInt32()
         {
-            throw new NotImplementedException();
+            return m_segment.ToInt32();
         }
 
         public long GetInt64()
@@ -76,7 +86,7 @@ namespace UniJSON
 
         public Utf8String GetUtf8String()
         {
-            throw new NotImplementedException();
+            return m_segment;
         }
 
         public U GetValue<U>()

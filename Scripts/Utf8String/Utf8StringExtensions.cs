@@ -326,5 +326,16 @@ namespace UniJSON
         {
             return Double.Parse(src.ToAscii(), System.Globalization.CultureInfo.InvariantCulture);
         }
+
+        public static Utf8String GetLine(this Utf8String src)
+        {
+            int pos;
+            if (!src.TrySearchAscii((byte)'\n', 0, out pos))
+            {
+                return src;
+            }
+
+            return src.Subbytes(0, pos + 1);
+        }
     }
 }
