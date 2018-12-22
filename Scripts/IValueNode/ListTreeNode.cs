@@ -106,7 +106,7 @@ namespace UniJSON
             }
             else
             {
-                return GetValue().ToString();
+                return Value.ToString();
             }
         }
 
@@ -426,11 +426,15 @@ namespace UniJSON
         public ulong GetUInt64() { return Value.GetUInt64(); }
         public float GetSingle() { return Value.GetSingle(); }
         public double GetDouble() { return Value.GetDouble(); }
+
+        /// <summary>
+        /// for UnitTest. Use explicit GetT() or Deserialize(ref T)
+        /// </summary>
+        /// <returns></returns>
         public object GetValue()
         {
             return Value.GetValue<object>();
         }
-
         #endregion
 
         #region JsonPointer
