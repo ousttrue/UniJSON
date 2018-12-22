@@ -428,7 +428,7 @@ namespace UniJSON
             TimeStamp32(time);
         }
 
-        public void Value(MsgPackNode node)
+        public void Value(ListTreeNode<MsgPackValue> node)
         {
             m_store.Write(node.Bytes);
         }

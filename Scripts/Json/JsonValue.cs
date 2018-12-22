@@ -3,7 +3,7 @@
 
 namespace UniJSON
 {
-    public struct JsonValue: ITreeItem, IValue<JsonValue>
+    public struct JsonValue : ITreeItem, IValue<JsonValue>
     {
         public Utf8String Segment;
         public ArraySegment<Byte> Bytes { get { return Segment.Bytes; } }
@@ -129,6 +129,20 @@ namespace UniJSON
         public Utf8String GetUtf8String()
         {
             return JsonString.Unquote(Segment);
+        }
+
+        public T GetValue<T>()
+        {
+            switch (ValueType)
+            {
+                case ValueNodeType.Null: return GenericCast<object, T>.Null();
+                case ValueNodeType.Boolean: return GenericCast<bool, T>.Cast(GetBoolean());
+                case ValueNodeType.Integer: return GenericCast<int, T>.Cast(GetInt32());
+                case ValueNodeType.Number: return GenericCast<double, T>.Cast(GetDouble());
+                case ValueNodeType.String: return GenericCast<string, T>.Cast(GetString());
+            }
+
+            throw new NotImplementedException();
         }
     }
 }

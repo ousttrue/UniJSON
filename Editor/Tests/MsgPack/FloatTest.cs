@@ -14,7 +14,7 @@ namespace UniJSON.MsgPack
             var i = 1.1f;
             var float_be = new byte[]
             {
-                0x3f, 0x8c, 0xcc, 0xcd
+                (Byte)MsgPackType.FLOAT, 0x3f, 0x8c, 0xcc, 0xcd
             };
 
             var f = new MsgPackFormatter();
@@ -22,7 +22,7 @@ namespace UniJSON.MsgPack
             var bytes = f.GetStoreBytes();
 
             var value = MsgPackParser.Parse(bytes);
-            var body = value.GetBody();
+            var body = value.Bytes;
             Assert.AreEqual(float_be, body.ToEnumerable().ToArray());
 
             Assert.AreEqual(i, value.GetValue());
@@ -33,7 +33,7 @@ namespace UniJSON.MsgPack
         {
             var i = 1.1;
             var double_be = new Byte[]{
-                0x3f, 0xf1, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9a,
+                (Byte)MsgPackType.DOUBLE, 0x3f, 0xf1, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9a,
             };
 
             var f = new MsgPackFormatter();
@@ -41,7 +41,7 @@ namespace UniJSON.MsgPack
             var bytes = f.GetStoreBytes();
 
             var value = MsgPackParser.Parse(bytes);
-            var body = value.GetBody();
+            var body = value.Bytes;
             Assert.AreEqual(double_be, body.ToEnumerable().ToArray());
 
             Assert.AreEqual(i, value.GetValue());

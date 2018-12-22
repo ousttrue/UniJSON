@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 
 namespace UniJSON
@@ -63,7 +64,50 @@ namespace UniJSON
 
         public override string ToString()
         {
-            return Value.ToString();
+            if (this.IsArray())
+            {
+                var sb = new StringBuilder();
+                bool isFirst = true;
+                sb.Append("[");
+                foreach (var x in this.ArrayItems())
+                {
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        sb.Append(",");
+                    }
+                    sb.Append(x.ToString());
+                }
+                sb.Append("]");
+                return sb.ToString();
+            }
+            else if (this.IsMap())
+            {
+                var sb = new StringBuilder();
+                bool isFirst = true;
+                sb.Append("{");
+                foreach (var x in this.ObjectItems())
+                {
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        sb.Append(",");
+                    }
+                    sb.Append(x.ToString());
+                }
+                sb.Append("}");
+                return sb.ToString();
+            }
+            else
+            {
+                return GetValue().ToString();
+            }
         }
 
         IEnumerable<string> ToString(string indent, int level, bool value = false)
@@ -382,18 +426,20 @@ namespace UniJSON
         public ulong GetUInt64() { return Value.GetUInt64(); }
         public float GetSingle() { return Value.GetSingle(); }
         public double GetDouble() { return Value.GetDouble(); }
+        public object GetValue()
+        {
+            return Value.GetValue<object>();
+        }
+
         #endregion
 
         #region JsonPointer
-        public void SetValue<U>(Utf8String jsonPointer, U value)
+        public void SetValue(Utf8String jsonPointer, ArraySegment<Byte> bytes)
         {
-            var f = new JsonFormatter();
-            f.Serialize(value);
-
             foreach (var node in this.GetNodes(jsonPointer))
             {
                 Values[node.ValueIndex] = default(T).New(
-                    f.GetStoreBytes(),
+                    bytes,
                     ValueNodeType.Boolean,
                     node.Value.ParentIndex);
             }

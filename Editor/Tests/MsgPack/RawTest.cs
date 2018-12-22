@@ -15,7 +15,7 @@ namespace UniJSON.MsgPack
             f.Value(src);
             var bytes = f.GetStoreBytes();
 
-            var v = MsgPackParser.Parse(bytes).GetBytes();
+            var v = MsgPackParser.Parse(bytes).Value.GetBody();
             Assert.True(src.SequenceEqual(v.ToEnumerable()));
         }
 
@@ -27,7 +27,7 @@ namespace UniJSON.MsgPack
             f.Value(src);
             var bytes = f.GetStoreBytes();
 
-            var v = MsgPackParser.Parse(bytes).GetBytes();
+            var v = MsgPackParser.Parse(bytes).Value.GetBody();
             Assert.True(src.SequenceEqual(v.ToEnumerable()));
         }
     }

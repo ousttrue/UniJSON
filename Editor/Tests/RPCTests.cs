@@ -73,7 +73,7 @@ namespace UniJSON
         [Test]
         public void MsgPackRpcDispatcherTest()
         {
-            var dispatcher = new RpcDispatcher<MsgPackNode>();
+            var dispatcher = new RpcDispatcher<ListTreeNode<MsgPackValue>>();
             var f = new MsgPackFormatter();
 
             {

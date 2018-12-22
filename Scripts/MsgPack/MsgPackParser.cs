@@ -5,7 +5,7 @@ namespace UniJSON
 {
     public static class MsgPackParser
     {
-        public static MsgPackNode Parse(Byte[] bytes)
+        public static ListTreeNode<MsgPackValue> Parse(Byte[] bytes)
         {
             return Parse(new ArraySegment<byte>(bytes));
         }
@@ -411,11 +411,11 @@ namespace UniJSON
             return bytes;
         }
 
-        public static MsgPackNode Parse(ArraySegment<Byte> bytes)
+        public static ListTreeNode<MsgPackValue> Parse(ArraySegment<Byte> bytes)
         {
             var values = new List<MsgPackValue>();
             _Parse(bytes, values, -1);
-            return new MsgPackNode(values);
+            return new ListTreeNode<MsgPackValue>(values);
         }
     }
 }

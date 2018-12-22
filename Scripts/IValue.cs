@@ -39,5 +39,6 @@ namespace UniJSON
         UInt64 GetUInt64();
         Single GetSingle();
         Double GetDouble();
+        U GetValue<U>();
     }
 }

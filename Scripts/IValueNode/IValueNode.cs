@@ -31,6 +31,7 @@ namespace UniJSON
         UInt64 GetUInt64();
         Single GetSingle();
         Double GetDouble();
+        object GetValue();
 
         void AddKey(Utf8String key);
         void AddValue(ArraySegment<Byte> bytes, ValueNodeType valueType);
