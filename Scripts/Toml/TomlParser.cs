@@ -11,21 +11,6 @@ namespace UniJSON
 
         static TomlValue ParseRHS(Utf8String segment, int parentIndex)
         {
-            int i = 1;
-            for (; i < segment.ByteLength; ++i)
-            {
-                if (Char.IsWhiteSpace((char)segment[i])
-                    || segment[i] == '}'
-                    || segment[i] == ']'
-                    || segment[i] == ','
-                    || segment[i] == ':'
-                    )
-                {
-                    break;
-                }
-            }
-            segment = segment.Subbytes(0, i);
-
             switch ((char)segment[0])
             {
                 case '0':
@@ -45,6 +30,24 @@ namespace UniJSON
                     else
                     {
                         return new TomlValue(segment, ValueNodeType.Integer, parentIndex);
+                    }
+
+                case '"':
+                    {
+                        int pos;
+                        if (segment.TrySearchAscii((Byte)'"', 1, out pos))
+                        {
+                            return new TomlValue(segment.Subbytes(0, pos + 1), ValueNodeType.String, parentIndex);
+                        }
+                        else
+                        {
+                            throw new ParserException("no close string: " + segment);
+                        }
+                    }
+
+                case '[':
+                    {
+                        throw new NotImplementedException();
                     }
             }
 
@@ -67,6 +70,12 @@ namespace UniJSON
                 line = line.TrimStart();
                 if (line.IsEmpty)
                 {
+                    continue;
+                }
+
+                if (line[0] == '#')
+                {
+                    // comment line
                     continue;
                 }
 

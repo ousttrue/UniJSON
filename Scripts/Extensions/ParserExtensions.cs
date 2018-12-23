@@ -30,5 +30,23 @@ namespace UniJSON
         {
             return MsgPackParser.Parse(bytes);
         }
+
+        public static ListTreeNode<TomlValue> ParseAsToml(this string toml)
+        {
+            return TomlParser.Parse(toml);
+        }
+        public static ListTreeNode<TomlValue> ParseAsToml(this Utf8String toml)
+        {
+            return TomlParser.Parse(toml);
+        }
+        public static ListTreeNode<TomlValue> ParseAsToml(this byte[] bytes)
+        {
+            return TomlParser.Parse(new Utf8String(bytes));
+        }
+        public static ListTreeNode<TomlValue> ParseAsToml(this ArraySegment<byte> bytes)
+        {
+            return TomlParser.Parse(new Utf8String(bytes));
+        }
+
     }
 }
