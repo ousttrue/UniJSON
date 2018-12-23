@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 
 namespace UniJSON
@@ -55,18 +53,11 @@ namespace UniJSON
 
         public static ListTreeNode<TomlValue> Parse(Utf8String segment)
         {
-            var values = new List<TomlValue>();
-            var stack = new Stack<int>();
-
-            Action<Utf8String, ValueNodeType, int> Add = 
-                (Utf8String s, ValueNodeType t, int parentIndex) =>
-                {
-                    var index = values.Count;
-                    values.Add(new TomlValue(s, t, parentIndex));
-                    stack.Push(index);
-                };
-
-            Add(segment, ValueNodeType.Object, -1);
+            var values = new List<TomlValue>()
+            {
+                new TomlValue(segment, ValueNodeType.Object, -1),
+            };
+            var current = 0;
 
             while (!segment.IsEmpty)
             {
@@ -92,11 +83,15 @@ namespace UniJSON
                     {
                         throw new ParserException("] not found");
                     }
-                    var table = line.Subbytes(1, table_end-2).Trim();
-                    if (table.IsEmpty)
+                    var table_name = line.Subbytes(1, table_end-1).Trim();
+                    if (table_name.IsEmpty)
                     {
                         throw new ParserException("empty table name");
                     }
+
+                    // top level key
+                    values.Add(new TomlValue(table_name, ValueNodeType.Object, 0));
+                    current = values.Count - 1;
                 }
                 else
                 {
@@ -108,7 +103,7 @@ namespace UniJSON
                     }
                     var key = line.Subbytes(0, key_end);
                     line = line.Subbytes(key_end + 1);
-                    values.Add(new TomlValue(key.Trim(), ValueNodeType.String, stack.Peek()));
+                    values.Add(new TomlValue(key.Trim(), ValueNodeType.String, current));
 
                     // skip white space
                     int pos;
@@ -118,7 +113,7 @@ namespace UniJSON
                     }
                     line = line.Subbytes(pos);
 
-                    var value = ParseRHS(line, stack.Peek());
+                    var value = ParseRHS(line, current);
                     values.Add(value);
                 }
             }
