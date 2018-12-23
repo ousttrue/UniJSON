@@ -18,6 +18,49 @@ value = 1
         }
 
         [Test]
+        public void DottedKeyTests()
+        {
+            {
+                var result = TomlParser.Parse(@"
+value.value2 = 1
+");
+                Assert.True(result.IsMap());
+                Assert.AreEqual(1, result["value"]["value2"].GetInt32());
+            }
+        }
+
+        [Test]
+        public void DuplicatedKey()
+        {
+            {
+                Assert.Catch(() => TomlParser.Parse(@"
+value = 1
+value = 2
+"));
+            }
+        }
+
+        [Test]
+        public void QuotedKeyTests()
+        {
+            {
+                var result = TomlParser.Parse(@"
+""value"" = 1
+");
+                Assert.True(result.IsMap());
+                Assert.AreEqual(1, result["value"].GetInt32());
+            }
+
+            {
+                var result = TomlParser.Parse(@"
+""[key=value]"" = 1
+");
+                Assert.True(result.IsMap());
+                Assert.AreEqual(1, result["value"].GetInt32());
+            }
+        }
+
+        [Test]
         public void TableTests()
         { 
             {
@@ -27,6 +70,15 @@ value = 1
 ".ParseAsToml();
                 Assert.True(result.IsMap());
                 Assert.AreEqual(1, result["table"]["value"].GetInt32());
+            }
+
+            {
+                var result = @"
+[table.table2]
+value = 1
+".ParseAsToml();
+                Assert.True(result.IsMap());
+                Assert.AreEqual(1, result["table"]["table2"]["value"].GetInt32());
             }
         }
 

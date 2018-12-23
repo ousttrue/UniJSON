@@ -6,6 +6,29 @@ namespace UniJSON
 {
     public static class TomlParser
     {
+        static TomlValue ParseLHS(Utf8String segment, int parentIndex)
+        {
+            var it = segment.GetIterator();
+            while (it.MoveNext())
+            {
+                if (it.Current == '"')
+                {
+                    throw new NotImplementedException();
+                }
+                else if (it.Current == '.')
+                {
+                    throw new NotImplementedException();
+                }
+                else if (it.Current == ' ' || it.Current == '\t' || it.Current == '=')
+                {
+                    return new TomlValue(segment.Subbytes(0, it.BytePosition),
+                        TomlValueType.BareKey, parentIndex);
+                }
+            }
+
+            throw new NotImplementedException();
+        }
+
         static TomlValue ParseRHS(Utf8String segment, int parentIndex)
         {
             switch ((char)segment[0])
@@ -106,26 +129,48 @@ namespace UniJSON
                 else
                 {
                     // key = value
-                    int key_end;
-                    if (!segment.TrySearchByte(x => x == '=', out key_end))
                     {
-                        throw new ParserException("= not found");
+                        var key = ParseLHS(segment, current);
+                        switch(key.TomlValueType)
+                        {
+                            case TomlValueType.BareKey:
+                            case TomlValueType.QuotedKey:
+                                {
+                                    values.Add(key);
+
+                                    // skip key
+                                    segment = segment.Subbytes(key.Bytes.Count);
+                                }
+                                break;
+
+                            case TomlValueType.DottedKey:
+                                throw new NotImplementedException();
+                        }
                     }
-                    var key = segment.Subbytes(0, key_end);
-                    segment = segment.Subbytes(key_end + 1);
-                    values.Add(new TomlValue(key.Trim(), TomlValueType.BareKey, current));
 
-                    // skip white space
-                    segment = segment.TrimStart();
+                    {
+                        // search and skip =
+                        int eq;
+                        if (!segment.TrySearchByte(x => x == '=', out eq))
+                        {
+                            throw new ParserException("= not found");
+                        }
+                        segment = segment.Subbytes(eq + 1);
 
-                    var value = ParseRHS(segment, current);
-                    values.Add(value);
+                        // skip white space
+                        segment = segment.TrimStart();
+                    }
 
-                    // skip value
-                    segment = segment.Subbytes(value.Bytes.Count);
+                    {
+                        var value = ParseRHS(segment, current);
+                        values.Add(value);
 
-                    // skip to line end
-                    segment = segment.Subbytes(segment.GetLine().ByteLength);
+                        // skip value
+                        segment = segment.Subbytes(value.Bytes.Count);
+
+                        // skip to line end
+                        segment = segment.Subbytes(segment.GetLine().ByteLength);
+                    }
                 }
             }
 

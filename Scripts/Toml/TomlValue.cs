@@ -29,13 +29,17 @@ namespace UniJSON
 
         public int ParentIndex { get; private set; }
 
-        TomlValueType m_valueType;
+        public TomlValueType TomlValueType
+        {
+            get;
+            private set;
+        }
 
         public ValueNodeType ValueType
         {
             get
             {
-                switch (m_valueType)
+                switch (TomlValueType)
                 {
                     case TomlValueType.Integer: return ValueNodeType.Integer;
                     case TomlValueType.Float: return ValueNodeType.Number;
@@ -63,7 +67,7 @@ namespace UniJSON
         public TomlValue(Utf8String segment, TomlValueType valueType, int parentIndex)
         {
             ParentIndex = parentIndex;
-            m_valueType = valueType;
+            TomlValueType = valueType;
             m_segment = segment;
         }
 
