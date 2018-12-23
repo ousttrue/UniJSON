@@ -3,6 +3,23 @@
 
 namespace UniJSON
 {
+    public enum TomlValueType
+    {
+        BareKey, // key
+        QuotedKey, // "key"
+        DottedKey, // key.nested
+        BasicString, // "str"
+        MultilineBasicString, // """str"""
+        LiteralString, // 'str'
+        MultilineLiteralString, // '''str'''
+        Integer,
+        Float,
+        Boolean,
+        OffsetDatetime,
+        Array, // [1, 2, 3]
+        Table, // [table_name]
+    }
+
     public struct TomlValue : ITreeItem, IValue<TomlValue>
     {
         public override string ToString()
@@ -12,15 +29,41 @@ namespace UniJSON
 
         public int ParentIndex { get; private set; }
 
-        public ValueNodeType ValueType { get; private set; }
+        TomlValueType m_valueType;
+
+        public ValueNodeType ValueType
+        {
+            get
+            {
+                switch (m_valueType)
+                {
+                    case TomlValueType.Integer: return ValueNodeType.Integer;
+                    case TomlValueType.Float: return ValueNodeType.Number;
+                    case TomlValueType.Boolean: return ValueNodeType.Boolean;
+
+                    case TomlValueType.BareKey: return ValueNodeType.String;
+                    case TomlValueType.QuotedKey: return ValueNodeType.String;
+                    case TomlValueType.DottedKey: return ValueNodeType.String;
+
+                    case TomlValueType.BasicString: return ValueNodeType.String;
+                    case TomlValueType.MultilineBasicString: return ValueNodeType.String;
+                    case TomlValueType.LiteralString: return ValueNodeType.String;
+                    case TomlValueType.MultilineLiteralString: return ValueNodeType.String;
+
+                    case TomlValueType.Table: return ValueNodeType.Object;
+                    case TomlValueType.Array: return ValueNodeType.Array;
+                }
+                throw new NotImplementedException();
+            }
+        }
 
         Utf8String m_segment;
         public ArraySegment<byte> Bytes { get { return m_segment.Bytes; } }
 
-        public TomlValue(Utf8String segment, ValueNodeType valueType, int parentIndex)
+        public TomlValue(Utf8String segment, TomlValueType valueType, int parentIndex)
         {
             ParentIndex = parentIndex;
-            ValueType = valueType;
+            m_valueType = valueType;
             m_segment = segment;
         }
 

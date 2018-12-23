@@ -83,6 +83,16 @@ namespace UniJSON
         }
 
         [Test]
+        public void SplitIntegerTest()
+        {
+            Assert.AreEqual("1", Utf8String.From("1 ").SplitInteger().ToString());
+            Assert.AreEqual("123", Utf8String.From("123").SplitInteger().ToString());
+            Assert.Catch(() => Utf8String.From(" 1").SplitInteger());
+            Assert.AreEqual("+12", Utf8String.From("+12\n").SplitInteger().ToString());
+            Assert.AreEqual("-123", Utf8String.From("-123\n").SplitInteger().ToString());
+        }
+
+        [Test]
         public void AtoiTest()
         {
             Assert.AreEqual(1234, Utf8String.From("1234").ToInt32());

@@ -6,7 +6,7 @@ namespace UniJSON.Toml
     class TomlParserTests
     {
         [Test]
-        public void Tests()
+        public void BareKeyTests()
         {
             {
                 var result = TomlParser.Parse(@"
@@ -15,7 +15,11 @@ value = 1
                 Assert.True(result.IsMap());
                 Assert.AreEqual(1, result["value"].GetInt32());
             }
+        }
 
+        [Test]
+        public void TableTests()
+        { 
             {
                 var result = @"
 [table]
