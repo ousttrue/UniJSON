@@ -3,7 +3,7 @@
 
 namespace UniJSON
 {
-    public struct JsonValue : ITreeItem, IValue<JsonValue>
+    public struct JsonValue : IListTreeItem, IValue<JsonValue>
     {
         public Utf8String Segment;
         public ArraySegment<Byte> Bytes { get { return Segment.Bytes; } }

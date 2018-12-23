@@ -272,7 +272,8 @@ namespace UniJSON
             f.EndMap();
         }
 
-        public void Deserialize<U, V>(U src, ref V dst) where U : IValueNode<U>
+        public void Deserialize<U, V>(ListTreeNode<U> src, ref V dst) 
+            where U : IListTreeItem, IValue<U>
         {
             throw new NotImplementedException();
         }

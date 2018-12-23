@@ -76,7 +76,7 @@ namespace UniJSON
 
         void Serialize<T>(IFormatter f, JsonSchemaValidationContext context, T value);
 
-        void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>;
+        void Deserialize<T, U>(ListTreeNode<T> src, ref U dst) where T : IListTreeItem, IValue<T>;
         #endregion
     }
 }

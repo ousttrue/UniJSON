@@ -42,9 +42,10 @@ namespace UniJSON
             f.Serialize(value);
         }
 
-        public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
+        public void Deserialize<T, U>(ListTreeNode<T> src, ref U dst) 
+            where T : IListTreeItem, IValue<T>
         {
-            dst = GenericCast<bool, T>.Cast(src.GetBoolean());
+            dst = GenericCast<bool, U>.Cast(src.GetBoolean());
         }
     }
 }

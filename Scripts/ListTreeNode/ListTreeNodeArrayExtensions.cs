@@ -4,15 +4,16 @@ using System.Linq;
 
 namespace UniJSON
 {
-    public static class IValueNodeArrayExtensions
+    public static class ListTreeNodeArrayExtensions
     {
-        public static IEnumerable<T> ArrayItems<T>(this T self) where T : IValueNode<T>
+        public static IEnumerable<ListTreeNode<T>> ArrayItems<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
         {
             if (!self.IsArray()) throw new DeserializationException("is not array");
             return self.Children;
         }
 
-        public static T GetArrrayItem<T>(this T self, int index) where T : IValueNode<T>
+        public static ListTreeNode<T> GetArrrayItem<T>(this ListTreeNode<T> self, int index) 
+            where T : IListTreeItem, IValue<T>
         {
             int i = 0;
             foreach (var v in self.ArrayItems())
@@ -25,13 +26,15 @@ namespace UniJSON
             throw new KeyNotFoundException();
         }
 
-        public static int GetArrayCount<T>(this T self) where T : IValueNode<T>
+        public static int GetArrayCount<T>(this ListTreeNode<T> self) 
+            where T : IListTreeItem, IValue<T>
         {
             if (!self.IsArray()) throw new DeserializationException("is not array");
             return self.Children.Count();
         }
 
-        public static int IndexOf<T>(this T self, T child) where T : IValueNode<T>
+        public static int IndexOf<T>(this ListTreeNode<T> self, ListTreeNode<T> child) 
+            where T : IListTreeItem, IValue<T>
         {
             int i = 0;
             foreach (var v in self.ArrayItems())

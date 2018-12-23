@@ -3,7 +3,7 @@ using System.Text;
 
 namespace UniJSON
 {
-    public struct MsgPackValue: ITreeItem, IValue<MsgPackValue>
+    public struct MsgPackValue: IListTreeItem, IValue<MsgPackValue>
     {
         public int ParentIndex
         {

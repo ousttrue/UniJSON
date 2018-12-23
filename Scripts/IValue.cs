@@ -3,11 +3,6 @@
 
 namespace UniJSON
 {
-    public interface ITreeItem
-    {
-        int ParentIndex { get; }
-    }
-
     public enum ValueNodeType
     {
         Null,
@@ -20,7 +15,7 @@ namespace UniJSON
         Object,
     }
 
-    public interface IValue<T> where T : struct
+    public interface IValue<T>
     {
         T New(ArraySegment<byte> bytes, ValueNodeType valueType, int parentIndex);
         T Key(Utf8String key, int parentIndex);

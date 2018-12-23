@@ -22,7 +22,7 @@ namespace UniJSON.MsgPack
             var bytes = f.GetStoreBytes();
 
             var value = MsgPackParser.Parse(bytes);
-            var body = value.Bytes;
+            var body = value.Value.Bytes;
             Assert.AreEqual(float_be, body.ToEnumerable().ToArray());
 
             Assert.AreEqual(i, value.GetValue());
@@ -41,7 +41,7 @@ namespace UniJSON.MsgPack
             var bytes = f.GetStoreBytes();
 
             var value = MsgPackParser.Parse(bytes);
-            var body = value.Bytes;
+            var body = value.Value.Bytes;
             Assert.AreEqual(double_be, body.ToEnumerable().ToArray());
 
             Assert.AreEqual(i, value.GetValue());

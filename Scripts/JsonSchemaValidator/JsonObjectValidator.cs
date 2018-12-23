@@ -510,13 +510,14 @@ namespace UniJSON
             GenericSerializer<T>.Serialize(this, f, c, value);
         }
 
-        static class GenericDeserializer<S, T> where S : IValueNode<S>
+        static class GenericDeserializer<S, T> 
+            where S : IListTreeItem, IValue<S>
         {
-            delegate T Deserializer(S src);
+            delegate T Deserializer(ListTreeNode<S> src);
 
             static Deserializer s_d;
 
-            delegate void FieldSetter(S s, object o);
+            delegate void FieldSetter(ListTreeNode<S> s, object o);
             static FieldSetter GetFieldDeserializer<U>(FieldInfo fi)
             {
                 return (s, o) =>
@@ -527,14 +528,14 @@ namespace UniJSON
                 };
             }
 
-            static U DeserializeField<U>(JsonSchema prop, S s)
+            static U DeserializeField<U>(JsonSchema prop, ListTreeNode<S> s)
             {
                 var u = default(U);
                 prop.Validator.Deserialize(s, ref u);
                 return u;
             }
 
-            public static void Deserialize(S src, ref T dst, Dictionary<string, JsonSchema> props)
+            public static void Deserialize(ListTreeNode<S> src, ref T dst, Dictionary<string, JsonSchema> props)
             {
                 if (s_d == null)
                 {
@@ -566,11 +567,11 @@ namespace UniJSON
                         });
                     });
 
-                    s_d = (S s) =>
+                    s_d = (ListTreeNode<S> s) =>
                     {
                         if (!s.IsMap())
                         {
-                            throw new ArgumentException(s.ValueType.ToString());
+                            throw new ArgumentException(s.Value.ValueType.ToString());
                         }
 
                         // boxing
@@ -594,9 +595,10 @@ namespace UniJSON
             }
         }
 
-        public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
+        public void Deserialize<T, U>(ListTreeNode<T> src, ref U dst) 
+            where T : IListTreeItem, IValue<T>
         {
-            GenericDeserializer<S, T>.Deserialize(src, ref dst, Properties);
+            GenericDeserializer<T, U>.Deserialize(src, ref dst, Properties);
         }
     }
 }

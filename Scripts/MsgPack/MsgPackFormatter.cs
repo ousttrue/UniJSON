@@ -430,7 +430,7 @@ namespace UniJSON
 
         public void Value(ListTreeNode<MsgPackValue> node)
         {
-            m_store.Write(node.Bytes);
+            m_store.Write(node.Value.Bytes);
         }
 
         public IStore GetStore()

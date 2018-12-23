@@ -275,7 +275,7 @@ namespace UniJSON
         public void Value(ListTreeNode<JsonValue> node)
         {
             CommaCheck();
-            m_w.Write(node.Bytes);
+            m_w.Write(node.Value.Bytes);
         }
 
         #region IRpc

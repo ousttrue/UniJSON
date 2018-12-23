@@ -20,7 +20,7 @@ namespace UniJSON
         Table, // [table_name]
     }
 
-    public struct TomlValue : ITreeItem, IValue<TomlValue>
+    public struct TomlValue : IListTreeItem, IValue<TomlValue>
     {
         public override string ToString()
         {

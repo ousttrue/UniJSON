@@ -40,7 +40,7 @@ namespace UniJSON
         [Test]
         public void JsonRpcDispatcherTest()
         {
-            var dispatcher = new RpcDispatcher<ListTreeNode<JsonValue>>();
+            var dispatcher = new RpcDispatcher<JsonValue>();
             var f = new JsonFormatter();
 
             {
@@ -73,7 +73,7 @@ namespace UniJSON
         [Test]
         public void MsgPackRpcDispatcherTest()
         {
-            var dispatcher = new RpcDispatcher<ListTreeNode<MsgPackValue>>();
+            var dispatcher = new RpcDispatcher<MsgPackValue>();
             var f = new MsgPackFormatter();
 
             {

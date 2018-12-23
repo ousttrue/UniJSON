@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+
 
 namespace UniJSON
 {
-    public static class IValueNodeJsonPointerExtensions
+    public static class ListTreeNodeJsonPointerExtensions
     {
-        public static JsonPointer<T> Pointer<T>(this T self) where T : IValueNode<T>
+        public static JsonPointer Pointer<T>(this ListTreeNode<T> self)
+            where T: IListTreeItem, IValue<T>
         {
-            return new JsonPointer<T>(self);
+            return JsonPointer.Create(self);
         }
 
-        public static IEnumerable<T> Path<T>(this T self) where T : IValueNode<T>
+        public static IEnumerable<ListTreeNode<T>> Path<T>(this ListTreeNode<T> self)
+            where T : IListTreeItem, IValue<T>
         {
             if (self.HasParent)
             {
@@ -24,7 +26,9 @@ namespace UniJSON
             yield return self;
         }
 
-        public static IEnumerable<T> GetNodes<T>(this T self, JsonPointer<T> jsonPointer) where T : IValueNode<T>
+        public static IEnumerable<ListTreeNode<T>> GetNodes<T>(this ListTreeNode<T> self, 
+            JsonPointer jsonPointer)
+            where T : IListTreeItem, IValue<T>
         {
             if (jsonPointer.Path.Count == 0)
             {
@@ -72,7 +76,7 @@ namespace UniJSON
                 }
                 else
                 {
-                    T child;
+                    ListTreeNode<T> child;
                     try
                     {
                         child = self.ObjectItems().First(x => x.Key.GetUtf8String() == jsonPointer[0]).Value;
@@ -98,9 +102,11 @@ namespace UniJSON
             }
         }
 
-        public static IEnumerable<T> GetNodes<T>(this T self, Utf8String jsonPointer) where T : IValueNode<T>
+        public static IEnumerable<ListTreeNode<T>> GetNodes<T>(this ListTreeNode<T> self, 
+            Utf8String jsonPointer) 
+            where T : IListTreeItem, IValue<T>
         {
-            return self.GetNodes(new JsonPointer<T>(jsonPointer));
+            return self.GetNodes(new JsonPointer(jsonPointer));
         }
     }
 }

@@ -6,7 +6,8 @@ using System.Text;
 
 namespace UniJSON
 {
-    public struct ListTreeNode<T> : IValueNode<ListTreeNode<T>> where T : struct, ITreeItem, IValue<T>
+    public struct ListTreeNode<T> : ITreeNode<ListTreeNode<T>, T>
+        where T : IListTreeItem, IValue<T>
     {
         public override int GetHashCode()
         {
@@ -191,7 +192,7 @@ namespace UniJSON
             return string.Join("", ToString(indent, 0).ToArray());
         }
 
-        public IEnumerable<JsonDiff<ListTreeNode<T>>> Diff(ListTreeNode<T> rhs, JsonPointer<ListTreeNode<T>> path = default(JsonPointer<ListTreeNode<T>>))
+        public IEnumerable<JsonDiff> Diff(ListTreeNode<T> rhs, JsonPointer path = default(JsonPointer))
         {
             switch (Value.ValueType)
             {
@@ -202,14 +203,14 @@ namespace UniJSON
                 case ValueNodeType.String:
                     if (!Equals(rhs))
                     {
-                        yield return new JsonDiff<ListTreeNode<T>>(this, JsonDiffType.ValueChanged, string.Format("{0} => {1}", Value, rhs.Value));
+                        yield return JsonDiff.Create(this, JsonDiffType.ValueChanged, string.Format("{0} => {1}", Value, rhs.Value));
                     }
                     yield break;
             }
 
             if (Value.ValueType != rhs.Value.ValueType)
             {
-                yield return new JsonDiff<ListTreeNode<T>>(this, JsonDiffType.ValueChanged, string.Format("{0} => {1}", Value.ValueType, rhs.Value));
+                yield return JsonDiff.Create(this, JsonDiffType.ValueChanged, string.Format("{0} => {1}", Value.ValueType, rhs.Value));
                 yield break;
             }
 
@@ -234,14 +235,14 @@ namespace UniJSON
                     else
                     {
                         // Removed
-                        yield return new JsonDiff<ListTreeNode<T>>(kv.Value, JsonDiffType.KeyRemoved, kv.Value.Value.ToString());
+                        yield return JsonDiff.Create(kv.Value, JsonDiffType.KeyRemoved, kv.Value.Value.ToString());
                     }
                 }
 
                 foreach (var kv in r)
                 {
                     // Addded
-                    yield return new JsonDiff<ListTreeNode<T>>(kv.Value, JsonDiffType.KeyAdded, kv.Value.Value.ToString());
+                    yield return JsonDiff.Create(kv.Value, JsonDiffType.KeyAdded, kv.Value.Value.ToString());
                 }
             }
             else if (Value.ValueType == ValueNodeType.Array)
@@ -262,11 +263,11 @@ namespace UniJSON
                     }
                     else if (lll)
                     {
-                        yield return new JsonDiff<ListTreeNode<T>>(ll.Current, JsonDiffType.KeyRemoved, ll.Current.Value.ToString());
+                        yield return JsonDiff.Create(ll.Current, JsonDiffType.KeyRemoved, ll.Current.Value.ToString());
                     }
                     else if (rrr)
                     {
-                        yield return new JsonDiff<ListTreeNode<T>>(rr.Current, JsonDiffType.KeyAdded, rr.Current.Value.ToString());
+                        yield return JsonDiff.Create(rr.Current, JsonDiffType.KeyAdded, rr.Current.Value.ToString());
                     }
                     else
                     {
@@ -314,9 +315,6 @@ namespace UniJSON
             }
         }
 
-        public ArraySegment<byte> Bytes { get { return Value.Bytes; } }
-        public ValueNodeType ValueType { get { return Value.ValueType; } }
-
         #region Children
         public IEnumerable<ListTreeNode<T>> Children
         {
@@ -355,33 +353,7 @@ namespace UniJSON
                 return this.GetArrrayItem(index);
             }
         }
-
-        public IEnumerable<KeyValuePair<ListTreeNode<T>, ListTreeNode<T>>> ObjectItems
-        {
-            get
-            {
-                if (!this.IsMap()) throw new DeserializationException("is not object");
-                var it = Children.GetEnumerator();
-                while (it.MoveNext())
-                {
-                    var key = it.Current;
-
-                    it.MoveNext();
-                    yield return new KeyValuePair<ListTreeNode<T>, ListTreeNode<T>>(key, it.Current);
-                }
-            }
-        }
-
-        public IEnumerable<ListTreeNode<T>> ArrayItems
-        {
-            get
-            {
-                if (!this.IsArray()) throw new DeserializationException("is not object");
-                return Children;
-            }
-        }
         #endregion
-
 
         public bool HasParent
         {
@@ -412,31 +384,6 @@ namespace UniJSON
             ValueIndex = index;
         }
 
-        #region Getter
-        public bool GetBoolean() { return Value.GetBoolean(); }
-        public string GetString() { return Value.GetString(); }
-        public Utf8String GetUtf8String() { return Value.GetUtf8String(); }
-        public sbyte GetSByte() { return Value.GetSByte(); }
-        public short GetInt16() { return Value.GetInt16(); }
-        public int GetInt32() { return Value.GetInt32(); }
-        public long GetInt64() { return Value.GetInt64(); }
-        public byte GetByte() { return Value.GetByte(); }
-        public ushort GetUInt16() { return Value.GetUInt16(); }
-        public uint GetUInt32() { return Value.GetUInt32(); }
-        public ulong GetUInt64() { return Value.GetUInt64(); }
-        public float GetSingle() { return Value.GetSingle(); }
-        public double GetDouble() { return Value.GetDouble(); }
-
-        /// <summary>
-        /// for UnitTest. Use explicit GetT() or Deserialize(ref T)
-        /// </summary>
-        /// <returns></returns>
-        public object GetValue()
-        {
-            return Value.GetValue<object>();
-        }
-        #endregion
-
         #region JsonPointer
         public void SetValue(Utf8String jsonPointer, ArraySegment<Byte> bytes)
         {
@@ -451,7 +398,7 @@ namespace UniJSON
 
         public void RemoveValue(Utf8String jsonPointer)
         {
-            foreach (var node in this.GetNodes(new JsonPointer<ListTreeNode<T>>(jsonPointer)))
+            foreach (var node in this.GetNodes(new JsonPointer(jsonPointer)))
             {
                 if (node.Parent.IsMap())
                 {
@@ -471,5 +418,93 @@ namespace UniJSON
             Values.Add(default(T).New(bytes, valueType, ValueIndex));
         }
         #endregion
+    }
+
+    public static class ListTreeNodeExtensions
+    {
+        #region IValue
+        public static bool IsNull<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
+        {
+            return self.Value.ValueType == ValueNodeType.Null;
+        }
+
+        public static bool IsBoolean<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
+        {
+            return self.Value.ValueType == ValueNodeType.Boolean;
+        }
+
+        public static bool IsString<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
+        {
+            return self.Value.ValueType == ValueNodeType.String;
+        }
+
+        public static bool IsInteger<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
+        {
+            return self.Value.ValueType == ValueNodeType.Integer;
+        }
+
+        public static bool IsFloat<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
+        {
+            return self.Value.ValueType == ValueNodeType.Number;
+        }
+
+        public static bool IsArray<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
+        {
+            return self.Value.ValueType == ValueNodeType.Array;
+        }
+
+        public static bool IsMap<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
+        {
+            return self.Value.ValueType == ValueNodeType.Object;
+        }
+
+        public static bool GetBoolean<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetBoolean(); }
+        public static string GetString<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetString(); }
+        public static Utf8String GetUtf8String<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetUtf8String(); }
+        public static sbyte GetSByte<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetSByte(); }
+        public static short GetInt16<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetInt16(); }
+        public static int GetInt32<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetInt32(); }
+        public static long GetInt64<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetInt64(); }
+        public static byte GetByte<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetByte(); }
+        public static ushort GetUInt16<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetUInt16(); }
+        public static uint GetUInt32<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetUInt32(); }
+        public static ulong GetUInt64<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetUInt64(); }
+        public static float GetSingle<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetSingle(); }
+        public static double GetDouble<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T> { return self.Value.GetDouble(); }
+
+        /// <summary>
+        /// for UnitTest. Use explicit GetT() or Deserialize(ref T)
+        /// </summary>
+        /// <returns></returns>
+        public static object GetValue<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
+        {
+            return self.Value.GetValue<object>();
+        }
+        #endregion
+
+        public static IEnumerable<ListTreeNode<T>> Traverse<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
+        {
+            yield return self;
+            if (self.IsArray())
+            {
+                foreach (var x in self.ArrayItems())
+                {
+                    foreach (var y in x.Traverse())
+                    {
+                        yield return y;
+                    }
+                }
+            }
+            else if (self.IsMap())
+            {
+                foreach (var kv in self.ObjectItems())
+                {
+                    foreach (var y in kv.Value.Traverse())
+                    {
+                        yield return y;
+                    }
+                }
+            }
+        }
     }
 }

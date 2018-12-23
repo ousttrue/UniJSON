@@ -26,8 +26,8 @@ namespace UniJSON
         {
             {
                 var node = JsonParser.Parse("null");
-                Assert.AreEqual(0, node.Bytes.Offset);
-                Assert.AreEqual(4, node.Bytes.Count);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
+                Assert.AreEqual(4, node.Value.Bytes.Count);
                 Assert.True(node.IsNull());
             }
         }
@@ -37,16 +37,16 @@ namespace UniJSON
         {
             {
                 var node = JsonParser.Parse("true");
-                Assert.AreEqual(0, node.Bytes.Offset);
-                Assert.AreEqual(4, node.Bytes.Count);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
+                Assert.AreEqual(4, node.Value.Bytes.Count);
                 Assert.True(node.IsBoolean());
                 Assert.AreEqual(true, node.GetBoolean());
                 Assert.Catch(typeof(FormatException), () => node.GetDouble());
             }
             {
                 var node = JsonParser.Parse(" false ");
-                Assert.AreEqual(1, node.Bytes.Offset);
-                Assert.AreEqual(5, node.Bytes.Count);
+                Assert.AreEqual(1, node.Value.Bytes.Offset);
+                Assert.AreEqual(5, node.Value.Bytes.Count);
                 Assert.True(node.IsBoolean());
                 Assert.AreEqual(false, node.GetBoolean());
             }
@@ -57,23 +57,23 @@ namespace UniJSON
         {
             {
                 var node = JsonParser.Parse("1");
-                Assert.AreEqual(0, node.Bytes.Offset);
-                Assert.AreEqual(1, node.Bytes.Count);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
+                Assert.AreEqual(1, node.Value.Bytes.Count);
                 Assert.True(node.IsInteger());
                 Assert.AreEqual(1, (int)node.GetDouble());
                 Assert.Catch(typeof(DeserializationException), () => node.GetBoolean());
             }
             {
                 var node = JsonParser.Parse(" 22 ");
-                Assert.AreEqual(1, node.Bytes.Offset);
-                Assert.AreEqual(2, node.Bytes.Count);
+                Assert.AreEqual(1, node.Value.Bytes.Offset);
+                Assert.AreEqual(2, node.Value.Bytes.Count);
                 Assert.True(node.IsInteger());
                 Assert.AreEqual(22, (int)node.GetDouble());
             }
             {
                 var node = JsonParser.Parse(" 3.3 ");
-                Assert.AreEqual(1, node.Bytes.Offset);
-                Assert.AreEqual(3, node.Bytes.Count);
+                Assert.AreEqual(1, node.Value.Bytes.Offset);
+                Assert.AreEqual(3, node.Value.Bytes.Count);
                 Assert.True(node.IsFloat());
                 Assert.AreEqual(3, (int)node.GetDouble());
                 Assert.AreEqual(3.3f, (float)node.GetDouble());
@@ -100,8 +100,8 @@ namespace UniJSON
                 var quoted = "\"hoge\"";
                 Assert.AreEqual(quoted, JsonString.Quote(value));
                 var node = JsonParser.Parse(quoted);
-                Assert.AreEqual(0, node.Bytes.Offset);
-                Assert.AreEqual(quoted.Length, node.Bytes.Count);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
+                Assert.AreEqual(quoted.Length, node.Value.Bytes.Count);
                 Assert.True(node.IsString());
                 Assert.AreEqual("hoge", node.GetString());
             }
@@ -111,8 +111,8 @@ namespace UniJSON
                 var quoted = "\"fuga\\n  hoge\"";
                 Assert.AreEqual(quoted, JsonString.Quote(value));
                 var node = JsonParser.Parse(quoted);
-                Assert.AreEqual(0, node.Bytes.Offset);
-                Assert.AreEqual(quoted.Length, node.Bytes.Count);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
+                Assert.AreEqual(quoted.Length, node.Value.Bytes.Count);
                 Assert.True(node.IsString());
                 Assert.AreEqual(value, node.GetString());
             }
@@ -177,9 +177,9 @@ namespace UniJSON
             {
                 var json = "{}";
                 var node = JsonParser.Parse(json);
-                Assert.AreEqual(0, node.Bytes.Offset);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
 
-                Assert.AreEqual(2, node.Bytes.Count);
+                Assert.AreEqual(2, node.Value.Bytes.Count);
 
                 Assert.True(node.IsMap());
                 Assert.AreEqual(0, node.ObjectItems().Count());
@@ -188,8 +188,8 @@ namespace UniJSON
             {
                 var json = "{\"key\":\"value\"}";
                 var node = JsonParser.Parse(json);
-                Assert.AreEqual(0, node.Bytes.Offset);
-                Assert.AreEqual(json.Length, node.Bytes.Count);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
+                Assert.AreEqual(json.Length, node.Value.Bytes.Count);
                 Assert.True(node.IsMap());
 
                 var it = node.ObjectItems().GetEnumerator();
@@ -204,8 +204,8 @@ namespace UniJSON
             {
                 var json = "{\"key\":\"value\"}";
                 var node = JsonParser.Parse(json);
-                Assert.AreEqual(0, node.Bytes.Offset);
-                Assert.AreEqual(json.Length, node.Bytes.Count);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
+                Assert.AreEqual(json.Length, node.Value.Bytes.Count);
                 Assert.True(node.IsMap());
 
                 var it = node.ObjectItems().GetEnumerator();
@@ -262,10 +262,10 @@ namespace UniJSON
             {
                 var json = "[]";
                 var node = JsonParser.Parse(json);
-                Assert.AreEqual(0, node.Bytes.Offset);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
 
-                //Assert.Catch(() => { var result = node.Bytes.Count; }, "raise exception");
-                Assert.AreEqual(2, node.Bytes.Count);
+                //Assert.Catch(() => { var result = node.Value.Bytes.Count; }, "raise exception");
+                Assert.AreEqual(2, node.Value.Bytes.Count);
 
                 Assert.True(node.IsArray());
 
@@ -275,9 +275,9 @@ namespace UniJSON
             {
                 var json = "[1,2,3]";
                 var node = JsonParser.Parse(json);
-                Assert.AreEqual(0, node.Bytes.Offset);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
 
-                //Assert.Catch(() => { var result = node.Bytes.Count; }, "raise exception");
+                //Assert.Catch(() => { var result = node.Value.Bytes.Count; }, "raise exception");
 
                 Assert.True(node.IsArray());
                 Assert.AreEqual(1, node[0].GetDouble());
@@ -290,10 +290,10 @@ namespace UniJSON
             {
                 var json = "[\"key\",1]";
                 var node = JsonParser.Parse(json);
-                Assert.AreEqual(0, node.Bytes.Offset);
+                Assert.AreEqual(0, node.Value.Bytes.Offset);
 
-                //Assert.Catch(() => { var result = node.Bytes.Count; }, "raise exception");
-                Assert.AreEqual(json.Length, node.Bytes.Count);
+                //Assert.Catch(() => { var result = node.Value.Bytes.Count; }, "raise exception");
+                Assert.AreEqual(json.Length, node.Value.Bytes.Count);
 
                 Assert.True(node.IsArray());
 

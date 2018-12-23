@@ -9,17 +9,21 @@ namespace UniJSON
         ValueChanged,
     }
 
-    public struct JsonDiff<T> where T : IValueNode<T>, new()
+    public struct JsonDiff
     {
-        public JsonPointer<T> Path;
+        public JsonPointer Path;
         public JsonDiffType DiffType;
         public string Msg;
 
-        public JsonDiff(T node, JsonDiffType diffType, string msg)
+        public static JsonDiff Create<T>(ListTreeNode<T> node, JsonDiffType diffType, string msg)
+            where T: IListTreeItem, IValue<T>
         {
-            Path = new JsonPointer<T>(node);
-            DiffType = diffType;
-            Msg = msg;
+            return new JsonDiff
+            {
+                Path = JsonPointer.Create(node),
+                DiffType = diffType,
+                Msg = msg,
+            };
         }
 
         public override string ToString()

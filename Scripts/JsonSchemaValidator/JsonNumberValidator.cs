@@ -222,9 +222,10 @@ namespace UniJSON
             f.Serialize(GenericCast<T, int>.Cast(o));
         }
 
-        public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
+        public void Deserialize<T, U>(ListTreeNode<T> src, ref U dst) 
+            where T : IListTreeItem, IValue<T>
         {
-            dst = GenericCast<int, T>.Cast(src.GetInt32());
+            dst = GenericCast<int, U>.Cast(src.GetInt32());
         }
     }
 
@@ -420,9 +421,10 @@ namespace UniJSON
             f.Serialize(o);
         }
 
-        public void Deserialize<S, T>(S src, ref T dst) where S : IValueNode<S>
+        public void Deserialize<T, U>(ListTreeNode<T> src, ref U dst) 
+            where T : IListTreeItem, IValue<T>
         {
-            dst = GenericCast<double, T>.Cast(src.GetDouble());
+            dst = GenericCast<double, U>.Cast(src.GetDouble());
         }
     }
 }
