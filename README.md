@@ -91,6 +91,20 @@ var parsed = msgpack.ParseAsMsgPack();
 var x = parsed["X"].GetInt32();
 ```
 
+### Toml
+
+WIP
+
+```cs
+var toml =@"
+X = 1
+Y = 2
+Z = 3
+";
+var parsed = toml.ParseAsToml();
+var x = parsed["X"].GetInt32();
+```
+
 ## Reference
 ### JSON
 
