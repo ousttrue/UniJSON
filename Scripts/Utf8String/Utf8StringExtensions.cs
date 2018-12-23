@@ -74,7 +74,7 @@ namespace UniJSON
 
                             default:
                                 // unkonw escape
-                                throw new JsonParseException("unknown escape: " + p.Second);
+                                throw new ParserException("unknown escape: " + p.Second);
                         }
                     }
                 }

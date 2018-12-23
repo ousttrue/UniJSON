@@ -45,7 +45,7 @@ namespace UniJSON
                     }
 
                 default:
-                    throw new JsonParseException(segment + " is not valid json start");
+                    throw new ParserException(segment + " is not valid json start");
             }
         }
 
@@ -83,7 +83,7 @@ namespace UniJSON
             }
             else
             {
-                throw new JsonParseException("no close string: " + segment);
+                throw new ParserException("no close string: " + segment);
             }
         }
 
@@ -99,7 +99,7 @@ namespace UniJSON
                     int nextToken;
                     if (!current.TrySearchByte(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
-                        throw new JsonParseException("no white space expected");
+                        throw new ParserException("no white space expected");
                     }
                     current = current.Subbytes(nextToken);
                 }
@@ -122,7 +122,7 @@ namespace UniJSON
                     int keyPos;
                     if (!current.TrySearchByte(x => x == ',', out keyPos))
                     {
-                        throw new JsonParseException("',' expected");
+                        throw new ParserException("',' expected");
                     }
                     current = current.Subbytes(keyPos + 1);
                 }
@@ -132,7 +132,7 @@ namespace UniJSON
                     int nextToken;
                     if (!current.TrySearchByte(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
-                        throw new JsonParseException("not whitespace expected");
+                        throw new ParserException("not whitespace expected");
                     }
                     current = current.Subbytes(nextToken);
                 }
@@ -157,7 +157,7 @@ namespace UniJSON
                     int nextToken;
                     if (!current.TrySearchByte(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
-                        throw new JsonParseException("no white space expected");
+                        throw new ParserException("no white space expected");
                     }
                     current = current.Subbytes(nextToken);
                 }
@@ -179,7 +179,7 @@ namespace UniJSON
                     int keyPos;
                     if (!current.TrySearchByte(x => x == ',', out keyPos))
                     {
-                        throw new JsonParseException("',' expected");
+                        throw new ParserException("',' expected");
                     }
                     current = current.Subbytes(keyPos + 1);
                 }
@@ -189,7 +189,7 @@ namespace UniJSON
                     int nextToken;
                     if (!current.TrySearchByte(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
-                        throw new JsonParseException("not whitespace expected");
+                        throw new ParserException("not whitespace expected");
                     }
                     current = current.Subbytes(nextToken);
                 }
@@ -198,7 +198,7 @@ namespace UniJSON
                 var key = Parse(current, values, parentIndex);
                 if (key.ValueType != ValueNodeType.String)
                 {
-                    throw new JsonParseException("object key must string: " + key.Segment);
+                    throw new ParserException("object key must string: " + key.Segment);
                 }
                 current = current.Subbytes(key.Segment.ByteLength);
 
@@ -206,7 +206,7 @@ namespace UniJSON
                 int valuePos;
                 if (!current.TrySearchByte(x => x == ':', out valuePos))
                 {
-                    throw new JsonParseException(": is not found");
+                    throw new ParserException(": is not found");
                 }
                 current = current.Subbytes(valuePos + 1);
 
@@ -215,7 +215,7 @@ namespace UniJSON
                     int nextToken;
                     if (!current.TrySearchByte(x => !Char.IsWhiteSpace((char)x), out nextToken))
                     {
-                        throw new JsonParseException("not whitespace expected");
+                        throw new ParserException("not whitespace expected");
                     }
                     current = current.Subbytes(nextToken);
                 }
@@ -234,7 +234,7 @@ namespace UniJSON
             int pos;
             if (!segment.TrySearchByte(x => !char.IsWhiteSpace((char)x), out pos))
             {
-                throw new JsonParseException("only whitespace");
+                throw new ParserException("only whitespace");
             }
             segment = segment.Subbytes(pos);
 

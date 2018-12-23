@@ -8,7 +8,7 @@ namespace UniJSON
     {
         public static IEnumerable<T> ArrayItems<T>(this T self) where T : IValueNode<T>
         {
-            if (!self.IsArray()) throw new JsonValueException("is not array");
+            if (!self.IsArray()) throw new DeserializationException("is not array");
             return self.Children;
         }
 
@@ -27,7 +27,7 @@ namespace UniJSON
 
         public static int GetArrayCount<T>(this T self) where T : IValueNode<T>
         {
-            if (!self.IsArray()) throw new JsonValueException("is not array");
+            if (!self.IsArray()) throw new DeserializationException("is not array");
             return self.Children.Count();
         }
 

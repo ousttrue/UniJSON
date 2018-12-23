@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 
 
-namespace UniJSON
+namespace UniJSON.Toml
 {
     class TomlParserTests
     {
@@ -14,6 +14,15 @@ value = 1
 ");
                 Assert.True(result.IsMap());
                 Assert.AreEqual(1, result["value"].GetInt32());
+            }
+
+            {
+                var result = TomlParser.Parse(@"
+[table]
+value = 1
+");
+                Assert.True(result.IsMap());
+                Assert.AreEqual(1, result["table"]["value"].GetInt32());
             }
         }
     }

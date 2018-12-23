@@ -360,7 +360,7 @@ namespace UniJSON
         {
             get
             {
-                if (!this.IsMap()) throw new JsonValueException("is not object");
+                if (!this.IsMap()) throw new DeserializationException("is not object");
                 var it = Children.GetEnumerator();
                 while (it.MoveNext())
                 {
@@ -376,7 +376,7 @@ namespace UniJSON
         {
             get
             {
-                if (!this.IsArray()) throw new JsonValueException("is not object");
+                if (!this.IsArray()) throw new DeserializationException("is not object");
                 return Children;
             }
         }

@@ -61,7 +61,7 @@ namespace UniJSON
                 Assert.AreEqual(1, node.Bytes.Count);
                 Assert.True(node.IsInteger());
                 Assert.AreEqual(1, (int)node.GetDouble());
-                Assert.Catch(typeof(JsonValueException), () => node.GetBoolean());
+                Assert.Catch(typeof(DeserializationException), () => node.GetBoolean());
             }
             {
                 var node = JsonParser.Parse(" 22 ");
@@ -318,7 +318,7 @@ namespace UniJSON
         public void ParseTest()
         {
             var json = "{";
-            Assert.Catch(typeof(JsonParseException), () => JsonParser.Parse(json));
+            Assert.Catch(typeof(ParserException), () => JsonParser.Parse(json));
         }
 
         [Test]

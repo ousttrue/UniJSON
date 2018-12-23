@@ -3,23 +3,27 @@
 
 namespace UniJSON
 {
-    public class JsonParseException : Exception
+    /// <summary>
+    ///Exception failure
+    /// </summary>
+    public class ParserException : ArgumentException
     {
-        public JsonParseException(string msg) : base(msg) { }
+        public ParserException(string msg) : base(msg) { }
     }
 
-    public class JsonFormatException : ArgumentException
+    /// <summary>
+    /// Successfully parsed, but fail to getValue
+    /// </summary>
+    public class DeserializationException : ArgumentException
     {
-        public JsonFormatException(string msg) : base(msg) { }
+        public DeserializationException(string msg) : base(msg) { }
     }
 
-    public class JsonValueException : Exception
+    /// <summary>
+    /// Formatter exception. key value violation
+    /// </summary>
+    public class FormatterException : FormatException
     {
-        public JsonValueException(string msg=null) : base(msg) { }
-    }
-
-    public class JsonValueTypeException: JsonValueException
-    {
-        public JsonValueTypeException(ValueType type) : base(type.ToString()) { }
+        public FormatterException(string msg) : base(msg) { }
     }
 }

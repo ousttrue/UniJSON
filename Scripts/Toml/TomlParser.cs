@@ -87,7 +87,16 @@ namespace UniJSON
                 else if (line.StartsWith(s_table_key))
                 {
                     // [table_name]
-                    throw new NotImplementedException();
+                    int table_end;
+                    if (!line.TrySearchByte(x => x == ']', out table_end))
+                    {
+                        throw new ParserException("] not found");
+                    }
+                    var table = line.Subbytes(1, table_end-2).Trim();
+                    if (table.IsEmpty)
+                    {
+                        throw new ParserException("empty table name");
+                    }
                 }
                 else
                 {
@@ -95,7 +104,7 @@ namespace UniJSON
                     int key_end;
                     if (!line.TrySearchByte(x => x == '=', out key_end))
                     {
-                        throw new JsonParseException("= not found");
+                        throw new ParserException("= not found");
                     }
                     var key = line.Subbytes(0, key_end);
                     line = line.Subbytes(key_end + 1);

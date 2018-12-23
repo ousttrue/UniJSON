@@ -9,7 +9,7 @@ namespace UniJSON
     {
         public static IEnumerable<KeyValuePair<T, T>> ObjectItems<T>(this T self) where T : IValueNode<T>
         {
-            if (!self.IsMap()) throw new JsonValueException("is not object");
+            if (!self.IsMap()) throw new DeserializationException("is not object");
             var it = self.Children.GetEnumerator();
             while (it.MoveNext())
             {
@@ -22,7 +22,7 @@ namespace UniJSON
 
         public static int GetObjectCount<T>(this T self) where T : IValueNode<T>
         {
-            if (!self.IsMap()) throw new JsonValueException("is not object");
+            if (!self.IsMap()) throw new DeserializationException("is not object");
             return self.Children.Count() / 2;
         }
 

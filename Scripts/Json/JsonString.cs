@@ -127,7 +127,7 @@ namespace UniJSON
                 }
                 else
                 {
-                    throw new JsonParseException("invalid utf8");
+                    throw new ParserException("invalid utf8");
                 }
             }
         }
@@ -313,7 +313,7 @@ namespace UniJSON
                 }
                 else
                 {
-                    throw new JsonParseException("invalid utf8");
+                    throw new ParserException("invalid utf8");
                 }
             }
 

@@ -89,7 +89,7 @@ namespace UniJSON
             {
                 case Current.ROOT:
                     {
-                        if (top.Count != 0) throw new JsonFormatException("multiple root value");
+                        if (top.Count != 0) throw new FormatterException("multiple root value");
                     }
                     break;
 
@@ -106,7 +106,7 @@ namespace UniJSON
                     {
                         if (top.Count % 2 == 0)
                         {
-                            if (!isKey) throw new JsonFormatException("key exptected");
+                            if (!isKey) throw new FormatterException("key exptected");
                             if (top.Count != 0)
                             {
                                 m_w.Write(',');
@@ -114,7 +114,7 @@ namespace UniJSON
                         }
                         else
                         {
-                            if (isKey) throw new JsonFormatException("key not exptected");
+                            if (isKey) throw new FormatterException("key not exptected");
                         }
                     }
                     break;

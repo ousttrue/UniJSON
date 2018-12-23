@@ -70,7 +70,7 @@ namespace UniJSON
             }
             else
             {
-                throw new JsonValueException("invalid boolean: " + Segment.ToString());
+                throw new DeserializationException("invalid boolean: " + Segment.ToString());
             }
         }
 
@@ -84,7 +84,8 @@ namespace UniJSON
         public UInt64 GetUInt64() { return Segment.ToUInt64(); }
         public Single GetSingle() { return Segment.ToSingle(); }
         public Double GetDouble() { return Segment.ToDouble(); }
-        public String GetString() { return JsonString.Unquote(Segment.ToString()); }        public Utf8String GetUtf8String() { return JsonString.Unquote(Segment); }
+        public String GetString() { return JsonString.Unquote(Segment.ToString()); }
+        public Utf8String GetUtf8String() { return JsonString.Unquote(Segment); }
 
         public T GetValue<T>()
         {
