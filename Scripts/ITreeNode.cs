@@ -14,6 +14,7 @@ namespace UniJSON
 
         int ValueIndex { get; }
         U Value { get; }
+        void SetValue(U value);
     }
 
     public interface IListTreeItem

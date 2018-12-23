@@ -285,12 +285,12 @@ namespace UniJSON
         /// <summary>
         /// Whole tree nodes
         /// </summary>
-        public readonly List<T> Values;
+        List<T> m_Values;
         public bool IsValid
         {
             get
             {
-                return Values != null;
+                return m_Values != null;
             }
         }
 
@@ -303,16 +303,28 @@ namespace UniJSON
             private set;
         }
 
+        public ListTreeNode<T> Prev
+        {
+            get
+            {
+                return new ListTreeNode<T>(m_Values, ValueIndex - 1);
+            }
+        }
+
         public T Value
         {
             get
             {
-                if (Values == null)
+                if (m_Values == null)
                 {
                     return default(T);
                 }
-                return Values[ValueIndex];
+                return m_Values[ValueIndex];
             }
+        }
+        public void SetValue(T value)
+        {
+            m_Values[ValueIndex] = value;
         }
 
         #region Children
@@ -320,11 +332,11 @@ namespace UniJSON
         {
             get
             {
-                for (int i = 0; i < Values.Count; ++i)
+                for (int i = 0; i < m_Values.Count; ++i)
                 {
-                    if (Values[i].ParentIndex == ValueIndex)
+                    if (m_Values[i].ParentIndex == ValueIndex)
                     {
-                        yield return new ListTreeNode<T>(Values, i);
+                        yield return new ListTreeNode<T>(m_Values, i);
                     }
                 }
             }
@@ -359,7 +371,7 @@ namespace UniJSON
         {
             get
             {
-                return Value.ParentIndex >= 0 && Value.ParentIndex < Values.Count;
+                return Value.ParentIndex >= 0 && Value.ParentIndex < m_Values.Count;
             }
         }
         public ListTreeNode<T> Parent
@@ -370,52 +382,29 @@ namespace UniJSON
                 {
                     throw new Exception("no parent");
                 }
-                if (Value.ParentIndex >= Values.Count)
+                if (Value.ParentIndex >= m_Values.Count)
                 {
                     throw new IndexOutOfRangeException();
                 }
-                return new ListTreeNode<T>(Values, Value.ParentIndex);
+                return new ListTreeNode<T>(m_Values, Value.ParentIndex);
             }
         }
 
         public ListTreeNode(List<T> values, int index = 0)
         {
-            Values = values;
+            m_Values = values;
             ValueIndex = index;
         }
 
         #region JsonPointer
-        public void SetValue(Utf8String jsonPointer, ArraySegment<Byte> bytes)
-        {
-            foreach (var node in this.GetNodes(jsonPointer))
-            {
-                Values[node.ValueIndex] = default(T).New(
-                    bytes,
-                    ValueNodeType.Boolean,
-                    node.Value.ParentIndex);
-            }
-        }
-
-        public void RemoveValue(Utf8String jsonPointer)
-        {
-            foreach (var node in this.GetNodes(new JsonPointer(jsonPointer)))
-            {
-                if (node.Parent.IsMap())
-                {
-                    Values[node.ValueIndex - 1] = default(T); // remove key
-                }
-                Values[node.ValueIndex] = default(T); // remove
-            }
-        }
-
         public void AddKey(Utf8String key)
         {
-            Values.Add(default(T).Key(key, ValueIndex));
+            m_Values.Add(default(T).Key(key, ValueIndex));
         }
 
         public void AddValue(ArraySegment<byte> bytes, ValueNodeType valueType)
         {
-            Values.Add(default(T).New(bytes, valueType, ValueIndex));
+            m_Values.Add(default(T).New(bytes, valueType, ValueIndex));
         }
         #endregion
     }
