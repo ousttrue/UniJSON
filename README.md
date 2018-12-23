@@ -3,7 +3,7 @@ JSON serializer and deserializer and schema utilities for Unity(.Net3.5)
 
 ## Usage
 
-### Json Create
+### JSON Create
 
 ```cs
 var f = new JsonFormatter();
@@ -16,7 +16,7 @@ var json = f.ToString();
 // {"X":1,"Y":2,"Z":3}
 ```
 
-### Json Serialize
+### JSON Serialize
 
 Serialize public fields automatically.
 
@@ -27,7 +27,7 @@ var json = f.ToString();
 // {"X":1,"Y":2,"Z":3}
 ```
 
-### Json Parse
+### JSON Parse
 
 ```cs
 var json = "{\"X\":1,\"Y\":2,\"Z\":3}";
@@ -35,14 +35,14 @@ var parsed = json.ParseAsJson();
 var x = parsed["X"].GetInt32();
 ```
 
-### Json Deserialize
+### JSON Deserialize
 
 ```cs
 var v = default(Vector3);
 json.Deserialize(ref v);
 ```
 
-### JsonSchema
+### JSON Schema
 
 ```cs
 [Serializable]
@@ -91,7 +91,7 @@ var parsed = msgpack.ParseAsMsgPack();
 var x = parsed["X"].GetInt32();
 ```
 
-### Toml
+### TOML
 
 WIP
 
@@ -118,6 +118,11 @@ var x = parsed["X"].GetInt32();
 ### JSON Patch
 
 * http://jsonpatch.com/
+
+### JSON RPC
+
+* https://www.jsonrpc.org/specification
+
 
 ### MsgPack
 
