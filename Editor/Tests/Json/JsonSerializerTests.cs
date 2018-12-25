@@ -1,5 +1,4 @@
 ﻿#pragma warning disable 0649
-using System;
 using NUnit.Framework;
 using System.Collections.Generic;
 
@@ -57,9 +56,6 @@ namespace UniJSON
             SerializeValue(1, "1");
             SerializeValue(1.1f, "1.1");
             SerializeValue(1.2, "1.2");
-            SerializeValue(Double.NaN, "NaN");
-            SerializeValue(Double.PositiveInfinity, "Infinity");
-            SerializeValue(Double.NegativeInfinity, "-Infinity");
             SerializeValue(true, "true");
             SerializeValue(false, "false");
             SerializeValue("ascii", "\"ascii\"");

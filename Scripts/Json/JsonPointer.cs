@@ -46,7 +46,7 @@ namespace UniJSON
             };
         }
 
-        public JsonPointer(Utf8String pointer) : this()
+        public JsonPointer(Utf8String pointer)
         {
             int pos;
             if (!pointer.TrySearchAscii((Byte)'/', 0, out pos))

@@ -90,21 +90,6 @@ namespace UniJSON
                 Assert.AreEqual(0, (int)node.GetDouble());
                 Assert.AreEqual(-5e-4, node.GetDouble());
             }
-            {
-                var node = JsonParser.Parse("NaN");
-                Assert.True(node.IsFloat());
-                Assert.AreEqual(Double.NaN, node.GetDouble());
-            }
-            {
-                var node = JsonParser.Parse("Infinity");
-                Assert.True(node.IsFloat());
-                Assert.AreEqual(Double.PositiveInfinity, node.GetDouble());
-            }
-            {
-                var node = JsonParser.Parse("-Infinity");
-                Assert.True(node.IsFloat());
-                Assert.AreEqual(Double.NegativeInfinity, node.GetDouble());
-            }
         }
 
         [Test]

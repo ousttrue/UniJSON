@@ -13,9 +13,6 @@ namespace UniJSON
         Number,
         Array,
         Object,
-        NaN,
-        Infinity,
-        MinusInfinity,
     }
 
     public interface IValue<T>
