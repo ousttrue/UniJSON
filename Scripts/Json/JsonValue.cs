@@ -48,6 +48,9 @@ namespace UniJSON
                 case ValueNodeType.Array:
                 case ValueNodeType.Object:
                 case ValueNodeType.String:
+                case ValueNodeType.NaN:
+                case ValueNodeType.Infinity:
+                case ValueNodeType.MinusInfinity:
                     return Segment.ToString();
 
                 default:
@@ -94,7 +97,11 @@ namespace UniJSON
                 case ValueNodeType.Null: return GenericCast<object, T>.Null();
                 case ValueNodeType.Boolean: return GenericCast<bool, T>.Cast(GetBoolean());
                 case ValueNodeType.Integer: return GenericCast<int, T>.Cast(GetInt32());
-                case ValueNodeType.Number: return GenericCast<double, T>.Cast(GetDouble());
+                case ValueNodeType.Number:
+                case ValueNodeType.NaN:
+                case ValueNodeType.Infinity:
+                case ValueNodeType.MinusInfinity:
+                    return GenericCast<double, T>.Cast(GetDouble());
                 case ValueNodeType.String: return GenericCast<string, T>.Cast(GetString());
             }
 
