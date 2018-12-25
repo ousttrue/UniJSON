@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 
 
+/*
 namespace UniJSON.Toml
 {
     class TomlParserTests
@@ -124,3 +125,4 @@ hosts = [
         }
     }
 }
+*/
