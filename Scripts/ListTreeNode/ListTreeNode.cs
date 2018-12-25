@@ -70,6 +70,7 @@ namespace UniJSON
                 var sb = new StringBuilder();
                 bool isFirst = true;
                 sb.Append("[");
+                /*
                 foreach (var x in this.ArrayItems())
                 {
                     if (isFirst)
@@ -80,8 +81,9 @@ namespace UniJSON
                     {
                         sb.Append(",");
                     }
-                    sb.Append(x.ToString());
+                    sb.Append(x.ToString());                    
                 }
+                */
                 sb.Append("]");
                 return sb.ToString();
             }
@@ -90,7 +92,8 @@ namespace UniJSON
                 var sb = new StringBuilder();
                 bool isFirst = true;
                 sb.Append("{");
-                foreach (var x in this.ObjectItems())
+                /*
+                foreach (var kv in this.ObjectItems())
                 {
                     if (isFirst)
                     {
@@ -100,8 +103,11 @@ namespace UniJSON
                     {
                         sb.Append(",");
                     }
-                    sb.Append(x.ToString());
+                    sb.Append(kv.Key.ToString());
+                    sb.Append(": ");
+                    sb.Append(kv.Value.ToString());
                 }
+                */
                 sb.Append("}");
                 return sb.ToString();
             }
