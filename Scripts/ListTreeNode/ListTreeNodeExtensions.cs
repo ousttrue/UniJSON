@@ -28,7 +28,10 @@ namespace UniJSON
 
         public static bool IsFloat<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>
         {
-            return self.Value.ValueType == ValueNodeType.Number;
+            return self.Value.ValueType == ValueNodeType.Number
+                   || self.Value.ValueType == ValueNodeType.NaN
+                   || self.Value.ValueType == ValueNodeType.Infinity
+                   || self.Value.ValueType == ValueNodeType.MinusInfinity;
         }
 
         public static bool IsArray<T>(this ListTreeNode<T> self) where T : IListTreeItem, IValue<T>

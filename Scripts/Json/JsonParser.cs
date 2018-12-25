@@ -20,10 +20,10 @@ namespace UniJSON
                 case '"': return ValueNodeType.String;
                 case 't': return ValueNodeType.Boolean;
                 case 'f': return ValueNodeType.Boolean;
-                case 'n': return ValueNodeType.Null;
+                case 'n':
                     if (segment.ByteLength >= 2 && Char.ToLower((char) segment[1]) == 'a')
                     {
-                        return JsonValueType.NaN;
+                        return ValueNodeType.NaN;
                     }
 
                     return ValueNodeType.Null;
