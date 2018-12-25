@@ -13,7 +13,7 @@ namespace UniJSON
     {
         static ValueNodeType GetValueType(Utf8String segment)
         {
-            switch ((char)segment[0])
+            switch (Char.ToLower((char)segment[0]))
             {
                 case '{': return ValueNodeType.Object;
                 case '[': return ValueNodeType.Array;
@@ -21,8 +21,22 @@ namespace UniJSON
                 case 't': return ValueNodeType.Boolean;
                 case 'f': return ValueNodeType.Boolean;
                 case 'n': return ValueNodeType.Null;
+                    if (segment.ByteLength >= 2 && Char.ToLower((char) segment[1]) == 'a')
+                    {
+                        return JsonValueType.NaN;
+                    }
 
-                case '-': // fall through
+                    return ValueNodeType.Null;
+
+                case 'i':
+                    return ValueNodeType.Infinity;
+
+                case '-':
+                    if (segment.ByteLength >= 2 && Char.ToLower((char) segment[1]) == 'i')
+                    {
+                        return ValueNodeType.MinusInfinity;
+                    }
+                    goto case '0';// fall through
                 case '0': // fall through
                 case '1': // fall through
                 case '2': // fall through
@@ -245,6 +259,9 @@ namespace UniJSON
                 case ValueNodeType.Integer:
                 case ValueNodeType.Number:
                 case ValueNodeType.Null:
+                case ValueNodeType.NaN:
+                case ValueNodeType.Infinity:
+                case ValueNodeType.MinusInfinity:
                     {
                         var value= ParsePrimitive(segment, valueType, parentIndex);
                         values.Add(value);
