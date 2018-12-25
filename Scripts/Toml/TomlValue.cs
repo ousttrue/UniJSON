@@ -64,7 +64,7 @@ namespace UniJSON
         Utf8String m_segment;
         public ArraySegment<byte> Bytes { get { return m_segment.Bytes; } }
 
-        public TomlValue(Utf8String segment, TomlValueType valueType, int parentIndex)
+        public TomlValue(Utf8String segment, TomlValueType valueType, int parentIndex) : this()
         {
             ParentIndex = parentIndex;
             TomlValueType = valueType;

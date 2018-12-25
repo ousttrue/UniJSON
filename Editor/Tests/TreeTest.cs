@@ -110,7 +110,7 @@ namespace GenericTree
             }
         }
 
-        public TreeNode(List<T> values, int index)
+        public TreeNode(List<T> values, int index) : this()
         {
             Values = values;
             ValueIndex = index;
