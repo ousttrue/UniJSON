@@ -107,7 +107,7 @@ namespace UniJSON
                     {
                         child = self.ObjectItems().First(x => x.Key.GetUtf8String() == jsonPointer[0]).Value;
                     }
-                    catch (KeyNotFoundException)
+                    catch (Exception)
                     {
                         // key
                         self.AddKey(jsonPointer[0]);
