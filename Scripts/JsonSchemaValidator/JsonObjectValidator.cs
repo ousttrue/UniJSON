@@ -324,7 +324,8 @@ namespace UniJSON
                         BindingFlags.Static|BindingFlags.NonPublic);
 
                     var t = typeof(T);
-                    foreach(var fi in t.GetFields())
+                    foreach(var fi in t.GetFields(
+                        BindingFlags.Instance|BindingFlags.Public))
                     {
                         var value = Expression.Parameter(typeof(T), "value");
                         var fieldValue = Expression.Field(value, fi);
