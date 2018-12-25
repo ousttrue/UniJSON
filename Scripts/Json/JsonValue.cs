@@ -20,7 +20,7 @@ namespace UniJSON
             private set;
         }
 
-        public JsonValue(Utf8String segment, ValueNodeType valueType, int parentIndex)
+        public JsonValue(Utf8String segment, ValueNodeType valueType, int parentIndex) : this()
         {
             Segment = segment;
             ValueType = valueType;

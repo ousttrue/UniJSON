@@ -71,7 +71,7 @@ namespace UniJSON
             }
         }
 
-        public MsgPackValue(ArraySegment<Byte> segment, int parentIndex)
+        public MsgPackValue(ArraySegment<Byte> segment, int parentIndex) : this()
         {
             Bytes = segment;
             ParentIndex = parentIndex;
@@ -88,7 +88,7 @@ namespace UniJSON
         }
 
         /// <summary>
-        /// Array��Map�ȊO�̃^�C�v�̃y�C���[�h�𓾂�
+        /// ArrayとMap以外のタイプのペイロードを得る
         /// </summary>
         /// <returns></returns>
         public ArraySegment<Byte> GetBody()
@@ -386,7 +386,7 @@ namespace UniJSON
         }
 
         /// <summary>
-        /// Array��Map�ȊO�̃^�C�v�̒l�𓾂�
+        /// ArrayとMap以外のタイプの値を得る
         /// </summary>
         /// <returns></returns>
         public T GetValue<T>()

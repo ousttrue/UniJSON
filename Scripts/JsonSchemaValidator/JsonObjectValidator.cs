@@ -320,7 +320,7 @@ namespace UniJSON
 
                 public ObjectValidator()
                 {
-                    var mi = typeof(ObjectValidator).GetMethod(nameof(CreteFieldValidator),
+                    var mi = typeof(ObjectValidator).GetMethod("CreteFieldValidator",
                         BindingFlags.Static|BindingFlags.NonPublic);
 
                     var t = typeof(T);

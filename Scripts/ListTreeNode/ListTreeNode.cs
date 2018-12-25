@@ -390,7 +390,7 @@ namespace UniJSON
             }
         }
 
-        public ListTreeNode(List<T> values, int index = 0)
+        public ListTreeNode(List<T> values, int index = 0) : this()
         {
             m_Values = values;
             ValueIndex = index;
