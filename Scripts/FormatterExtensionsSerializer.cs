@@ -8,124 +8,6 @@ namespace UniJSON
 {
     public static class FormatterExtensionsSerializer
     {
-        static Type SelfType = typeof(FormatterExtensionsSerializer);
-
-        static class GenericSerializer<T>
-        {
-            delegate void Serializer(IFormatter f, T t);
-
-            static Action<IFormatter, T> GetSerializer(Type t)
-            {
-                // object
-                if(typeof(T)==typeof(object) && t.GetType() != typeof(object))
-                {
-                    var self = Expression.Parameter(typeof(IFormatter), "f");
-                    var arg = Expression.Parameter(t, "value");
-                    var call = Expression.Call(SelfType, "SerializeObject",
-                        new Type[] { },
-                        self, arg);
-                    var lambda = Expression.Lambda(call, self, arg);
-                    return (Action<IFormatter, T>)lambda.Compile();
-                }
-
-                try
-                {
-                    // primitive
-                    var mi = typeof(IFormatter).GetMethod("Value", new Type[] { t });
-                    if (mi != null)
-                    {
-                        // premitives
-                        var self = Expression.Parameter(typeof(IFormatter), "f");
-                        var arg = Expression.Parameter(t, "value");
-                        var call = Expression.Call(self, mi, arg);
-
-                        var lambda = Expression.Lambda(call, self, arg);
-                        return (Action<IFormatter, T>)lambda.Compile();
-                    }
-                }
-                catch (AmbiguousMatchException)
-                {
-                    // do nothing
-                }
-
-                {
-                    // dictionary
-                    var idictionary = t.GetInterfaces().FirstOrDefault(x =>
-                    x.IsGenericType
-                    && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)
-                    && x.GetGenericArguments()[0] == typeof(string)
-                    );
-                    if (idictionary != null)
-                    {
-                        //var mi = typeof(IFormatter).GetMethod("SerializeDictionary", new Type[] { t });
-                        var self = Expression.Parameter(typeof(IFormatter), "f");
-                        var arg = Expression.Parameter(t, "value");
-                        var call = Expression.Call(SelfType, "SerializeDictionary",
-                            new Type[] { },
-                            self, arg);
-                        var lambda = Expression.Lambda(call, self, arg);
-                        return (Action<IFormatter, T>)lambda.Compile();
-                    }
-                }
-
-                {
-                    // object[]
-                    if (t == typeof(object[]))
-                    {
-                        var self = Expression.Parameter(typeof(IFormatter), "f");
-                        var arg = Expression.Parameter(t, "value");
-                        var call = Expression.Call(SelfType, "SerializeObjectArray",
-                            new Type[] { },
-                            self, arg);
-                        var lambda = Expression.Lambda(call, self, arg);
-                        return (Action<IFormatter, T>)lambda.Compile();
-                    }
-                }
-
-                {
-                    // list
-                    var ienumerable = t.GetInterfaces().FirstOrDefault(x =>
-                    x.IsGenericType
-                    && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)
-                    );
-                    if (ienumerable != null)
-                    {
-                        var self = Expression.Parameter(typeof(IFormatter), "f");
-                        var arg = Expression.Parameter(t, "value");
-                        var call = Expression.Call(SelfType, "SerializeArray",
-                            ienumerable.GetGenericArguments(),
-                            self, arg);
-                        var lambda = Expression.Lambda(call, self, arg);
-                        return (Action<IFormatter, T>)lambda.Compile();
-                    }
-                }
-
-                {
-                    // reflection
-                    var schema = JsonSchema.FromType<T>();
-                    return (IFormatter f, T value) => schema.Serialize(f, value);
-                }
-
-                //throw new NotImplementedException();
-            }
-
-            static Serializer s_serializer;
-
-            public static void Set(Action<IFormatter, T> serializer)
-            {
-                s_serializer = new Serializer(serializer);
-            }
-
-            public static void Serialize(IFormatter f, T t)
-            {
-                if (s_serializer == null)
-                {
-                    s_serializer = new Serializer(GetSerializer(typeof(T)));
-                }
-                s_serializer(f, t);
-            }
-        }
-
         public static void SerializeDictionary(this IFormatter f, IDictionary<string, object> dictionary)
         {
             f.BeginMap(dictionary.Count);
@@ -165,7 +47,7 @@ namespace UniJSON
             }
             else
             {
-                SelfType.GetMethod("Serialize").MakeGenericMethod(value.GetType()).Invoke(null, new object[] { f, value });
+                typeof(FormatterExtensionsSerializer).GetMethod("Serialize").MakeGenericMethod(value.GetType()).Invoke(null, new object[] { f, value });
             }
         }
 
@@ -183,6 +65,122 @@ namespace UniJSON
         public static void SetCustomSerializer<T>(Action<IFormatter, T> serializer)
         {
             GenericSerializer<T>.Set(serializer);
+        }
+    }
+
+    static class GenericSerializer<T>
+    {
+        delegate void Serializer(IFormatter f, T t);
+
+        static Action<IFormatter, T> GetSerializer(Type t)
+        {
+            // object
+            if (typeof(T) == typeof(object) && t.GetType() != typeof(object))
+            {
+                var self = Expression.Parameter(typeof(IFormatter), "f");
+                var arg = Expression.Parameter(t, "value");
+                var call = Expression.Call(typeof(FormatterExtensionsSerializer), "SerializeObject",
+                    new Type[] { },
+                    self, arg);
+                var lambda = Expression.Lambda(call, self, arg);
+                return (Action<IFormatter, T>)lambda.Compile();
+            }
+
+            try
+            {
+                // primitive
+                var mi = typeof(IFormatter).GetMethod("Value", new Type[] { t });
+                if (mi != null)
+                {
+                    // premitives
+                    var self = Expression.Parameter(typeof(IFormatter), "f");
+                    var arg = Expression.Parameter(t, "value");
+                    var call = Expression.Call(self, mi, arg);
+
+                    var lambda = Expression.Lambda(call, self, arg);
+                    return (Action<IFormatter, T>)lambda.Compile();
+                }
+            }
+            catch (AmbiguousMatchException)
+            {
+                // do nothing
+            }
+
+            {
+                // dictionary
+                var idictionary = t.GetInterfaces().FirstOrDefault(x =>
+                x.IsGenericType
+                && x.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+                && x.GetGenericArguments()[0] == typeof(string)
+                );
+                if (idictionary != null)
+                {
+                    //var mi = typeof(IFormatter).GetMethod("SerializeDictionary", new Type[] { t });
+                    var self = Expression.Parameter(typeof(IFormatter), "f");
+                    var arg = Expression.Parameter(t, "value");
+                    var call = Expression.Call(typeof(FormatterExtensionsSerializer), "SerializeDictionary",
+                        new Type[] { },
+                        self, arg);
+                    var lambda = Expression.Lambda(call, self, arg);
+                    return (Action<IFormatter, T>)lambda.Compile();
+                }
+            }
+
+            {
+                // object[]
+                if (t == typeof(object[]))
+                {
+                    var self = Expression.Parameter(typeof(IFormatter), "f");
+                    var arg = Expression.Parameter(t, "value");
+                    var call = Expression.Call(typeof(FormatterExtensionsSerializer), "SerializeObjectArray",
+                        new Type[] { },
+                        self, arg);
+                    var lambda = Expression.Lambda(call, self, arg);
+                    return (Action<IFormatter, T>)lambda.Compile();
+                }
+            }
+
+            {
+                // list
+                var ienumerable = t.GetInterfaces().FirstOrDefault(x =>
+                x.IsGenericType
+                && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                );
+                if (ienumerable != null)
+                {
+                    var self = Expression.Parameter(typeof(IFormatter), "f");
+                    var arg = Expression.Parameter(t, "value");
+                    var call = Expression.Call(typeof(FormatterExtensionsSerializer), "SerializeArray",
+                        ienumerable.GetGenericArguments(),
+                        self, arg);
+                    var lambda = Expression.Lambda(call, self, arg);
+                    return (Action<IFormatter, T>)lambda.Compile();
+                }
+            }
+
+            {
+                // reflection
+                var schema = JsonSchema.FromType<T>();
+                return (IFormatter f, T value) => schema.Serialize(f, value);
+            }
+
+            //throw new NotImplementedException();
+        }
+
+        static Serializer s_serializer;
+
+        public static void Set(Action<IFormatter, T> serializer)
+        {
+            s_serializer = new Serializer(serializer);
+        }
+
+        public static void Serialize(IFormatter f, T t)
+        {
+            if (s_serializer == null)
+            {
+                s_serializer = new Serializer(GetSerializer(typeof(T)));
+            }
+            s_serializer(f, t);
         }
     }
 }

@@ -96,143 +96,150 @@ namespace UniJSON
             }
         }
 
-        static class GenericDeserializer<T, U>
+        public static void Deserialize<T, U>(this ListTreeNode<T> self, ref U value)
             where T : IListTreeItem, IValue<T>
         {
-            static V[] GenericArrayDeserializer<V>(ListTreeNode<T> s)
-            {
-                if (!s.IsArray())
-                {
-                    throw new ArgumentException("not array: " + s.Value.ValueType);
-                }
-                var u = new V[s.GetArrayCount()];
-                int i = 0;
-                foreach (var x in s.ArrayItems())
-                {
-                    x.Deserialize(ref u[i++]);
-                }
-                return u;
-            }
+            GenericDeserializer<T, U>.Deserialize(self, ref value);
+        }
+    }
 
-            static List<V> GenericListDeserializer<V>(ListTreeNode<T> s)
+    public static class GenericDeserializer<T, U>
+        where T : IListTreeItem, IValue<T>
+    {
+        static V[] GenericArrayDeserializer<V>(ListTreeNode<T> s)
+        {
+            if (!s.IsArray())
             {
-                if (!s.IsArray())
-                {
-                    throw new ArgumentException("not array: " + s.Value.ValueType);
-                }
-                var u = new List<V>(s.GetArrayCount());
-                foreach (var x in s.ArrayItems())
-                {
-                    var e = default(V);
-                    x.Deserialize(ref e);
-                    u.Add(e);
-                }
-                return u;
+                throw new ArgumentException("not array: " + s.Value.ValueType);
             }
-
-            delegate void FieldSetter(ListTreeNode<T> s, object o);
-            static FieldSetter GetFieldDeserializer<V>(FieldInfo fi)
+            var u = new V[s.GetArrayCount()];
+            int i = 0;
+            foreach (var x in s.ArrayItems())
             {
-                return (s, o) =>
-                {
-                    var u = default(V);
-                    s.Deserialize(ref u);
-                    fi.SetValue(o, u);
-                };
+                x.Deserialize(ref u[i++]);
             }
+            return u;
+        }
 
-            static Func<ListTreeNode<T>, U> GetDeserializer()
+        static List<V> GenericListDeserializer<V>(ListTreeNode<T> s)
+        {
+            if (!s.IsArray())
             {
-                // primitive
+                throw new ArgumentException("not array: " + s.Value.ValueType);
+            }
+            var u = new List<V>(s.GetArrayCount());
+            foreach (var x in s.ArrayItems())
+            {
+                var e = default(V);
+                x.Deserialize(ref e);
+                u.Add(e);
+            }
+            return u;
+        }
+
+        delegate void FieldSetter(ListTreeNode<T> s, object o);
+        static FieldSetter GetFieldDeserializer<V>(FieldInfo fi)
+        {
+            return (s, o) =>
+            {
+                var u = default(V);
+                s.Deserialize(ref u);
+                fi.SetValue(o, u);
+            };
+        }
+
+        static Func<ListTreeNode<T>, U> GetDeserializer()
+        {
+            // primitive
+            {
+                var mi = typeof(ListTreeNode<T>).GetMethods().FirstOrDefault(x =>
                 {
-                    var mi = typeof(ListTreeNode<T>).GetMethods().FirstOrDefault(x =>
+                    if (!x.Name.StartsWith("Get"))
                     {
-                        if (!x.Name.StartsWith("Get"))
-                        {
-                            return false;
-                        }
-
-                        if (!x.Name.EndsWith(typeof(U).Name))
-                        {
-                            return false;
-                        }
-
-                        var parameters = x.GetParameters();
-                        if (parameters.Length != 0)
-                        {
-                            return false;
-                        }
-
-                        if (x.ReturnType != typeof(U))
-                        {
-                            return false;
-                        }
-
-                        return true;
-                    });
-
-                    if (mi != null)
-                    {
-                        var self = Expression.Parameter(typeof(ListTreeNode<T>), "self");
-                        var call = Expression.Call(self, mi);
-                        var func = Expression.Lambda(call, self);
-                        return (Func<ListTreeNode<T>, U>)func.Compile();
+                        return false;
                     }
-                }
 
-                var target = typeof(U);
+                    if (!x.Name.EndsWith(typeof(U).Name))
+                    {
+                        return false;
+                    }
 
-                if (target.IsArray)
+                    var parameters = x.GetParameters();
+                    if (parameters.Length != 0)
+                    {
+                        return false;
+                    }
+
+                    if (x.ReturnType != typeof(U))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                if (mi != null)
                 {
-                    var mi = typeof(GenericDeserializer<T, U>).GetMethod("GenericArrayDeserializer",
+                    var self = Expression.Parameter(typeof(ListTreeNode<T>), "self");
+                    var call = Expression.Call(self, mi);
+                    var func = Expression.Lambda(call, self);
+                    return (Func<ListTreeNode<T>, U>)func.Compile();
+                }
+            }
+
+            var target = typeof(U);
+
+            if (target.IsArray)
+            {
+                var mi = typeof(GenericDeserializer<T, U>).GetMethod("GenericArrayDeserializer",
+                    BindingFlags.Static | BindingFlags.NonPublic);
+                var g = mi.MakeGenericMethod(target.GetElementType());
+                var self = Expression.Parameter(typeof(ListTreeNode<T>), "self");
+                var call = Expression.Call(g, self);
+                var func = Expression.Lambda(call, self);
+                return (Func<ListTreeNode<T>, U>)func.Compile();
+            }
+
+            if (target.IsGenericType)
+            {
+                if (target.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    var mi = typeof(GenericDeserializer<T, U>).GetMethod("GenericListDeserializer",
                         BindingFlags.Static | BindingFlags.NonPublic);
-                    var g = mi.MakeGenericMethod(target.GetElementType());
+                    var g = mi.MakeGenericMethod(target.GetGenericArguments());
                     var self = Expression.Parameter(typeof(ListTreeNode<T>), "self");
                     var call = Expression.Call(g, self);
                     var func = Expression.Lambda(call, self);
                     return (Func<ListTreeNode<T>, U>)func.Compile();
                 }
 
-                if (target.IsGenericType)
+                if (target.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
+                    target.GetGenericArguments()[0] == typeof(string))
                 {
-                    if (target.GetGenericTypeDefinition() == typeof(List<>))
+                    var mi = typeof(ListTreeNodeDeserializerExtensions).GetMethod("DictionaryDeserializer",
+                    BindingFlags.Static | BindingFlags.NonPublic);
+                    var g = mi.MakeGenericMethod(typeof(T));
+                    var self = Expression.Parameter(typeof(ListTreeNode<T>), "self");
+                    var call = Expression.Call(g, self);
+                    var func = Expression.Lambda(call, self);
+                    var d = (Func<ListTreeNode<T>, object>)func.Compile();
+                    return (ListTreeNode<T> s) =>
                     {
-                        var mi = typeof(GenericDeserializer<T, U>).GetMethod("GenericListDeserializer",
-                            BindingFlags.Static | BindingFlags.NonPublic);
-                        var g = mi.MakeGenericMethod(target.GetGenericArguments());
-                        var self = Expression.Parameter(typeof(ListTreeNode<T>), "self");
-                        var call = Expression.Call(g, self);
-                        var func = Expression.Lambda(call, self);
-                        return (Func<ListTreeNode<T>, U>)func.Compile();
-                    }
-
-                    if (target.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
-                        target.GetGenericArguments()[0] == typeof(string))
-                    {
-                        var mi = typeof(ListTreeNodeDeserializerExtensions).GetMethod("DictionaryDeserializer",
-                        BindingFlags.Static | BindingFlags.NonPublic);
-                        var g = mi.MakeGenericMethod(typeof(T));
-                        var self = Expression.Parameter(typeof(ListTreeNode<T>), "self");
-                        var call = Expression.Call(g, self);
-                        var func = Expression.Lambda(call, self);
-                        var d = (Func<ListTreeNode<T>, object>)func.Compile();
-                        return (ListTreeNode<T> s) =>
-                        {
-                            var x = d(s);
-                            return (U)x;
-                        };
-                    }
-                }
-
-                {
-                    var schema = JsonSchema.FromType<U>();
-                    return s =>
-                    {
-                        var t = default(U);
-                        schema.Validator.Deserialize(s, ref t);
-                        return t;
+                        var x = d(s);
+                        return (U)x;
                     };
                 }
+            }
+
+            {
+                var schema = JsonSchema.FromType<U>();
+                return s =>
+                {
+                    var t = default(U);
+                    schema.Validator.Deserialize(s, ref t);
+                    return t;
+                };
+            }
 
 #if false
                 if (target.IsEnum)
@@ -277,27 +284,25 @@ namespace UniJSON
                     };
                 }
 #endif
-            }
-
-            delegate U Deserializer(ListTreeNode<T> node);
-
-            static Deserializer s_deserializer;
-
-            public static void Deserialize(ListTreeNode<T> node, ref U value)
-            {
-                if (s_deserializer == null)
-                {
-                    var d = GetDeserializer();
-                    s_deserializer = new Deserializer(d);
-                }
-                value = s_deserializer(node);
-            }
         }
 
-        public static void Deserialize<T, U>(this ListTreeNode<T> self, ref U value)
-            where T : IListTreeItem, IValue<T>
+        public delegate U Deserializer(ListTreeNode<T> node);
+
+        public static Deserializer s_deserializer;
+
+        public static void Deserialize(ListTreeNode<T> node, ref U value)
         {
-            GenericDeserializer<T, U>.Deserialize(self, ref value);
+            if (s_deserializer == null)
+            {
+                var d = GetDeserializer();
+                s_deserializer = new Deserializer(d);
+            }
+            value = s_deserializer(node);
+        }
+
+        public static void SetCustomDeserializer(Deserializer deserializer)
+        {
+            s_deserializer = deserializer;
         }
     }
 }
