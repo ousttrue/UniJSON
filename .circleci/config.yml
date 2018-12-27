@@ -5,8 +5,8 @@ jobs:
       - image: circleci/buildpack-deps:latest
 
     working_directory: ~/repo
+
     environment:
-      UniJSON_SHA1: "${CIRCLE_SHA1}"
       UniJSON_unity_REPO: "git@github.com:ousttrue/UniJSON-unity.git"
 
     steps:
@@ -28,7 +28,7 @@ jobs:
           name: Update submodule(UniJSON) in UniJSON-unity
           command: |
             cd UniJSON-unity/Assets/UniJSON
-            git fetch && git checkout --force ${UniJSON_SHA1}
+            git fetch && git checkout --force ${CIRCLE_SHA1}
 
       - run:
           command: |
@@ -40,7 +40,7 @@ jobs:
           command: |
             cd UniJSON-unity
             git add Assets/UniJSON
-            git commit -m "[skip ci] Checkout UniJSON (${UniJSON_SHA1})"
+            git commit -m "[skip ci] Checkout UniJSON (${CIRCLE_SHA1})"
 
       - run:
           command: |
