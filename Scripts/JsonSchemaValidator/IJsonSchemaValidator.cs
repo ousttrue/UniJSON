@@ -15,6 +15,14 @@ namespace UniJSON
 
         public ActionDisposer Push(object o)
         {
+            if (m_pos >= m_stack.Length)
+            {
+                // extend array
+                // but may be forget pop
+                var stack = new string[m_stack.Length * 2];
+                Array.Copy(m_stack, stack, m_stack.Length);
+                m_stack = stack;
+            }
             m_stack[m_pos++] = o.ToString();
             return new ActionDisposer(Pop);
         }
