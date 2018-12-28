@@ -311,7 +311,7 @@ namespace UniJSON
                 {
                     return (v, c, o) =>
                     {
-                        //using (c.Push(name))
+                        using (c.Push(name))
                         {
                             return v.Validate(c, getter(o));
                         }

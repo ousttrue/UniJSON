@@ -13,9 +13,9 @@ namespace UniJSON
             Push(o.GetType().Name);
         }
 
-        public void Push(object o)
+        public ActionDisposer Push(object o)
         {
-            return;
+            return new ActionDisposer(() => { });
             /*
             if (m_pos >= m_stack.Length)
             {
