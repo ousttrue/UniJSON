@@ -6,7 +6,7 @@ namespace UniJSON
     public class JsonSchemaValidationContext
     {
         string[] m_stack = new string[64];
-        //int m_pos;
+        int m_pos;
 
         public JsonSchemaValidationContext(object o)
         {
@@ -15,8 +15,6 @@ namespace UniJSON
 
         public ActionDisposer Push(object o)
         {
-            return new ActionDisposer(() => { });
-            /*
             if (m_pos >= m_stack.Length)
             {
                 // extend array
@@ -27,18 +25,16 @@ namespace UniJSON
             }
             m_stack[m_pos++] = o.ToString();
             return new ActionDisposer(Pop);
-            */
         }
 
         public void Pop()
         {
-            //--m_pos;
+            --m_pos;
         }
 
         public override string ToString()
         {
-            return "";
-            //return string.Join(".", m_stack, 0, m_pos);
+            return string.Join(".", m_stack, 0, m_pos);
         }
     }
 
