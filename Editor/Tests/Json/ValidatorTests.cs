@@ -227,5 +227,25 @@ namespace UniJSON
 
             Assert.True(c.IsEmpty());
         }
+
+        class HasDictionary
+        {
+            public Dictionary<string, float> primitiveProperties = new Dictionary<string, float>();
+            // TODO: fix
+            // public Dictionary<string, Nested> nestedProperties = new Dictionary<string, Nested>();
+        }
+
+        [Test]
+        public void HasDictionaryObjectValidator()
+        {
+            var c = new JsonSchemaValidationContext("test");
+
+            {
+                var s = JsonSchema.FromType<HasDictionary>();
+                Assert.Null(s.Validator.Validate(c, new HasDictionary()));
+            }
+
+            Assert.True(c.IsEmpty());
+        }
     }
 }
