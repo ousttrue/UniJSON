@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Collections.Generic;
 
-
 namespace UniJSON
 {
     /// <summary>
@@ -222,7 +221,6 @@ namespace UniJSON
 
             if (Required != null)
             {
-                /*
                 foreach (var x in Required)
                 {
                     using (c.Push(x))
@@ -230,18 +228,19 @@ namespace UniJSON
                         // ToDo
                     }
                 }
-                */
             }
 
             if (AdditionalProperties != null)
             {
                 foreach (var kv in d)
                 {
-                    c.Push(kv.Key);
-                    var result = AdditionalProperties.Validator.Validate(c, kv.Value);
-                    if (result != null)
+                    using (c.Push(kv.Key))
                     {
-                        return result;
+                        var result = AdditionalProperties.Validator.Validate(c, kv.Value);
+                        if (result != null)
+                        {
+                            return result;
+                        }
                     }
                 }
             }
@@ -274,7 +273,7 @@ namespace UniJSON
             f.EndMap();
         }
 
-        public void Deserialize<U, V>(ListTreeNode<U> src, ref V dst) 
+        public void Deserialize<U, V>(ListTreeNode<U> src, ref V dst)
             where U : IListTreeItem, IValue<U>
         {
             throw new NotImplementedException();

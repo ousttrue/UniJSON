@@ -46,6 +46,8 @@ namespace UniJSON
                 Assert.Null(v.Validate(c, 4));
                 Assert.NotNull(v.Validate(c, 5));
             }
+
+            Assert.True(c.IsEmpty());
         }
 
         [Test]
@@ -83,11 +85,14 @@ namespace UniJSON
                 Assert.NotNull(v.Validate(c, 0.1));
                 Assert.NotNull(v.Validate(c, -1));
             }
+
+            Assert.True(c.IsEmpty());
         }
 
         [Test]
         public void BoolValidator()
         {
+            // ???
         }
 
         [Test]
@@ -120,6 +125,8 @@ namespace UniJSON
                 Assert.Null(v.Validate(c, "ab"));
                 Assert.NotNull(v.Validate(c, "a"));
             }
+
+            Assert.True(c.IsEmpty());
         }
 
         [Test]
@@ -132,6 +139,8 @@ namespace UniJSON
                 Assert.Null(v.Validate(c, "a"));
                 Assert.NotNull(v.Validate(c, "c"));
             }
+
+            Assert.True(c.IsEmpty());
         }
 
         [Test]
@@ -145,6 +154,8 @@ namespace UniJSON
                 Assert.Null(v.Validate(c, 1));
                 Assert.NotNull(v.Validate(c, 3));
             }
+
+            Assert.True(c.IsEmpty());
         }
 
         [Test]
@@ -158,12 +169,15 @@ namespace UniJSON
                 Assert.Null(v.Validate(c, new object[] { 0 }));
                 Assert.NotNull(v.Validate(c, new object[] { 0, 1 }));
             }
+
             {
                 var v = new JsonArrayValidator();
                 v.MinItems = 1;
                 Assert.Null(v.Validate(c, new object[] { 0 }));
                 Assert.NotNull(v.Validate(c, new object[] { }));
             }
+
+            Assert.True(c.IsEmpty());
         }
 
         class Hoge
@@ -181,6 +195,8 @@ namespace UniJSON
                 Assert.Null(s.Validator.Validate(c, new Hoge { Value = 1 }));
                 Assert.NotNull(s.Validator.Validate(c, new Hoge { Value = 0 }));
             }
+
+            Assert.True(c.IsEmpty());
         }
 
         [Test]
@@ -208,6 +224,28 @@ namespace UniJSON
                 });
                 Assert.NotNull(result);
             }
+
+            Assert.True(c.IsEmpty());
+        }
+
+        class HasDictionary
+        {
+            public Dictionary<string, float> primitiveProperties = new Dictionary<string, float>();
+            // TODO: fix
+            // public Dictionary<string, Nested> nestedProperties = new Dictionary<string, Nested>();
+        }
+
+        [Test]
+        public void HasDictionaryObjectValidator()
+        {
+            var c = new JsonSchemaValidationContext("test");
+
+            {
+                var s = JsonSchema.FromType<HasDictionary>();
+                Assert.Null(s.Validator.Validate(c, new HasDictionary()));
+            }
+
+            Assert.True(c.IsEmpty());
         }
     }
 }
