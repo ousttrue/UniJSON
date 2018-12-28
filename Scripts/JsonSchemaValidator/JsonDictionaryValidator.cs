@@ -222,6 +222,7 @@ namespace UniJSON
 
             if (Required != null)
             {
+                /*
                 foreach (var x in Required)
                 {
                     using (c.Push(x))
@@ -229,6 +230,7 @@ namespace UniJSON
                         // ToDo
                     }
                 }
+                */
             }
 
             if (AdditionalProperties != null)
