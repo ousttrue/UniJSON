@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace UniJSON
 {
     public class JsonSchema : IEquatable<JsonSchema>

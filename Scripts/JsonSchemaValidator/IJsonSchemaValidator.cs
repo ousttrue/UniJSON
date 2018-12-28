@@ -1,12 +1,11 @@
 ﻿using System;
-
+using System.Collections.Generic;
 
 namespace UniJSON
 {
     public class JsonSchemaValidationContext
     {
-        string[] m_stack = new string[64];
-        int m_pos;
+        Stack<string> m_stack = new Stack<string>();
 
         public JsonSchemaValidationContext(object o)
         {
@@ -15,18 +14,23 @@ namespace UniJSON
 
         public ActionDisposer Push(object o)
         {
-            m_stack[m_pos++] = o.ToString();
+            m_stack.Push(o.ToString());
             return new ActionDisposer(Pop);
         }
 
         public void Pop()
         {
-            --m_pos;
+            m_stack.Pop();
+        }
+
+        public bool IsEmpty()
+        {
+            return m_stack.Count == 1; // A first element will be remained.
         }
 
         public override string ToString()
         {
-            return string.Join(".", m_stack, 0, m_pos);
+            return string.Join(".", m_stack.ToArray(), 0, m_stack.Count);
         }
     }
 
