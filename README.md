@@ -1,3 +1,7 @@
+> I decided to integrate this library with UniVRM for maintenance reason (submodule burdensome). Continue updating within UniVRM
+
+* [UniVRM](https://github.com/dwango/UniVRM)
+
 # UniJSON
 JSON serializer and deserializer and schema utilities for Unity(.Net3.5)
 
